@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RAG Debugging Lab Report</title>
+
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: Inter, system-ui, sans-serif;
+      line-height: 1.5;
+      color: #18212f;
+      background: #f4f6f8;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+    }
+
+    main {
+      width: min(1200px, calc(100% - 32px));
+      margin: 32px auto;
+    }
+
+    section {
+      margin: 24px 0;
+      padding: 24px;
+      background: white;
+      border: 1px solid #dce2e8;
+      border-radius: 12px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      padding: 10px;
+      border-bottom: 1px solid #dce2e8;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 12px;
+    }
+
+    .metric-card {
+      padding: 16px;
+      border: 1px solid #dce2e8;
+      border-radius: 8px;
+    }
+
+    .pass {
+      color: #176b3a;
+    }
+
+    .failure {
+      color: #a12626;
+    }
+
+    .preview {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    @media print {
+      body {
+        background: white;
+      }
+
+      main {
+        width: 100%;
+        margin: 0;
+      }
+
+      section {
+        break-inside: avoid;
+        border-color: #999;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  {% macro display_metric(value) -%}
+    {% if value is none %}
+      N/A
+    {% else %}
+      {{ "%.3f" | format(value) }}
+    {% endif %}
+  {%- endmacro %}
+
+  <main>
+    <header>
+      <h1>RAG Debugging Lab Report</h1>
+      <p>Generated at {{ report.generated_at }}</p>
+    </header>
+
+    <section>
+      <h2>Baseline summary</h2>
+
+      <div class="metric-grid">
+        <div class="metric-card">
+          <strong>Configuration</strong>
+          <div>{{ report.baseline.manifest.config.name }}</div>
+        </div>
+
+        <div class="metric-card">
+          <strong>Strategy</strong>
+          <div>{{ report.baseline.manifest.config.strategy }}</div>
+        </div>
+
+        <div class="metric-card">
+          <strong>Representation</strong>
+          <div>{{ report.baseline.manifest.config.representation }}</div>
+        </div>
+
+        <div class="metric-card">
+          <strong>Retrieval depth</strong>
+          <div>k = {{ report.baseline.manifest.config.k }}</div>
+        </div>
+
+        <div class="metric-card">
+          <strong>Sufficient evidence</strong>
+          <div>
+            {{ report.baseline.summary.successful }}
+            /
+            {{ report.baseline.summary.answerable }}
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <strong>Success rate</strong>
+          <div>
+            {{ display_metric(
+              report.baseline.summary.sufficient_evidence_rate
+            ) }}
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+</body>
+</html>
