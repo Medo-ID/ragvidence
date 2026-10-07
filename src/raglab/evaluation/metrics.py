@@ -1,6 +1,6 @@
 """Pure evidence-level retrieval metrics.
 
-Owner contribution: implement the functions below using the documented contract.
+Owner contribution: evidence-level metrics used across all retrieval strategies.
 Do not add file I/O, model calls, logging, or framework dependencies here.
 """
 
@@ -28,13 +28,10 @@ def sufficient_evidence_at_k(
         return None
 
     found_evidence: set[str] = set()
-     
     for hit_evidence in retrieved_evidence[:k]:
         found_evidence.update(hit_evidence)
 
     return set(required_evidence).issubset(found_evidence)
-    
-
 
 
 def evidence_coverage_at_k(
@@ -44,21 +41,18 @@ def evidence_coverage_at_k(
 ) -> float | None:
     """Return the fraction of unique required evidence found in the first k hits."""
     if k <= 0:
-            raise ValueError("k must be positive")
-    
+        raise ValueError("k must be positive")
+
     if not required_evidence:
         return None
 
-    requied = set(required_evidence)
+    required = set(required_evidence)
     found_evidence: set[str] = set()
-        
     for hit_evidence in retrieved_evidence[:k]:
         found_evidence.update(hit_evidence)
 
-    found_required_evidence = requied.intersection(found_evidence)
-
-    return len(found_required_evidence) / len(requied)
-    
+    found_required_evidence = required.intersection(found_evidence)
+    return len(found_required_evidence) / len(required)
 
 
 def first_relevant_rank(
@@ -69,12 +63,11 @@ def first_relevant_rank(
     """Return the one-based first relevant rank within k, or None when absent/undefined."""
     if k <= 0:
         raise ValueError("k must be positive")
-        
+
     if not required_evidence:
         return None
 
     required = set(required_evidence)
-    print(required, retrieved_evidence)
     for rank, hit_evidence in enumerate(retrieved_evidence[:k], start=1):
         if required.intersection(hit_evidence):
             return rank
@@ -88,14 +81,17 @@ def reciprocal_rank(
     k: int,
 ) -> float | None:
     """Return 1/rank, 0.0 for no relevant hit, or None for unanswerable questions."""
+    if k <= 0:
+        raise ValueError("k must be positive")
+
     if not required_evidence:
         return None
-    
+
     rank = first_relevant_rank(required_evidence, retrieved_evidence, k)
     if rank is None:
         return 0.0
-    
-    return 1.0 / rank 
+
+    return 1.0 / rank
 
 
 def precision_at_k(
@@ -109,10 +105,9 @@ def precision_at_k(
 
     if not required_evidence:
         return None
-    
+
     required = set(required_evidence)
     relevant_hits = 0
-
     for hit_evidence in retrieved_evidence[:k]:
         if required.intersection(hit_evidence):
             relevant_hits += 1
@@ -134,4 +129,3 @@ def classify_change(
 
     state = (baseline_success, intervention_success)
     return mapping[state]
-    
