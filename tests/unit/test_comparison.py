@@ -1,6 +1,6 @@
 import pytest
 
-from raglab.comparison import compare_evaluations
+from ragvidence.comparison import compare_evaluations
 
 
 def _evaluation(dataset_hash: str = "same", k: int = 2) -> dict:

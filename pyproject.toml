@@ -1,10 +1,21 @@
 [project]
-name = "rag-debugging-lab"
+name = "ragvidence"
 version = "0.1.0"
-description = "Local CLI experiments and evidence-level diagnostics for RAG retrieval systems."
+description = "Evidence-first RAG retrieval diagnostics, built to run locally."
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 authors = [{ name = "Medo" }]
+license = { file = "LICENSE.md" }
+keywords = ["rag", "retrieval", "evaluation", "debugging", "bm25", "embeddings"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: Other/Proprietary License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 dependencies = [
   "bm25s>=0.2.14,<0.3",
   "jinja2>=3.1,<4",
@@ -28,10 +39,33 @@ dev = [
 ]
 
 [project.scripts]
-raglab = "raglab.cli:app"
+ragvidence = "ragvidence.cli:app"
+
+[project.urls]
+Homepage = "https://ragvidence.medo-id.com"
+Documentation = "https://ragvidence.medo-id.com/docs"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/raglab"]
+packages = ["src/ragvidence"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "/src",
+  "/tests",
+  "/docs",
+  "/README.md",
+  "/LICENSE.md",
+  "/SECURITY.md",
+  "/SUPPORT.md",
+  "/CHANGELOG.md",
+  "/THIRD_PARTY_NOTICES.md",
+  "/THIRD_PARTY_LICENSES.md",
+  "/.env.example",
+  "/.python-version",
+  "/pyproject.toml",
+  "/uv.lock",
+]
+exclude = ["/docs/maintainer"]
 
 [build-system]
 requires = ["hatchling"]

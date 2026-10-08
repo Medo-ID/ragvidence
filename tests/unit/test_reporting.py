@@ -1,8 +1,8 @@
 from pathlib import Path
 
-from raglab.reporting.html import render_html
-from raglab.reporting.markdown import render_markdown
-from raglab.reporting.payload import build_report
+from ragvidence.reporting.html import render_html
+from ragvidence.reporting.markdown import render_markdown
+from ragvidence.reporting.payload import build_report
 
 
 def _evaluation(name: str) -> dict:
@@ -93,13 +93,13 @@ def _complete_evaluation(name: str, *, success: bool) -> dict:
 
 
 def test_product_html_template_renders_baseline_and_comparison() -> None:
-    template = Path(__file__).parents[2] / "src/raglab/reporting/templates/report.html.j2"
+    template = Path(__file__).parents[2] / "src/ragvidence/reporting/templates/report.html.j2"
     baseline = _complete_evaluation("baseline", success=False)
     intervention = _complete_evaluation("intervention", success=True)
 
     rendered = render_html(build_report(baseline, intervention), template)
 
-    assert "RAG Debugging Lab" in rendered
+    assert "RAGvidence" in rendered
     assert "Fail To Pass" in rendered
     assert "run-baseline" in rendered
     assert "run-intervention" in rendered
@@ -109,7 +109,7 @@ def test_product_html_template_renders_baseline_and_comparison() -> None:
 
 
 def test_product_html_template_renders_baseline_only() -> None:
-    template = Path(__file__).parents[2] / "src/raglab/reporting/templates/report.html.j2"
+    template = Path(__file__).parents[2] / "src/ragvidence/reporting/templates/report.html.j2"
 
     rendered = render_html(build_report(_complete_evaluation("baseline", success=True)), template)
 

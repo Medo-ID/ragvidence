@@ -3,9 +3,9 @@ from pathlib import Path
 
 import pytest
 
-from raglab.data import DatasetError, load_dataset
-from raglab.importer import import_retrieval_run
-from raglab.workspace import EXERCISE_ROOT
+from ragvidence.data import DatasetError, load_dataset
+from ragvidence.importer import import_retrieval_run
+from ragvidence.workspace import EXERCISE_ROOT
 
 
 def _write_complete_import(path: Path, *, bad_source: bool = False) -> None:

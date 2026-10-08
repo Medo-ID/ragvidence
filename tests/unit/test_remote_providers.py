@@ -1,11 +1,28 @@
 import numpy as np
+import pytest
 
-from raglab.providers import remote
-from raglab.providers.remote import (
+from ragvidence.providers import remote
+from ragvidence.providers.remote import (
     ChatProvider,
     OllamaEmbeddingProvider,
     OpenAICompatibleEmbeddingProvider,
 )
+
+
+def test_remote_provider_rejects_non_http_url() -> None:
+    provider = OpenAICompatibleEmbeddingProvider("model", "file:///tmp/provider")
+
+    with pytest.raises(RuntimeError, match="must use http or https"):
+        provider.embed_query("query")
+
+
+def test_remote_provider_rejects_embedded_credentials() -> None:
+    provider = OpenAICompatibleEmbeddingProvider(
+        "model", "https://user:password@example.test/v1"
+    )
+
+    with pytest.raises(RuntimeError, match="must not contain embedded credentials"):
+        provider.embed_query("query")
 
 
 def test_openai_compatible_embedding_order(monkeypatch) -> None:

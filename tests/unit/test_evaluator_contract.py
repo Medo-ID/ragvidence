@@ -1,5 +1,5 @@
-from raglab.evaluation import evaluator
-from raglab.models import (
+from ragvidence.evaluation import evaluator
+from ragvidence.models import (
     ExperimentRun,
     QueryRun,
     QuestionCase,

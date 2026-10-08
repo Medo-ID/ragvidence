@@ -1,0 +1,35 @@
+name: Build release artifacts
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Install Python
+        run: uv python install 3.12
+      - name: Verify tag matches package version
+        run: test "${GITHUB_REF_NAME#v}" = "$(uv version --short)"
+      - name: Test and build
+        run: |
+          uv sync --frozen --dev
+          uv run ruff check src tests
+          uv run pytest
+          uv run ragvidence verify
+          uv build
+          sha256sum dist/* > dist/SHA256SUMS.txt
+      - name: Create immutable release candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/* --verify-tag --generate-notes

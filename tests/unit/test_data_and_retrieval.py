@@ -1,9 +1,9 @@
 from pathlib import Path
 
-from raglab.data import load_dataset
-from raglab.representation import build_records
-from raglab.strategies.bm25 import BM25Strategy, tokenize
-from raglab.workspace import EXERCISE_ROOT, create_workspace, restore_workspace
+from ragvidence.data import load_dataset
+from ragvidence.representation import build_records
+from ragvidence.strategies.bm25 import BM25Strategy, tokenize
+from ragvidence.workspace import EXERCISE_ROOT, create_workspace, restore_workspace
 
 
 def test_bundled_dataset_has_reviewed_evidence() -> None:
@@ -36,7 +36,7 @@ def test_bm25_returns_ranked_source_evidence() -> None:
 
 def test_workspace_restore_preserves_backup(tmp_path: Path) -> None:
     target = create_workspace(tmp_path, "demo")
-    (target / "notes.txt").write_text("owner edit")
+    (target / "notes.txt").write_text("user edit")
     restored, backup = restore_workspace(tmp_path, "demo")
     assert restored.is_dir()
-    assert (backup / "notes.txt").read_text() == "owner edit"
+    assert (backup / "notes.txt").read_text() == "user edit"

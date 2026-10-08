@@ -1,6 +1,6 @@
 import pytest
 
-from raglab.evaluation.metrics import (
+from ragvidence.evaluation.metrics import (
     classify_change,
     evidence_coverage_at_k,
     first_relevant_rank,
