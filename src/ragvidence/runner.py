@@ -9,12 +9,12 @@ import time
 from datetime import UTC, datetime
 from pathlib import Path
 
-from raglab import __version__
-from raglab.data import canonical_dataset_bytes, load_dataset
-from raglab.models import ExperimentRun, QueryRun, RunManifest, StrategyConfig
-from raglab.providers import OllamaEmbeddingProvider, OpenAICompatibleEmbeddingProvider
-from raglab.representation import build_records
-from raglab.strategies import BM25Strategy, SemanticStrategy
+from ragvidence import __version__
+from ragvidence.data import canonical_dataset_bytes, load_dataset
+from ragvidence.models import ExperimentRun, QueryRun, RunManifest, StrategyConfig
+from ragvidence.providers import OllamaEmbeddingProvider, OpenAICompatibleEmbeddingProvider
+from ragvidence.representation import build_records
+from ragvidence.strategies import BM25Strategy, SemanticStrategy
 
 
 def run_experiment(dataset: Path, config: StrategyConfig) -> ExperimentRun:
@@ -61,7 +61,7 @@ def write_run(run: ExperimentRun, output: Path) -> None:
 
 
 def _semantic_strategy(dataset: Path, config: StrategyConfig) -> SemanticStrategy:
-    from raglab.config import Settings
+    from ragvidence.config import Settings
 
     settings = Settings()
     provider_name = config.provider or settings.embedding_provider
@@ -73,11 +73,11 @@ def _semantic_strategy(dataset: Path, config: StrategyConfig) -> SemanticStrateg
         )
     elif provider_name == "openai_compatible":
         if not settings.embedding_base_url:
-            raise RuntimeError("RAGLAB_EMBEDDING_BASE_URL is required")
+            raise RuntimeError("RAGVIDENCE_EMBEDDING_BASE_URL is required")
         key = settings.embedding_api_key.get_secret_value() if settings.embedding_api_key else None
         provider = OpenAICompatibleEmbeddingProvider(model, settings.embedding_base_url, key)
     elif provider_name != "fastembed":
         raise RuntimeError(f"Unsupported embedding provider: {provider_name}")
     return SemanticStrategy(
-        model, cache_dir=dataset / ".raglab-cache" / "embeddings", provider=provider
+        model, cache_dir=dataset / ".ragvidence-cache" / "embeddings", provider=provider
     )

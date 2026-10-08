@@ -10,23 +10,23 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
-from raglab import __edition__, __version__
-from raglab.comparison import compare_evaluations
-from raglab.data import DatasetError, load_dataset
-from raglab.diagnosis import diagnose as build_diagnosis
-from raglab.evaluation.evaluator import evaluate_run
-from raglab.generation import generate_answers
-from raglab.health import run_health
-from raglab.importer import import_retrieval_run
-from raglab.models import ExperimentRun, StrategyConfig
-from raglab.reporting import build_report, render_markdown
-from raglab.reporting.html import render_html
-from raglab.runner import run_experiment, write_run
-from raglab.verification import run_verification
-from raglab.workspace import create_workspace, restore_workspace
+from ragvidence import __edition__, __version__
+from ragvidence.comparison import compare_evaluations
+from ragvidence.data import DatasetError, load_dataset
+from ragvidence.diagnosis import diagnose as build_diagnosis
+from ragvidence.evaluation.evaluator import evaluate_run
+from ragvidence.generation import generate_answers
+from ragvidence.health import run_health
+from ragvidence.importer import import_retrieval_run
+from ragvidence.models import ExperimentRun, StrategyConfig
+from ragvidence.reporting import build_report, render_markdown
+from ragvidence.reporting.html import render_html
+from ragvidence.runner import run_experiment, write_run
+from ragvidence.verification import run_verification
+from ragvidence.workspace import create_workspace, restore_workspace
 
 app = typer.Typer(
-    name="raglab",
+    name="ragvidence",
     help="Diagnose RAG retrieval with evidence-level experiments.",
     no_args_is_help=True,
 )
@@ -54,7 +54,7 @@ def main(
         bool | None, typer.Option("--version", callback=version_callback, is_eager=True)
     ] = None,
 ) -> None:
-    """RAG Debugging Lab CLI."""
+    """RAGvidence CLI."""
 
 
 @app.command()
@@ -104,7 +104,7 @@ def quickstart(root: Path = DEFAULT_ROOT) -> None:
     except FileExistsError:
         target = root / "heading-context"
         console.print(f"[yellow]EXISTS[/yellow] {target}")
-    console.print(f"[green]READY[/green] {target}\nNext: raglab validate {target}")
+    console.print(f"[green]READY[/green] {target}\nNext: ragvidence validate {target}")
 
 
 @app.command()
@@ -257,7 +257,7 @@ def evaluate(workspace: Path, run_file: Path) -> None:
 @app.command()
 def generate(workspace: Path, run_file: Path, output: Path) -> None:
     """Generate optional answers with a user-configured provider."""
-    from raglab.config import Settings
+    from ragvidence.config import Settings
 
     settings = Settings()
     console.print(

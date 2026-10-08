@@ -1,7 +1,7 @@
 [project]
-name = "rag-debugging-lab"
+name = "ragvidence"
 version = "0.1.0"
-description = "Local CLI experiments and evidence-level diagnostics for RAG retrieval systems."
+description = "Evidence-first RAG retrieval diagnostics, built to run locally."
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 authors = [{ name = "Medo" }]
@@ -39,14 +39,14 @@ dev = [
 ]
 
 [project.scripts]
-raglab = "raglab.cli:app"
+ragvidence = "ragvidence.cli:app"
 
 [project.urls]
-Homepage = "https://medo-id.com"
-Documentation = "https://medo-id.com"
+Homepage = "https://ragvidence.medo-id.com"
+Documentation = "https://ragvidence.medo-id.com/docs"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/raglab"]
+packages = ["src/ragvidence"]
 
 [tool.hatch.build.targets.sdist]
 include = [

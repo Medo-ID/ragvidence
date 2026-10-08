@@ -4,7 +4,7 @@ This file is internal and excluded from customer source distributions.
 
 ## Before release
 
-1. Confirm the final product name and package name are clear for commercial use. “RAG Debugging Lab” is descriptive and is already used publicly by other educational content; do not claim trademark ownership without a professional search.
+1. Recheck the RAGvidence product and package names before every public release. The October 2026 clearance search found no exact-match software or package conflict, but it was not a formal trademark opinion.
 2. Replace generic seller/contact references with the legal seller identity and support address used at checkout.
 3. Have the proprietary license, refund terms, privacy notice, and checkout terms reviewed for the seller’s jurisdiction and target markets.
 4. Confirm every advertised Free and Plus capability exists in the exact delivered build.
@@ -17,16 +17,16 @@ This file is internal and excluded from customer source distributions.
 uv sync --frozen --dev
 uv run ruff check src tests
 uv run pytest
-uv run raglab verify
+uv run ragvidence verify
 uv build
 ```
 
 Then install the built wheel into an isolated tool environment:
 
 ```bash
-uv tool install --force dist/rag_debugging_lab-0.1.0-py3-none-any.whl
-raglab health
-raglab tutorial --root /tmp/raglab-release-smoke
+uv tool install --force dist/ragvidence-0.1.0-py3-none-any.whl
+ragvidence health
+ragvidence tutorial --root /tmp/ragvidence-release-smoke
 ```
 
 Inspect wheel and source-archive contents. Neither may include `.env`, workspaces, caches, build directories, maintainer documentation, credentials, or customer data.

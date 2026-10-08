@@ -6,10 +6,10 @@ import time
 from pathlib import Path
 from typing import Any
 
-from raglab.config import Settings
-from raglab.data import load_dataset
-from raglab.models import ExperimentRun
-from raglab.providers.remote import ChatProvider
+from ragvidence.config import Settings
+from ragvidence.data import load_dataset
+from ragvidence.models import ExperimentRun
+from ragvidence.providers.remote import ChatProvider
 
 SYSTEM_PROMPT = (
     "Answer only from the provided retrieved context. Cite source IDs in square brackets. "
@@ -19,7 +19,7 @@ SYSTEM_PROMPT = (
 
 def generate_answers(workspace: Path, run: ExperimentRun, settings: Settings) -> dict[str, Any]:
     if settings.generation_provider not in {"ollama", "openai_compatible"}:
-        raise RuntimeError("RAGLAB_GENERATION_PROVIDER must be ollama or openai_compatible")
+        raise RuntimeError("RAGVIDENCE_GENERATION_PROVIDER must be ollama or openai_compatible")
     if not settings.generation_model or not settings.generation_base_url:
         raise RuntimeError("Generation model and base URL are required")
     key = settings.generation_api_key.get_secret_value() if settings.generation_api_key else None

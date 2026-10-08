@@ -7,9 +7,9 @@ from pathlib import Path
 
 import numpy as np
 
-from raglab.models import RetrievalHit
-from raglab.providers import EmbeddingProvider, FastEmbedProvider
-from raglab.representation import RetrievalRecord
+from ragvidence.models import RetrievalHit
+from ragvidence.providers import EmbeddingProvider, FastEmbedProvider
+from ragvidence.representation import RetrievalRecord
 
 
 class SemanticStrategy:

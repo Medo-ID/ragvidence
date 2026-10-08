@@ -4,14 +4,14 @@ from __future__ import annotations
 
 from typing import Any
 
-from raglab.evaluation.metrics import (
+from ragvidence.evaluation.metrics import (
     evidence_coverage_at_k,
     first_relevant_rank,
     precision_at_k,
     reciprocal_rank,
     sufficient_evidence_at_k,
 )
-from raglab.models import ExperimentRun, QuestionCase
+from ragvidence.models import ExperimentRun, QuestionCase
 
 
 def evaluate_run(run: ExperimentRun, questions: list[QuestionCase]) -> dict[str, Any]:

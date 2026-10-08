@@ -3,8 +3,8 @@
 from collections.abc import Sequence
 from typing import Protocol
 
-from raglab.models import RetrievalHit
-from raglab.representation import RetrievalRecord
+from ragvidence.models import RetrievalHit
+from ragvidence.representation import RetrievalRecord
 
 
 class RetrievalStrategy(Protocol):

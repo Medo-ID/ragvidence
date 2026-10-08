@@ -25,6 +25,6 @@ jobs:
       - name: Test
         run: uv run pytest
       - name: Verify release fixtures
-        run: uv run raglab verify
+        run: uv run ragvidence verify
       - name: Build distributions
         run: uv build

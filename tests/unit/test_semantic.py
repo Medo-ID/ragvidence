@@ -2,9 +2,9 @@ from pathlib import Path
 
 import numpy as np
 
-from raglab.models import SourceUnit
-from raglab.representation import build_records
-from raglab.strategies.semantic import SemanticStrategy
+from ragvidence.models import SourceUnit
+from ragvidence.representation import build_records
+from ragvidence.strategies.semantic import SemanticStrategy
 
 
 class FakeProvider:

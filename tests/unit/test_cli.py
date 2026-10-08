@@ -2,7 +2,7 @@ from pathlib import Path
 
 from typer.testing import CliRunner
 
-from raglab.cli import app
+from ragvidence.cli import app
 
 runner = CliRunner()
 

@@ -1,9 +1,9 @@
 from pathlib import Path
 
-from raglab.data import load_dataset
-from raglab.representation import build_records
-from raglab.strategies.bm25 import BM25Strategy, tokenize
-from raglab.workspace import EXERCISE_ROOT, create_workspace, restore_workspace
+from ragvidence.data import load_dataset
+from ragvidence.representation import build_records
+from ragvidence.strategies.bm25 import BM25Strategy, tokenize
+from ragvidence.workspace import EXERCISE_ROOT, create_workspace, restore_workspace
 
 
 def test_bundled_dataset_has_reviewed_evidence() -> None:

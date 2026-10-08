@@ -1,6 +1,6 @@
 # Plans and editions
 
-RAG Debugging Lab uses two proprietary plans. The plan shown on the purchase receipt controls the license grant and available build.
+RAGvidence uses two proprietary plans. The plan shown on the purchase receipt controls the license grant and available build.
 
 ## Free
 

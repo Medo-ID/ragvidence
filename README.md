@@ -1,6 +1,8 @@
-# RAG Debugging Lab
+# RAGvidence
 
-RAG Debugging Lab is a local, CLI-first toolkit for testing retrieval changes with reviewed evidence instead of judging generated answers by intuition.
+**Evidence-first RAG diagnostics, built to run locally.**
+
+RAGvidence is a local, CLI-first toolkit for testing retrieval changes with reviewed evidence instead of judging generated answers by intuition.
 
 It helps you answer questions such as:
 
@@ -11,7 +13,7 @@ It helps you answer questions such as:
 
 No account, telemetry, hosted database, or vendor-provided API key is required. BM25 works completely offline. Semantic retrieval can run locally or through a provider chosen by the user.
 
-> RAG Debugging Lab evaluates retrieval evidence. It does not prove that a generated answer is correct, safe, or legally compliant.
+> RAGvidence evaluates retrieval evidence. It does not prove that a generated answer is correct, safe, or legally compliant.
 
 ## Install
 
@@ -21,18 +23,18 @@ Extract the release, open a terminal in its directory, and run:
 
 ```bash
 uv sync --frozen
-uv run raglab health
-uv run raglab tutorial
+uv run ragvidence health
+uv run ragvidence tutorial
 ```
 
-During source-based use, prefix commands with `uv run`. After installing the CLI as a tool, use `raglab` directly.
+During source-based use, prefix commands with `uv run`. After installing the CLI as a tool, use `ragvidence` directly.
 
 ### Install a built wheel
 
 ```bash
-uv tool install ./rag_debugging_lab-0.1.0-py3-none-any.whl
-raglab health
-raglab tutorial
+uv tool install ./ragvidence-0.1.0-py3-none-any.whl
+ragvidence health
+ragvidence tutorial
 ```
 
 Python 3.12 is pinned in `.python-version`; `uv` can install the required Python runtime automatically.
@@ -53,7 +55,7 @@ Then follow [Getting started](docs/getting-started.md) to understand the experim
 
 | Goal | Start here |
 | --- | --- |
-| Learn the workflow on bundled data | `raglab tutorial` |
+| Learn the workflow on bundled data | `ragvidence tutorial` |
 | Evaluate your own labeled dataset | [Bring your own data](docs/bring-your-own-data.md) |
 | Compare BM25 and semantic retrieval | [User guide](docs/user-guide.md#semantic-retrieval) |
 | Test an existing RAG retriever | [User guide](docs/user-guide.md#import-an-existing-retriever) |
@@ -100,7 +102,7 @@ The Free edition does not require activation. Plus activation will be issued aft
 uv sync --frozen --dev
 uv run ruff check src tests
 uv run pytest
-uv run raglab verify
+uv run ragvidence verify
 uv build
 ```
 

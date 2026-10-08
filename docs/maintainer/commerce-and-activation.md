@@ -2,7 +2,7 @@
 
 This file is internal and excluded from customer source distributions.
 
-PayPal processes payment; it is not the product-license authority. A small backend must connect verified payment state to a RAG Debugging Lab entitlement.
+PayPal processes payment; it is not the product-license authority. A small backend must connect verified payment state to a RAGvidence entitlement.
 
 ## Required flow
 
@@ -12,7 +12,7 @@ PayPal processes payment; it is not the product-license authority. A small backe
 4. A webhook endpoint accepts payment events but fulfills only after PayPal signature verification and a completed capture.
 5. The backend stores an idempotent entitlement keyed by PayPal capture/order ID and buyer identity.
 6. The backend emails or displays a one-time activation code or authenticated download link.
-7. `raglab license activate CODE` exchanges that code for a signed, non-secret license document.
+7. `ragvidence license activate CODE` exchanges that code for a signed, non-secret license document.
 8. The CLI verifies the document with an embedded public key and stores it in the user configuration directory with restrictive permissions.
 9. Plus feature checks read the verified entitlement. The private signing key exists only in the backend or a managed secret store.
 10. Refund, chargeback, cancellation, and fraud events revoke future downloads/refreshes. Define an explicit offline grace policy before launch.

@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from raglab.evaluation.metrics import classify_change
+from ragvidence.evaluation.metrics import classify_change
 
 
 def compare_evaluations(baseline: dict[str, Any], intervention: dict[str, Any]) -> dict[str, Any]:

@@ -10,9 +10,9 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from raglab import __version__
-from raglab.data import DatasetError, canonical_dataset_bytes, load_dataset
-from raglab.models import ExperimentRun, QueryRun, RetrievalHit, RunManifest, StrategyConfig
+from ragvidence import __version__
+from ragvidence.data import DatasetError, canonical_dataset_bytes, load_dataset
+from ragvidence.models import ExperimentRun, QueryRun, RetrievalHit, RunManifest, StrategyConfig
 
 
 def import_retrieval_run(

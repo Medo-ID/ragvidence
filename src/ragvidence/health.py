@@ -9,8 +9,8 @@ import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
-from raglab.data import load_dataset
-from raglab.workspace import EXERCISE_ROOT
+from ragvidence.data import load_dataset
+from ragvidence.workspace import EXERCISE_ROOT
 
 
 @dataclass(frozen=True)

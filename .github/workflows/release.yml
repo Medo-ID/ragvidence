@@ -26,7 +26,7 @@ jobs:
           uv sync --frozen --dev
           uv run ruff check src tests
           uv run pytest
-          uv run raglab verify
+          uv run ragvidence verify
           uv build
           sha256sum dist/* > dist/SHA256SUMS.txt
       - name: Create immutable release candidate

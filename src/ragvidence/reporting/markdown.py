@@ -35,7 +35,7 @@ def _render_evaluation(evaluation: dict[str, Any], heading: str) -> list[str]:
 
 
 def render_markdown(report: dict[str, Any]) -> str:
-    lines = ["# RAG Debugging Lab report", ""]
+    lines = ["# RAGvidence report", ""]
     lines.extend(_render_evaluation(report["baseline"], "Baseline"))
     if report.get("intervention") is not None:
         lines.extend([""])

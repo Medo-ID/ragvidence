@@ -7,7 +7,7 @@ from pathlib import Path
 
 from pydantic import BaseModel, ValidationError
 
-from raglab.models import QuestionCase, SourceUnit
+from ragvidence.models import QuestionCase, SourceUnit
 
 
 class DatasetError(ValueError):

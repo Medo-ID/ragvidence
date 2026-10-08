@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
 
-from raglab.providers import remote
-from raglab.providers.remote import (
+from ragvidence.providers import remote
+from ragvidence.providers.remote import (
     ChatProvider,
     OllamaEmbeddingProvider,
     OpenAICompatibleEmbeddingProvider,

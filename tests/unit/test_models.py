@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from raglab.models import QuestionCase
+from ragvidence.models import QuestionCase
 
 
 def test_answerable_question_requires_evidence() -> None:

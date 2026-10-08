@@ -1,6 +1,6 @@
 # User guide
 
-This guide covers supported workflows beyond the bundled tutorial. Commands use an installed `raglab` tool. Prefix them with `uv run` when using the source archive.
+This guide covers supported workflows beyond the bundled tutorial. Commands use an installed `ragvidence` tool. Prefix them with `uv run` when using the source archive.
 
 ## The experiment lifecycle
 
@@ -17,13 +17,13 @@ Every useful experiment follows the same sequence:
 ## Create a custom experiment
 
 ```bash
-raglab init customer-support
+ragvidence init customer-support
 ```
 
 Edit `workspaces/customer-support/sources.jsonl` and `questions.jsonl`, then validate:
 
 ```bash
-raglab validate workspaces/customer-support
+ragvidence validate workspaces/customer-support
 ```
 
 Start with 10–50 source units and 10–30 carefully reviewed questions. Larger weakly labeled datasets create more confident-looking noise, not stronger evidence. See [Bring your own data](bring-your-own-data.md) for schemas and labeling rules.
@@ -31,30 +31,30 @@ Start with 10–50 source units and 10–30 carefully reviewed questions. Larger
 ## BM25 representation comparison
 
 ```bash
-raglab benchmark workspaces/customer-support --strategies bm25 --k 4
+ragvidence benchmark workspaces/customer-support --strategies bm25 --k 4
 
-raglab evaluate workspaces/customer-support \
+ragvidence evaluate workspaces/customer-support \
   workspaces/customer-support/runs/bm25-body.json
 
-raglab evaluate workspaces/customer-support \
+ragvidence evaluate workspaces/customer-support \
   workspaces/customer-support/runs/bm25-heading_context.json
 ```
 
 Compare and diagnose:
 
 ```bash
-raglab compare \
+ragvidence compare \
   workspaces/customer-support/evaluations/bm25-body.json \
   workspaces/customer-support/evaluations/bm25-heading_context.json \
   workspaces/customer-support/comparisons/bm25.json
 
-raglab diagnose workspaces/customer-support/comparisons/bm25.json
+ragvidence diagnose workspaces/customer-support/comparisons/bm25.json
 ```
 
 Create a shareable HTML report:
 
 ```bash
-raglab report \
+ragvidence report \
   workspaces/customer-support/evaluations/bm25-body.json \
   workspaces/customer-support/reports/bm25-comparison.html \
   --intervention workspaces/customer-support/evaluations/bm25-heading_context.json \
@@ -66,7 +66,7 @@ raglab report \
 Install optional local semantic dependencies into a tool installation:
 
 ```bash
-uv tool install --reinstall "rag-debugging-lab[semantic]"
+uv tool install --reinstall "ragvidence[semantic]"
 ```
 
 For a source archive:
@@ -78,7 +78,7 @@ uv sync --frozen --extra semantic
 Run the default local embedding model:
 
 ```bash
-raglab benchmark workspaces/customer-support \
+ragvidence benchmark workspaces/customer-support \
   --strategies semantic \
   --k 4
 ```
@@ -90,13 +90,13 @@ The first run downloads the selected model. Embeddings are cached inside the wor
 Copy `.env.example` to `.env` and configure:
 
 ```dotenv
-RAGLAB_EMBEDDING_PROVIDER=ollama
-RAGLAB_EMBEDDING_MODEL=your-embedding-model
-RAGLAB_EMBEDDING_BASE_URL=http://localhost:11434
+RAGVIDENCE_EMBEDDING_PROVIDER=ollama
+RAGVIDENCE_EMBEDDING_MODEL=your-embedding-model
+RAGVIDENCE_EMBEDDING_BASE_URL=http://localhost:11434
 ```
 
 ```bash
-raglab benchmark workspaces/customer-support \
+ragvidence benchmark workspaces/customer-support \
   --strategies semantic \
   --provider ollama \
   --model your-embedding-model \
@@ -108,10 +108,10 @@ raglab benchmark workspaces/customer-support \
 Configure `.env`:
 
 ```dotenv
-RAGLAB_EMBEDDING_PROVIDER=openai_compatible
-RAGLAB_EMBEDDING_MODEL=your-model
-RAGLAB_EMBEDDING_BASE_URL=https://provider.example/v1
-RAGLAB_EMBEDDING_API_KEY=your-key
+RAGVIDENCE_EMBEDDING_PROVIDER=openai_compatible
+RAGVIDENCE_EMBEDDING_MODEL=your-model
+RAGVIDENCE_EMBEDDING_BASE_URL=https://provider.example/v1
+RAGVIDENCE_EMBEDDING_API_KEY=your-key
 ```
 
 Then run with `--provider openai_compatible`. Source text and questions will be sent to that endpoint. Review the provider’s retention and training policy first.
@@ -119,7 +119,7 @@ Then run with `--provider openai_compatible`. Source text and questions will be 
 ## Compare lexical and semantic retrieval
 
 ```bash
-raglab benchmark workspaces/customer-support \
+ragvidence benchmark workspaces/customer-support \
   --strategies bm25,semantic \
   --k 4
 ```
@@ -137,13 +137,13 @@ Export one JSON object per question:
 Every question and source ID must match the reviewed workspace.
 
 ```bash
-raglab import-run \
+ragvidence import-run \
   workspaces/customer-support \
   exported-results.jsonl \
   --name production-v1 \
   --k 4
 
-raglab evaluate \
+ragvidence evaluate \
   workspaces/customer-support \
   workspaces/customer-support/runs/production-v1.json
 ```
@@ -155,13 +155,13 @@ This is the recommended path for evaluating LangChain, LlamaIndex, a vector data
 Answer generation is deliberately separate from retrieval scoring. Configure `ollama` or `openai_compatible` in `.env`:
 
 ```dotenv
-RAGLAB_GENERATION_PROVIDER=ollama
-RAGLAB_GENERATION_MODEL=your-chat-model
-RAGLAB_GENERATION_BASE_URL=http://localhost:11434
+RAGVIDENCE_GENERATION_PROVIDER=ollama
+RAGVIDENCE_GENERATION_MODEL=your-chat-model
+RAGVIDENCE_GENERATION_BASE_URL=http://localhost:11434
 ```
 
 ```bash
-raglab generate \
+ragvidence generate \
   workspaces/customer-support \
   workspaces/customer-support/runs/bm25-heading_context.json \
   workspaces/customer-support/answers/bm25-heading_context.json
@@ -185,7 +185,7 @@ Use `--format json` for automation, `markdown` for lightweight review, and `html
 ## Recovery
 
 ```bash
-raglab workspace restore customer-support
+ragvidence workspace restore customer-support
 ```
 
 The existing workspace becomes a timestamped backup. Restoration never deletes it automatically.

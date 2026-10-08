@@ -6,7 +6,7 @@ Do not add file I/O, model calls, logging, or framework dependencies here.
 
 from collections.abc import Collection, Sequence
 
-from raglab.models import ChangeClassification
+from ragvidence.models import ChangeClassification
 
 EvidenceRanking = Sequence[Collection[str]]
 

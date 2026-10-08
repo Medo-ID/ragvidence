@@ -1,6 +1,6 @@
 # Third-party notices
 
-This inventory covers direct runtime dependencies selected for RAG Debugging Lab v0.1.0. Exact resolved versions are recorded in `uv.lock`. Each dependency remains governed by its own license; consult the installed distribution and upstream project for the complete text.
+This inventory covers direct runtime dependencies selected for RAGvidence v0.1.0. Exact resolved versions are recorded in `uv.lock`. Each dependency remains governed by its own license; consult the installed distribution and upstream project for the complete text.
 
 | Component | Role | License identified by upstream/package metadata |
 | --- | --- | --- |

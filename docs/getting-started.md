@@ -8,23 +8,23 @@ From an extracted customer archive:
 
 ```bash
 uv sync --frozen
-uv run raglab health
+uv run ragvidence health
 ```
 
 From a tool installation:
 
 ```bash
-raglab health
+ragvidence health
 ```
 
 `PASS` means the core workflow is ready. A warning that the semantic extra is unavailable does not block the offline BM25 tutorial.
 
 ## 2. Run the guided tutorial
 
-Use `uv run raglab` instead of `raglab` below when working directly from the source archive.
+Use `uv run ragvidence` instead of `ragvidence` below when working directly from the source archive.
 
 ```bash
-raglab tutorial
+ragvidence tutorial
 ```
 
 The command creates `workspaces/first-run` and runs two controlled experiments:
@@ -76,9 +76,9 @@ The primary metric is **sufficient evidence at k**. A question passes only when 
 ## 5. Inspect one retrieval manually
 
 ```bash
-raglab inspect workspaces/first-run/runs/bm25-body.json --question DEV-01
+ragvidence inspect workspaces/first-run/runs/bm25-body.json --question DEV-01
 
-raglab inspect workspaces/first-run/runs/bm25-heading_context.json --question DEV-01
+ragvidence inspect workspaces/first-run/runs/bm25-heading_context.json --question DEV-01
 ```
 
 This lets you see what moved in the ranking before relying on aggregate metrics.
@@ -88,7 +88,7 @@ This lets you see what moved in the ranking before relying on aggregate metrics.
 Read [Bring your own data](bring-your-own-data.md), then create a clean experiment:
 
 ```bash
-raglab init my-experiment
+ragvidence init my-experiment
 ```
 
 Do not replace the tutorial files with sensitive production data. Use a separate named workspace.
@@ -98,5 +98,5 @@ Do not replace the tutorial files with sensitive production data. Use a separate
 Existing outputs are never silently overwritten. Preserve the current tutorial and create a separately named copy:
 
 ```bash
-raglab tutorial --name first-run-2
+ragvidence tutorial --name first-run-2
 ```

@@ -1,4 +1,4 @@
-from raglab.verification import run_verification
+from ragvidence.verification import run_verification
 
 
 def test_verification_passes_release_fixtures() -> None:

@@ -5,8 +5,8 @@ from collections.abc import Sequence
 
 import bm25s
 
-from raglab.models import RetrievalHit
-from raglab.representation import RetrievalRecord
+from ragvidence.models import RetrievalHit
+from ragvidence.representation import RetrievalRecord
 
 TOKEN_PATTERN = re.compile(r"[a-z0-9]+(?:[._-][a-z0-9]+)*", re.IGNORECASE)
 

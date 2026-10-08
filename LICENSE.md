@@ -1,4 +1,4 @@
-# RAG Debugging Lab Software License
+# RAGvidence Software License
 
 Version 1.0 — 8 October 2026
 
@@ -6,7 +6,7 @@ Copyright © 2026 Medo. All rights reserved.
 
 This is proprietary software, not open-source software. “Licensor” means the seller identified on the product page or transaction receipt. “You” means the individual who obtained the software, or the organization identified on a valid order if the order expressly grants an organizational license.
 
-By downloading, installing, copying, or using RAG Debugging Lab, you agree to this license. If you do not agree, do not use the software.
+By downloading, installing, copying, or using RAGvidence, you agree to this license. If you do not agree, do not use the software.
 
 ## 1. Free license grant
 

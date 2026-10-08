@@ -5,8 +5,8 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from typing import Any
 
-from raglab.comparison import compare_evaluations
-from raglab.diagnosis import diagnose
+from ragvidence.comparison import compare_evaluations
+from ragvidence.diagnosis import diagnose
 
 
 def build_report(

@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from typing import Literal
 
-from raglab.models import SourceUnit
+from ragvidence.models import SourceUnit
 
 
 @dataclass(frozen=True)
