@@ -36,7 +36,7 @@ def test_bm25_returns_ranked_source_evidence() -> None:
 
 def test_workspace_restore_preserves_backup(tmp_path: Path) -> None:
     target = create_workspace(tmp_path, "demo")
-    (target / "notes.txt").write_text("owner edit")
+    (target / "notes.txt").write_text("user edit")
     restored, backup = restore_workspace(tmp_path, "demo")
     assert restored.is_dir()
-    assert (backup / "notes.txt").read_text() == "owner edit"
+    assert (backup / "notes.txt").read_text() == "user edit"

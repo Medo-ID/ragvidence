@@ -10,7 +10,7 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
-from raglab import __version__
+from raglab import __edition__, __version__
 from raglab.comparison import compare_evaluations
 from raglab.data import DatasetError, load_dataset
 from raglab.diagnosis import diagnose as build_diagnosis
@@ -58,11 +58,20 @@ def main(
 
 
 @app.command()
+def edition() -> None:
+    """Show the installed product edition and activation requirement."""
+    if __edition__ == "Free":
+        console.print("Free — no account or activation required")
+    else:
+        console.print(__edition__)
+
+
+@app.command()
 def health(root: Path = DEFAULT_ROOT) -> None:
     """Check runtime, bundled data, workspace access and semantic support."""
     checks = run_health(root)
     table = Table("Status", "Check", "Detail")
-    colors = {"PASS": "green", "WARN": "yellow", "FAIL": "red"}
+    colors = {"PASS": "green", "WARN": "yellow", "FAIL": "red"}  # nosec B105
     for check in checks:
         table.add_row(f"[{colors[check.status]}]{check.status}[/]", check.name, check.detail)
     console.print(table)
@@ -75,7 +84,7 @@ def verify() -> None:
     """Run deterministic release and installation fixtures."""
     results = run_verification()
     table = Table("Status", "Fixture", "Detail")
-    colors = {"PASS": "green", "BLOCKED": "yellow", "FAIL": "red"}
+    colors = {"PASS": "green", "FAIL": "red"}  # nosec B105
     for result in results:
         table.add_row(
             f"[{colors[result.status]}]{result.status}[/]",
@@ -85,8 +94,6 @@ def verify() -> None:
     console.print(table)
     if any(item.status == "FAIL" for item in results):
         raise typer.Exit(1)
-    if any(item.status == "BLOCKED" for item in results):
-        raise typer.Exit(2)
 
 
 @app.command()
@@ -97,7 +104,57 @@ def quickstart(root: Path = DEFAULT_ROOT) -> None:
     except FileExistsError:
         target = root / "heading-context"
         console.print(f"[yellow]EXISTS[/yellow] {target}")
-    console.print(f"[green]READY[/green] {target}\nNext: uv run raglab validate {target}")
+    console.print(f"[green]READY[/green] {target}\nNext: raglab validate {target}")
+
+
+@app.command()
+def tutorial(
+    root: Path = DEFAULT_ROOT,
+    name: Annotated[str, typer.Option(help="Name for the new tutorial workspace")] = "first-run",
+) -> None:
+    """Run the complete local BM25 tutorial and create a shareable HTML report."""
+    try:
+        workspace = create_workspace(root, name)
+        evaluations = []
+        for representation in ("body", "heading_context"):
+            config = StrategyConfig(
+                name=f"bm25-{representation}",
+                strategy="bm25",
+                representation=representation,
+                k=2,
+            )
+            console.print(f"Running [cyan]{config.name}[/cyan] at k={config.k}")
+            run = run_experiment(workspace, config)
+            run_path = workspace / "runs" / f"{config.name}.json"
+            write_run(run, run_path)
+            _, questions = load_dataset(workspace)
+            evaluation = evaluate_run(run, questions)
+            evaluation_path = workspace / "evaluations" / f"{config.name}.json"
+            evaluation_path.parent.mkdir(parents=True, exist_ok=True)
+            evaluation_path.write_text(json.dumps(evaluation, indent=2), encoding="utf-8")
+            evaluations.append(evaluation)
+
+        report_path = workspace / "reports" / "tutorial.html"
+        report_path.parent.mkdir(parents=True, exist_ok=True)
+        template = Path(__file__).parent / "reporting/templates/report.html.j2"
+        report_path.write_text(
+            render_html(build_report(evaluations[0], evaluations[1]), template),
+            encoding="utf-8",
+        )
+    except (DatasetError, FileExistsError, OSError, RuntimeError, ValueError) as exc:
+        if isinstance(exc, FileExistsError):
+            fail(
+                f"Tutorial workspace already exists: {root / name}. "
+                "Inspect it or choose another name with --name."
+            )
+        fail(str(exc))
+
+    console.print(
+        f"[green]COMPLETE[/green] Guided comparison finished.\n"
+        f"[bold]Report:[/bold] {report_path}\n"
+        f"[bold]Next:[/bold] Open the report, inspect changed questions, then read "
+        "the Getting started guide included with your download."
+    )
 
 
 @app.command("init")
@@ -188,11 +245,11 @@ def evaluate(workspace: Path, run_file: Path) -> None:
         run = ExperimentRun.model_validate_json(run_file.read_text(encoding="utf-8"))
         result = evaluate_run(run, questions)
     except (DatasetError, OSError, ValueError, NotImplementedError) as exc:
-        fail(str(exc) or "Evaluation metrics are not installed yet")
+        fail(str(exc) or "Evaluation could not be completed")
     destination = workspace / "evaluations" / f"{run.manifest.config.name}.json"
     destination.parent.mkdir(parents=True, exist_ok=True)
     if destination.exists():
-        raise FileExistsError(f"Refusing to overwrite: {destination}")
+        fail(f"Refusing to overwrite: {destination}")
     destination.write_text(json.dumps(result, indent=2), encoding="utf-8")
     console.print(f"[green]SAVED[/green] {destination}")
 
@@ -227,9 +284,9 @@ def compare(baseline: Path, intervention: Path, output: Path) -> None:
             json.loads(baseline.read_text()), json.loads(intervention.read_text())
         )
     except (OSError, ValueError, json.JSONDecodeError, NotImplementedError) as exc:
-        fail(str(exc) or "Evaluation metrics are not installed yet")
+        fail(str(exc) or "Comparison could not be completed")
     if output.exists():
-        raise FileExistsError(f"Refusing to overwrite: {output}")
+        fail(f"Refusing to overwrite: {output}")
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(result, indent=2), encoding="utf-8")
     console.print_json(data=result["summary"])
@@ -238,7 +295,11 @@ def compare(baseline: Path, intervention: Path, output: Path) -> None:
 @app.command()
 def diagnose(comparison: Path) -> None:
     """Explain an observable pattern and bounded next step."""
-    for key, value in build_diagnosis(json.loads(comparison.read_text())).items():
+    try:
+        result = build_diagnosis(json.loads(comparison.read_text(encoding="utf-8")))
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        fail(str(exc))
+    for key, value in result.items():
         console.print(f"[bold]{key.replace('_', ' ').title()}:[/bold] {value}")
 
 
@@ -248,7 +309,10 @@ def inspect(
     question: Annotated[str, typer.Option("--question", help="Stable question ID")],
 ) -> None:
     """Inspect ranked evidence for one question."""
-    run = ExperimentRun.model_validate_json(run_file.read_text())
+    try:
+        run = ExperimentRun.model_validate_json(run_file.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        fail(str(exc))
     query = next((item for item in run.queries if item.question_id == question), None)
     if query is None:
         raise typer.BadParameter(f"Question not found: {question}")
@@ -274,14 +338,17 @@ def report(
 ) -> None:
     """Create JSON, Markdown or HTML from authoritative evaluation data."""
     if output.exists():
-        raise FileExistsError(f"Refusing to overwrite: {output}")
+        fail(f"Refusing to overwrite: {output}")
     if format not in {"json", "markdown", "html"}:
         raise typer.BadParameter("format must be json, markdown, or html")
-    baseline_data = json.loads(baseline.read_text(encoding="utf-8"))
-    intervention_data = (
-        json.loads(intervention.read_text(encoding="utf-8")) if intervention else None
-    )
-    payload = build_report(baseline_data, intervention_data)
+    try:
+        baseline_data = json.loads(baseline.read_text(encoding="utf-8"))
+        intervention_data = (
+            json.loads(intervention.read_text(encoding="utf-8")) if intervention else None
+        )
+        payload = build_report(baseline_data, intervention_data)
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        fail(str(exc))
     if format == "json":
         content = json.dumps(payload, indent=2)
     elif format == "markdown":
@@ -289,10 +356,7 @@ def report(
     else:
         selected = template or Path(__file__).parent / "reporting/templates/report.html.j2"
         if not selected.is_file():
-            raise typer.BadParameter(
-                "HTML template is not installed yet. Add the owner contribution at "
-                "src/raglab/reporting/templates/report.html.j2"
-            )
+            raise typer.BadParameter("The installed HTML report template is missing")
         content = render_html(payload, selected)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(content, encoding="utf-8")

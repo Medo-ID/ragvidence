@@ -8,3 +8,7 @@ workspaces/
 dist/
 build/
 .ruff_cache/
+*.egg-info/
+.coverage
+htmlcov/
+*.log

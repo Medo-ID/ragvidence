@@ -1,4 +1,4 @@
-"""HTML renderer contract. The visual template is owner-contributed."""
+"""Render the self-contained, shareable HTML diagnostic report."""
 
 from pathlib import Path
 from typing import Any

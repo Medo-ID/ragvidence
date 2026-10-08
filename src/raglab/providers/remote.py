@@ -4,12 +4,24 @@ from __future__ import annotations
 
 import json
 from urllib.error import HTTPError, URLError
+from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 
 import numpy as np
 
+MAX_RESPONSE_BYTES = 25 * 1024 * 1024
+
+
+def _validate_http_url(url: str) -> None:
+    parsed = urlsplit(url)
+    if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+        raise RuntimeError("Provider URL must use http or https and include a host")
+    if parsed.username is not None or parsed.password is not None:
+        raise RuntimeError("Provider URL must not contain embedded credentials")
+
 
 def _post_json(url: str, payload: dict, headers: dict[str, str], timeout: float = 60.0) -> dict:
+    _validate_http_url(url)
     request = Request(
         url,
         data=json.dumps(payload).encode(),
@@ -17,8 +29,11 @@ def _post_json(url: str, payload: dict, headers: dict[str, str], timeout: float 
         method="POST",
     )
     try:
-        with urlopen(request, timeout=timeout) as response:
-            value = json.loads(response.read().decode())
+        with urlopen(request, timeout=timeout) as response:  # nosec B310: URL validated above
+            raw = response.read(MAX_RESPONSE_BYTES + 1)
+            if len(raw) > MAX_RESPONSE_BYTES:
+                raise RuntimeError("Provider response exceeds the 25 MiB safety limit")
+            value = json.loads(raw.decode())
     except HTTPError as exc:
         raise RuntimeError(f"Provider request failed with HTTP {exc.code}") from exc
     except (URLError, TimeoutError, json.JSONDecodeError) as exc:

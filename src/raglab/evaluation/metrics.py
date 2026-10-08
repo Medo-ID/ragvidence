@@ -1,6 +1,6 @@
 """Pure evidence-level retrieval metrics.
 
-Owner contribution: evidence-level metrics used across all retrieval strategies.
+These pure functions are shared by every retrieval strategy.
 Do not add file I/O, model calls, logging, or framework dependencies here.
 """
 

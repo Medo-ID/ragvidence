@@ -58,7 +58,7 @@ def run_health(workspace_root: Path) -> list[Check]:
         Check(
             "PASS" if semantic else "WARN",
             "Semantic extra",
-            "available" if semantic else "install with: uv sync --extra semantic",
+            "available" if semantic else "not installed; see docs/user-guide.md",
         )
     )
     checks.append(

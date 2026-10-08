@@ -1,4 +1,4 @@
-"""Evidence-level evaluation composed from the owner-contributed metrics."""
+"""Compose evidence-level metrics into a reproducible evaluation result."""
 
 from __future__ import annotations
 

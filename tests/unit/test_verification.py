@@ -1,7 +1,7 @@
 from raglab.verification import run_verification
 
 
-def test_verification_passes_finished_non_owner_fixtures() -> None:
+def test_verification_passes_release_fixtures() -> None:
     results = {item.name: item for item in run_verification()}
     for name in ("Asset hashes", "Dataset", "Tokenizer", "BM25 fixture", "Recovery"):
         assert results[name].status == "PASS"

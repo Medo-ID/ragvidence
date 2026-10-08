@@ -34,9 +34,9 @@ def run_verification() -> list[Verification]:
     template = Path(__file__).parent / "reporting/templates/report.html.j2"
     checks.append(
         Verification(
-            "PASS" if template.is_file() else "BLOCKED",
+            "PASS" if template.is_file() else "FAIL",
             "HTML template",
-            "owner template is installed" if template.is_file() else "awaiting owner contribution",
+            "self-contained template is installed" if template.is_file() else "template is missing",
         )
     )
     return checks
@@ -91,13 +91,13 @@ def _recovery_fixture() -> Verification:
     with tempfile.TemporaryDirectory() as directory:
         root = Path(directory)
         target = create_workspace(root, "verify")
-        (target / "owner-edit.txt").write_text("preserve", encoding="utf-8")
+        (target / "user-edit.txt").write_text("preserve", encoding="utf-8")
         _, backup = restore_workspace(root, "verify")
-        preserved = (backup / "owner-edit.txt").read_text(encoding="utf-8") == "preserve"
+        preserved = (backup / "user-edit.txt").read_text(encoding="utf-8") == "preserve"
     return Verification(
         "PASS" if preserved else "FAIL",
         "Recovery",
-        "owner edit preserved in backup" if preserved else "backup lost owner edit",
+        "user edit preserved in backup" if preserved else "backup lost user edit",
     )
 
 
@@ -105,11 +105,11 @@ def _metrics_fixture() -> Verification:
     try:
         result = sufficient_evidence_at_k({"E-1"}, [{"E-1"}], 1)
     except NotImplementedError:
-        return Verification("BLOCKED", "Metrics", "awaiting owner contribution")
+        return Verification("FAIL", "Metrics", "metrics implementation is missing")
     except Exception as exc:
         return Verification("FAIL", "Metrics", str(exc))
     return Verification(
         "PASS" if result is True else "FAIL",
         "Metrics",
-        "manual sufficient-evidence fixture passed" if result is True else repr(result),
+        "sufficient-evidence fixture passed" if result is True else repr(result),
     )

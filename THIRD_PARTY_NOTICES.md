@@ -14,6 +14,6 @@ This inventory covers direct runtime dependencies selected for RAG Debugging Lab
 | FastEmbed (optional) | Local ONNX embedding runtime | Apache-2.0 |
 | BAAI/bge-small-en-v1.5 (downloaded optionally) | Default English embedding model | MIT |
 
-FastEmbed installs transitive runtime dependencies whose versions and licenses may change when `uv.lock` is updated. Before every commercial release, regenerate a complete dependency-license report from the final locked environment and retain it with the release records.
+FastEmbed installs transitive runtime dependencies whose versions and licenses may change when `uv.lock` is updated. The resolved inventory for this release is recorded in `THIRD_PARTY_LICENSES.md`. The `py-rust-stemmers` 0.1.8 package metadata does not declare a machine-readable license; its upstream repository license file must be checked manually before each commercial release.
 
 The default model is downloaded separately on first semantic use and is not redistributed inside the core archive.
