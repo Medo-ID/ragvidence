@@ -17,7 +17,7 @@ This file is internal and excluded from customer source distributions.
 uv sync --frozen --dev
 uv run ruff check src tests
 uv run pytest
-uv run ragvidence verify
+uv run ragvi verify
 uv build
 ```
 
@@ -25,8 +25,8 @@ Then install the built wheel into an isolated tool environment:
 
 ```bash
 uv tool install --force dist/ragvidence-0.1.0-py3-none-any.whl
-ragvidence health
-ragvidence tutorial --root /tmp/ragvidence-release-smoke
+ragvi health
+ragvi tutorial --root /tmp/ragvidence-release-smoke
 ```
 
 Inspect wheel and source-archive contents. Neither may include `.env`, workspaces, caches, build directories, maintainer documentation, credentials, or customer data.

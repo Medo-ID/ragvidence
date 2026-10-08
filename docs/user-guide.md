@@ -1,6 +1,6 @@
 # User guide
 
-This guide covers supported workflows beyond the bundled tutorial. Commands use an installed `ragvidence` tool. Prefix them with `uv run` when using the source archive.
+This guide covers supported workflows beyond the bundled tutorial. Commands use an installed `ragvi` tool. Prefix them with `uv run` when using the source archive.
 
 ## The experiment lifecycle
 
@@ -17,13 +17,13 @@ Every useful experiment follows the same sequence:
 ## Create a custom experiment
 
 ```bash
-ragvidence init customer-support
+ragvi init customer-support
 ```
 
 Edit `workspaces/customer-support/sources.jsonl` and `questions.jsonl`, then validate:
 
 ```bash
-ragvidence validate workspaces/customer-support
+ragvi validate workspaces/customer-support
 ```
 
 Start with 10–50 source units and 10–30 carefully reviewed questions. Larger weakly labeled datasets create more confident-looking noise, not stronger evidence. See [Bring your own data](bring-your-own-data.md) for schemas and labeling rules.
@@ -31,30 +31,30 @@ Start with 10–50 source units and 10–30 carefully reviewed questions. Larger
 ## BM25 representation comparison
 
 ```bash
-ragvidence benchmark workspaces/customer-support --strategies bm25 --k 4
+ragvi benchmark workspaces/customer-support --strategies bm25 --k 4
 
-ragvidence evaluate workspaces/customer-support \
+ragvi evaluate workspaces/customer-support \
   workspaces/customer-support/runs/bm25-body.json
 
-ragvidence evaluate workspaces/customer-support \
+ragvi evaluate workspaces/customer-support \
   workspaces/customer-support/runs/bm25-heading_context.json
 ```
 
 Compare and diagnose:
 
 ```bash
-ragvidence compare \
+ragvi compare \
   workspaces/customer-support/evaluations/bm25-body.json \
   workspaces/customer-support/evaluations/bm25-heading_context.json \
   workspaces/customer-support/comparisons/bm25.json
 
-ragvidence diagnose workspaces/customer-support/comparisons/bm25.json
+ragvi diagnose workspaces/customer-support/comparisons/bm25.json
 ```
 
 Create a shareable HTML report:
 
 ```bash
-ragvidence report \
+ragvi report \
   workspaces/customer-support/evaluations/bm25-body.json \
   workspaces/customer-support/reports/bm25-comparison.html \
   --intervention workspaces/customer-support/evaluations/bm25-heading_context.json \
@@ -78,7 +78,7 @@ uv sync --frozen --extra semantic
 Run the default local embedding model:
 
 ```bash
-ragvidence benchmark workspaces/customer-support \
+ragvi benchmark workspaces/customer-support \
   --strategies semantic \
   --k 4
 ```
@@ -96,7 +96,7 @@ RAGVIDENCE_EMBEDDING_BASE_URL=http://localhost:11434
 ```
 
 ```bash
-ragvidence benchmark workspaces/customer-support \
+ragvi benchmark workspaces/customer-support \
   --strategies semantic \
   --provider ollama \
   --model your-embedding-model \
@@ -119,7 +119,7 @@ Then run with `--provider openai_compatible`. Source text and questions will be 
 ## Compare lexical and semantic retrieval
 
 ```bash
-ragvidence benchmark workspaces/customer-support \
+ragvi benchmark workspaces/customer-support \
   --strategies bm25,semantic \
   --k 4
 ```
@@ -137,13 +137,13 @@ Export one JSON object per question:
 Every question and source ID must match the reviewed workspace.
 
 ```bash
-ragvidence import-run \
+ragvi import-run \
   workspaces/customer-support \
   exported-results.jsonl \
   --name production-v1 \
   --k 4
 
-ragvidence evaluate \
+ragvi evaluate \
   workspaces/customer-support \
   workspaces/customer-support/runs/production-v1.json
 ```
@@ -161,7 +161,7 @@ RAGVIDENCE_GENERATION_BASE_URL=http://localhost:11434
 ```
 
 ```bash
-ragvidence generate \
+ragvi generate \
   workspaces/customer-support \
   workspaces/customer-support/runs/bm25-heading_context.json \
   workspaces/customer-support/answers/bm25-heading_context.json
@@ -185,7 +185,7 @@ Use `--format json` for automation, `markdown` for lightweight review, and `html
 ## Recovery
 
 ```bash
-ragvidence workspace restore customer-support
+ragvi workspace restore customer-support
 ```
 
 The existing workspace becomes a timestamped backup. Restoration never deletes it automatically.

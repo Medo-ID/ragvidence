@@ -12,7 +12,7 @@ All notable user-facing changes are documented here.
 - Evidence sufficiency, coverage, rank, reciprocal-rank, and precision metrics.
 - Question-level regression classification and bounded diagnosis.
 - JSON, Markdown, and self-contained HTML reports.
-- Guided `ragvidence tutorial` workflow.
+- Guided `ragvi tutorial` workflow.
 - Workspace backup and restore.
 - Health and deterministic verification commands.
 - Customer documentation, privacy boundaries, and Free/Plus license terms.

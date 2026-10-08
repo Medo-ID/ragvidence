@@ -23,18 +23,18 @@ Extract the release, open a terminal in its directory, and run:
 
 ```bash
 uv sync --frozen
-uv run ragvidence health
-uv run ragvidence tutorial
+uv run ragvi health
+uv run ragvi tutorial
 ```
 
-During source-based use, prefix commands with `uv run`. After installing the CLI as a tool, use `ragvidence` directly.
+During source-based use, prefix commands with `uv run`. After installing the CLI as a tool, use `ragvi` directly.
 
 ### Install a built wheel
 
 ```bash
 uv tool install ./ragvidence-0.1.0-py3-none-any.whl
-ragvidence health
-ragvidence tutorial
+ragvi health
+ragvi tutorial
 ```
 
 Python 3.12 is pinned in `.python-version`; `uv` can install the required Python runtime automatically.
@@ -55,7 +55,7 @@ Then follow [Getting started](docs/getting-started.md) to understand the experim
 
 | Goal | Start here |
 | --- | --- |
-| Learn the workflow on bundled data | `ragvidence tutorial` |
+| Learn the workflow on bundled data | `ragvi tutorial` |
 | Evaluate your own labeled dataset | [Bring your own data](docs/bring-your-own-data.md) |
 | Compare BM25 and semantic retrieval | [User guide](docs/user-guide.md#semantic-retrieval) |
 | Test an existing RAG retriever | [User guide](docs/user-guide.md#import-an-existing-retriever) |
@@ -102,7 +102,7 @@ The Free edition does not require activation. Plus activation will be issued aft
 uv sync --frozen --dev
 uv run ruff check src tests
 uv run pytest
-uv run ragvidence verify
+uv run ragvi verify
 uv build
 ```
 

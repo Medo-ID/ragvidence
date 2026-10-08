@@ -39,7 +39,7 @@ dev = [
 ]
 
 [project.scripts]
-ragvidence = "ragvidence.cli:app"
+ragvi = "ragvidence.cli:app"
 
 [project.urls]
 Homepage = "https://ragvidence.medo-id.com"

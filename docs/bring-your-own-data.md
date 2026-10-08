@@ -36,7 +36,7 @@ Do not place reference answers, required-evidence IDs, grader notes or invented 
 ## Validation
 
 ```bash
-uv run ragvidence validate workspaces/my-experiment
+uv run ragvi validate workspaces/my-experiment
 ```
 
 Validation rejects malformed JSON, unknown fields, duplicate IDs, answerability contradictions and required evidence that does not exist in the sources.

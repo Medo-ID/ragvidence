@@ -3,9 +3,9 @@
 ## Before requesting help
 
 ```bash
-ragvidence --version
-ragvidence health
-ragvidence verify
+ragvi --version
+ragvi health
+ragvi verify
 ```
 
 Then check [Getting started](docs/getting-started.md) and [Troubleshooting](docs/troubleshooting.md).

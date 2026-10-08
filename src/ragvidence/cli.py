@@ -26,7 +26,7 @@ from ragvidence.verification import run_verification
 from ragvidence.workspace import create_workspace, restore_workspace
 
 app = typer.Typer(
-    name="ragvidence",
+    name="ragvi",
     help="Diagnose RAG retrieval with evidence-level experiments.",
     no_args_is_help=True,
 )
@@ -104,7 +104,7 @@ def quickstart(root: Path = DEFAULT_ROOT) -> None:
     except FileExistsError:
         target = root / "heading-context"
         console.print(f"[yellow]EXISTS[/yellow] {target}")
-    console.print(f"[green]READY[/green] {target}\nNext: ragvidence validate {target}")
+    console.print(f"[green]READY[/green] {target}\nNext: ragvi validate {target}")
 
 
 @app.command()
