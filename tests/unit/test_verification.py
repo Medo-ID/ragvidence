@@ -6,4 +6,4 @@ def test_verification_passes_finished_non_owner_fixtures() -> None:
     for name in ("Asset hashes", "Dataset", "Tokenizer", "BM25 fixture", "Recovery"):
         assert results[name].status == "PASS"
     assert results["Metrics"].status == "PASS"
-    assert results["HTML template"].status == "BLOCKED"
+    assert results["HTML template"].status == "PASS"
