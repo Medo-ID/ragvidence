@@ -17,6 +17,19 @@ No account, telemetry, hosted database, or vendor-provided API key is required. 
 
 ## Install
 
+### Production PyPI
+
+```bash
+uv tool install --python 3.12 "ragvidence[semantic]"
+ragvi health
+ragvi tutorial
+```
+
+See the [public installation guide](https://ragvidence.medo-id.com/docs/installation).
+The report presentation in the development source build is documented separately
+from the currently published PyPI release; publishing it requires a new release.
+
+
 ### Customer release archive
 
 Extract the release, open a terminal in its directory, and run:
@@ -49,22 +62,22 @@ workspaces/first-run/reports/tutorial.html
 
 Open it in any browser. It contains the baseline, intervention, changed questions, diagnosis, ranked evidence, limitations, and reproducibility metadata.
 
-Then follow [Getting started](docs/getting-started.md) to understand the experiment rather than only running it.
+Then follow [Getting started](https://ragvidence.medo-id.com/docs/first-tutorial) to understand the experiment rather than only running it.
 
 ## Supported workflows
 
 | Goal | Start here |
 | --- | --- |
 | Learn the workflow on bundled data | `ragvi tutorial` |
-| Evaluate your own labeled dataset | [Bring your own data](docs/bring-your-own-data.md) |
-| Compare BM25 and semantic retrieval | [User guide](docs/user-guide.md#semantic-retrieval) |
-| Test an existing RAG retriever | [User guide](docs/user-guide.md#import-an-existing-retriever) |
-| Generate optional answers for inspection | [User guide](docs/user-guide.md#optional-answer-inspection) |
-| Understand each metric | [Interpreting results](docs/interpreting-results.md) |
-| Recover a broken workspace | [Troubleshooting](docs/troubleshooting.md) |
-| Review data and provider boundaries | [Privacy and providers](docs/privacy-and-providers.md) |
+| Evaluate your own labeled dataset | [Bring your own data](https://ragvidence.medo-id.com/docs/bring-your-own-data) |
+| Compare BM25 and semantic retrieval | [User guide](https://ragvidence.medo-id.com/docs/semantic-workflow) |
+| Test an existing RAG retriever | [User guide](https://ragvidence.medo-id.com/docs/import-retriever) |
+| Generate optional answers for inspection | [User guide](https://ragvidence.medo-id.com/docs/commands) |
+| Understand each metric | [Interpreting results](https://ragvidence.medo-id.com/docs/metrics) |
+| Recover a broken workspace | [Troubleshooting](https://ragvidence.medo-id.com/docs/troubleshooting) |
+| Review data and provider boundaries | [Privacy and providers](https://ragvidence.medo-id.com/docs/privacy-providers) |
 
-The complete CLI reference is in [Command reference](docs/command-reference.md).
+The complete CLI reference is in [Command reference](https://ragvidence.medo-id.com/docs/commands).
 
 ## What is included
 
@@ -82,7 +95,7 @@ The complete CLI reference is in [Command reference](docs/command-reference.md).
 
 ## Free and Plus
 
-The current release contains the complete Free feature set. Plus is a separate paid entitlement for advanced features released in Plus builds; features are never advertised as available until they ship. See [Plans and editions](docs/plans.md) and [LICENSE.md](LICENSE.md).
+The current release contains the complete Free feature set. Plus is a separate paid entitlement for advanced features released in Plus builds; features are never advertised as available until they ship. See [Plans and editions](https://ragvidence.medo-id.com/#plans) and [LICENSE.md](https://ragvidence.medo-id.com/ragvidence-0.1.0-license.txt).
 
 The Free edition does not require activation. Plus activation will be issued after verified checkout and must never require placing payment credentials inside this CLI.
 
@@ -106,6 +119,6 @@ uv run ragvi verify
 uv build
 ```
 
-See [Security](SECURITY.md), [Support](SUPPORT.md), [Changelog](CHANGELOG.md), [Third-party notices](THIRD_PARTY_NOTICES.md), and the [resolved dependency inventory](THIRD_PARTY_LICENSES.md).
+See [Security](https://ragvidence.medo-id.com/security), [Support](https://ragvidence.medo-id.com/docs/troubleshooting), [Changelog](https://ragvidence.medo-id.com/releases), [Third-party notices](https://ragvidence.medo-id.com/ragvidence-source-notices.txt), and the [resolved dependency inventory](https://ragvidence.medo-id.com/ragvidence-source-licenses.txt).
 
-Copyright © 2026 Medo. Distributed under the proprietary Free or Plus license in [LICENSE.md](LICENSE.md).
+Copyright © 2026 Medo. Distributed under the proprietary Free or Plus license in [LICENSE.md](https://ragvidence.medo-id.com/ragvidence-0.1.0-license.txt).

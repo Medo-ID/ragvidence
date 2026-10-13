@@ -25,3 +25,11 @@ tutorial passed. Reports were reviewed through file:// with JavaScript disabled 
 360/390/768/1280/1440/1920px with no overflow or remote requests. The website sample
 must always be copied from generated output. Normal website Turbopack confirmation
 is still reserved for the user's machine/Vercel.
+
+## Milestone 11 — Public references
+
+README documentation, trust, license, release, and source-notice links now use the
+final public website routes. Homepage/Documentation metadata already matched.
+The published PyPI long description still contains older relative links; these
+source README corrections take effect only on the next release. No release,
+GitHub push, or website deployment was performed by this refinement.
