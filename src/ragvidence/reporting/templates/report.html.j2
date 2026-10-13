@@ -4,686 +4,297 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
-  <title>RAGvidence Report</title>
-
+  <title>RAGvidence · {{ report.baseline.manifest.config.name }}{% if report.intervention %} vs {{ report.intervention.manifest.config.name }}{% endif %}</title>
   <style>
+    @font-face { font-family: Geist; src: url(data:font/woff2;base64,{{ fonts.sans }}) format("woff2"); font-weight: 100 900; font-display: swap; }
+    @font-face { font-family: "Geist Mono"; src: url(data:font/woff2;base64,{{ fonts.mono }}) format("woff2"); font-weight: 100 900; font-display: swap; }
     :root {
       color-scheme: light;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: #172033;
-      background: #eef2f7;
-      font-synthesis: none;
-      --ink: #172033;
-      --muted: #637083;
-      --line: #dfe5ee;
-      --surface: #ffffff;
-      --surface-soft: #f7f9fc;
-      --navy: #111c37;
-      --violet: #6941c6;
-      --violet-soft: #f0ebff;
-      --cyan: #087f8c;
-      --cyan-soft: #e5f7f8;
-      --green: #147a4b;
-      --green-soft: #e9f7ef;
-      --red: #b42318;
-      --red-soft: #fff0ee;
-      --amber: #9a6700;
-      --amber-soft: #fff7df;
-      --shadow: 0 16px 40px rgba(23, 32, 51, 0.08);
+      --teal: #063f47; --ink: #172b2d; --muted: #4f6668; --line: #cedddd;
+      --panel: #fff; --raised: #f1f6f5; --success: #17633c; --danger: #a32437;
+      --warning: #765017; --radius-sm: 6px; --radius-md: 9px; --radius-lg: 12px; --radius-xl: 16px;
+      font-family: Geist, system-ui, sans-serif; color: var(--ink); background: #f5f8f7;
     }
-
     * { box-sizing: border-box; }
-
-    html { scroll-behavior: smooth; }
-
-    body {
-      margin: 0;
-      line-height: 1.55;
-      background:
-        radial-gradient(circle at 10% 0%, rgba(105, 65, 198, 0.10), transparent 30rem),
-        radial-gradient(circle at 90% 6%, rgba(8, 127, 140, 0.10), transparent 26rem),
-        #eef2f7;
+    html { scroll-behavior: smooth; scroll-padding-top: 1rem; }
+    body { margin: 0; font-size: 16px; line-height: 1.7; overflow-wrap: anywhere; }
+    main { width: min(1440px, calc(100% - 48px)); margin: 32px auto 64px; }
+    h1, h2, h3, h4, p { margin: 0 0 12px; }
+    h1 { font-size: clamp(26px, 3vw, 40px); line-height: 1.2; letter-spacing: -0.03em; }
+    h2 { font-size: 25px; line-height: 1.35; letter-spacing: -0.025em; }
+    h3 { font-size: 19px; line-height: 1.5; }
+    h4 { font-size: 16px; }
+    a { color: var(--teal); text-underline-offset: 4px; }
+    :focus-visible { outline: 3px solid #167b86; outline-offset: 4px; }
+    code, pre { font-family: "Geist Mono", monospace; font-size: 14px; overflow-wrap: anywhere; }
+    code { background: var(--raised); border-radius: var(--radius-sm); padding: 2px 5px; }
+    .hero { background: var(--teal); color: #f2f6f5; border-radius: var(--radius-xl); padding: clamp(24px, 4vw, 44px); }
+    .hero code { background: #0a5964; color: #fff; }
+    .eyebrow { font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+    .hero-copy { color: #d5e7e5; max-width: 900px; }
+    .result { font-size: clamp(40px, 6vw, 68px); line-height: 1.2; font-weight: 650; letter-spacing: -0.04em; margin: 20px 0 12px; }
+    .hero-meta, .outcomes { display: flex; flex-wrap: wrap; gap: 8px 24px; }
+    .hero-meta { color: #d5e7e5; font-size: 14px; margin-top: 24px; }
+    .outcomes { font-size: 18px; margin: 16px 0; }
+    .report-nav { display: flex; flex-wrap: wrap; gap: 8px 20px; padding: 20px 0; }
+    .report-nav a { padding: 8px 0; font-size: 14px; }
+    section { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: clamp(20px, 3vw, 32px); margin: 24px 0; }
+    .muted, .section-copy { color: var(--muted); }
+    .comparison, .runs, .diagnosis-grid, .metadata { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+    .run-summary { padding: 24px; background: var(--raised); border-radius: var(--radius-lg); }
+    .rate { font-size: 40px; font-weight: 650; line-height: 1.3; }
+    .delta { margin-top: 20px; font-size: 20px; font-weight: 600; color: var(--teal); }
+    dl { margin: 16px 0 0; }
+    .metrics { display: flex; flex-wrap: wrap; gap: 12px 24px; }
+    dt { font-size: 14px; color: var(--muted); }
+    dd { margin: 2px 0 0; font-weight: 500; overflow-wrap: anywhere; }
+    .config { font-size: 14px; color: var(--muted); margin: 16px 0 0; }
+    .composition { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+    .composition a { border: 1px solid var(--line); border-radius: var(--radius-md); padding: 16px; text-decoration: none; background: var(--raised); }
+    .composition strong { display: block; font-size: 30px; line-height: 1.3; }
+    .composition span { display: block; font-size: 14px; }
+    .status { display: inline-block; padding: 3px 8px; font-size: 14px; font-weight: 600; border-radius: var(--radius-sm); border: 1px solid currentColor; }
+    .success { color: var(--success); }
+    .danger { color: var(--danger); }
+    .warning { color: var(--warning); }
+    .question-list { display: grid; gap: 16px; }
+    .question-card { border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; }
+    summary { cursor: pointer; padding: 20px; background: var(--raised); }
+    summary:hover { background: #e8f1ef; }
+    .question-id { font-family: "Geist Mono", monospace; font-weight: 600; }
+    .question-heading { display: inline; margin-left: 12px; }
+    .summary-metrics { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 10px; font-size: 14px; }
+    .summary-metrics span { display: inline-block; }
+    .investigation { padding: 24px; }
+    .evidence-change { border-left: 3px solid var(--teal); padding: 12px 16px; background: var(--raised); margin-bottom: 24px; }
+    .evidence-change p { margin: 4px 0; }
+    .run { min-width: 0; }
+    .run + .run { border-left: 1px solid var(--line); padding-left: 24px; }
+    .evidence-ids { margin: 18px 0; font-size: 14px; }
+    .evidence-ids p { margin: 5px 0; }
+    .hits { list-style: none; padding: 0; margin: 16px 0 0; display: grid; gap: 16px; }
+    .hit { border-top: 1px solid var(--line); padding-top: 16px; overflow-wrap: anywhere; }
+    .hit-meta { font-size: 14px; color: var(--muted); }
+    .preview { white-space: pre-wrap; overflow-wrap: anywhere; margin-top: 12px; }
+    .diagnosis-grid > div { border-left: 3px solid var(--line); padding-left: 20px; }
+    .diagnosis-grid > div:last-child { border-left-color: var(--teal); }
+    .metadata dd { font-weight: 400; }
+    .metadata div { min-width: 0; }
+    .print-note, footer { font-size: 14px; color: var(--muted); }
+    .font-license pre { white-space: pre-wrap; }
+    footer { margin-top: 24px; }
+    @media (max-width: 800px) {
+      main { width: calc(100% - 24px); margin-top: 12px; }
+      .comparison, .runs, .diagnosis-grid, .metadata { grid-template-columns: 1fr; }
+      .composition { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .run + .run { border-left: 0; border-top: 1px solid var(--line); padding: 24px 0 0; }
+      .question-heading { display: block; margin: 10px 0 0; }
+      .investigation { padding: 20px; }
     }
-
-    main {
-      width: min(1180px, calc(100% - 32px));
-      margin: 32px auto 64px;
-    }
-
-    h1, h2, h3, h4, p { margin-top: 0; }
-    h1 { margin-bottom: 8px; font-size: clamp(2rem, 5vw, 3.4rem); line-height: 1.05; letter-spacing: -0.045em; }
-    h2 { margin-bottom: 6px; font-size: 1.35rem; letter-spacing: -0.02em; }
-    h3 { margin-bottom: 4px; font-size: 1.02rem; }
-    h4 { margin-bottom: 6px; font-size: 0.95rem; }
-
-    code {
-      padding: 2px 6px;
-      border-radius: 5px;
-      background: #edf1f7;
-      color: #33415c;
-      font-size: 0.88em;
-      overflow-wrap: anywhere;
-    }
-
-    .hero {
-      position: relative;
-      overflow: hidden;
-      padding: clamp(28px, 6vw, 56px);
-      border-radius: 22px;
-      color: #fff;
-      background: linear-gradient(135deg, #101a34 0%, #242657 56%, #164a57 100%);
-      box-shadow: 0 24px 60px rgba(17, 28, 55, 0.22);
-    }
-
-    .hero::after {
-      content: "";
-      position: absolute;
-      width: 280px;
-      height: 280px;
-      right: -90px;
-      top: -130px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, rgba(157, 117, 255, 0.55), rgba(45, 212, 191, 0.35));
-      filter: blur(4px);
-    }
-
-    .hero > * { position: relative; z-index: 1; }
-
-    .eyebrow {
-      margin-bottom: 14px;
-      color: #b9f5ef;
-      font-size: 0.75rem;
-      font-weight: 800;
-      letter-spacing: 0.13em;
-      text-transform: uppercase;
-    }
-
-    .hero-copy { max-width: 720px; color: #dbe5f5; font-size: 1.05rem; }
-
-    .hero-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px 20px;
-      margin-top: 26px;
-      color: #cbd7e9;
-      font-size: 0.84rem;
-    }
-
-    section {
-      margin-top: 24px;
-      padding: clamp(20px, 4vw, 30px);
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      background: var(--surface);
-      box-shadow: var(--shadow);
-    }
-
-    .section-heading {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 20px;
-      margin-bottom: 22px;
-    }
-
-    .section-heading p { margin-bottom: 0; color: var(--muted); }
-
-    .label {
-      display: inline-flex;
-      align-items: center;
-      min-height: 26px;
-      padding: 4px 9px;
-      border-radius: 999px;
-      background: var(--violet-soft);
-      color: var(--violet);
-      font-size: 0.72rem;
-      font-weight: 800;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      white-space: nowrap;
-    }
-
-    .label.intervention { background: var(--cyan-soft); color: var(--cyan); }
-
-    .metric-grid {
-      display: grid;
-      grid-template-columns: repeat(6, minmax(0, 1fr));
-      gap: 12px;
-    }
-
-    .metric-card {
-      min-height: 110px;
-      padding: 16px;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      background: linear-gradient(180deg, #fff, var(--surface-soft));
-    }
-
-    .metric-card.featured {
-      border-color: #cfc2f7;
-      background: linear-gradient(145deg, #f7f3ff, #eef9fa);
-    }
-
-    .metric-label {
-      display: block;
-      margin-bottom: 11px;
-      color: var(--muted);
-      font-size: 0.72rem;
-      font-weight: 750;
-      letter-spacing: 0.055em;
-      text-transform: uppercase;
-    }
-
-    .metric-value {
-      display: block;
-      font-size: 1.25rem;
-      font-weight: 800;
-      line-height: 1.25;
-      overflow-wrap: anywhere;
-    }
-
-    .metric-detail { color: var(--muted); font-size: 0.78rem; }
-
-    .pass { color: var(--green); }
-    .failure { color: var(--red); }
-    .neutral { color: var(--muted); }
-
-    .callout-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-      margin-top: 18px;
-    }
-
-    .callout {
-      padding: 16px 18px;
-      border-left: 4px solid var(--violet);
-      border-radius: 9px;
-      background: var(--surface-soft);
-    }
-
-    .callout p:last-child { margin-bottom: 0; }
-    .callout.full { grid-column: 1 / -1; }
-    .callout.warning { border-left-color: var(--amber); background: var(--amber-soft); }
-    .callout.positive { border-left-color: var(--green); background: var(--green-soft); }
-    .callout.negative { border-left-color: var(--red); background: var(--red-soft); }
-
-    .question-list { display: grid; gap: 14px; }
-
-    .question-card {
-      overflow: hidden;
-      border: 1px solid var(--line);
-      border-radius: 13px;
-      background: #fff;
-    }
-
-    .question-card.success { border-left: 5px solid var(--green); }
-    .question-card.unsuccessful { border-left: 5px solid var(--red); }
-    .question-card.unanswerable { border-left: 5px solid #8995a8; }
-
-    .question-header {
-      display: flex;
-      justify-content: space-between;
-      gap: 18px;
-      padding: 17px 18px;
-      background: var(--surface-soft);
-    }
-
-    .question-header p { margin-bottom: 0; color: var(--muted); font-size: 0.82rem; }
-
-    .status {
-      display: inline-flex;
-      align-items: center;
-      align-self: flex-start;
-      padding: 5px 10px;
-      border-radius: 999px;
-      font-size: 0.74rem;
-      font-weight: 800;
-      white-space: nowrap;
-    }
-
-    .status.success { color: var(--green); background: var(--green-soft); }
-    .status.failure { color: var(--red); background: var(--red-soft); }
-    .status.neutral { color: #586579; background: #e9edf3; }
-
-    .question-metrics {
-      display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap: 1px;
-      border-top: 1px solid var(--line);
-      border-bottom: 1px solid var(--line);
-      background: var(--line);
-    }
-
-    .question-metric { padding: 13px 16px; background: #fff; }
-    .question-metric .metric-label { margin-bottom: 5px; }
-
-    details { background: #fff; }
-
-    summary {
-      padding: 14px 18px;
-      color: #38465b;
-      cursor: pointer;
-      font-weight: 750;
-      list-style-position: inside;
-    }
-
-    summary:hover { background: #fafbfe; }
-
-    .hits { display: grid; gap: 10px; padding: 0 18px 18px; }
-
-    .hit {
-      padding: 15px;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      background: var(--surface-soft);
-    }
-
-    .hit-heading {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 16px;
-    }
-
-    .rank {
-      display: inline-block;
-      margin-right: 6px;
-      padding: 2px 7px;
-      border-radius: 6px;
-      color: var(--violet);
-      background: var(--violet-soft);
-      font-size: 0.74rem;
-      font-weight: 800;
-    }
-
-    .score { color: var(--muted); font-size: 0.82rem; white-space: nowrap; }
-    .evidence { margin: 7px 0; color: #43516a; font-size: 0.82rem; }
-    .preview { margin-bottom: 0; color: #354258; white-space: pre-wrap; overflow-wrap: anywhere; }
-
-    .table-wrapper { overflow-x: auto; border: 1px solid var(--line); border-radius: 11px; }
-
-    table { width: 100%; border-collapse: collapse; }
-
-    th, td {
-      padding: 12px 14px;
-      border-bottom: 1px solid var(--line);
-      text-align: left;
-      vertical-align: top;
-    }
-
-    th {
-      color: #4f5d73;
-      background: var(--surface-soft);
-      font-size: 0.73rem;
-      letter-spacing: 0.045em;
-      text-transform: uppercase;
-    }
-
-    tr:last-child td { border-bottom: 0; }
-
-    .change {
-      display: inline-block;
-      padding: 4px 8px;
-      border-radius: 999px;
-      font-size: 0.74rem;
-      font-weight: 800;
-      white-space: nowrap;
-    }
-
-    .change.fail_to_pass { color: var(--green); background: var(--green-soft); }
-    .change.pass_to_fail { color: var(--red); background: var(--red-soft); }
-    .change.pass_to_pass { color: var(--cyan); background: var(--cyan-soft); }
-    .change.fail_to_fail { color: var(--amber); background: var(--amber-soft); }
-
-    .metadata-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px 28px;
-      margin: 0;
-    }
-
-    .metadata-grid div { min-width: 0; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
-    .metadata-grid dt { color: var(--muted); font-size: 0.76rem; font-weight: 750; text-transform: uppercase; }
-    .metadata-grid dd { margin: 4px 0 0; overflow-wrap: anywhere; }
-
-    .limitations { margin-bottom: 0; padding-left: 20px; color: #46546a; }
-    .limitations li + li { margin-top: 8px; }
-
-    .footer {
-      margin-top: 22px;
-      color: var(--muted);
-      font-size: 0.78rem;
-      text-align: center;
-    }
-
-    @media (max-width: 900px) {
-      .metric-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-      .question-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    }
-
-    @media (max-width: 620px) {
-      main { width: min(100% - 20px, 1180px); margin-top: 10px; }
-      .hero, section { border-radius: 13px; }
-      .metric-grid, .callout-grid, .metadata-grid { grid-template-columns: 1fr; }
-      .question-header, .hit-heading, .section-heading { flex-direction: column; }
-      .question-metrics { grid-template-columns: 1fr; }
-      .callout.full { grid-column: auto; }
-    }
-
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
     @media print {
       @page { margin: 12mm; }
-      body { background: #fff; color: #000; }
+      body, .hero, section, summary, .run-summary, .composition a { background: #fff; color: #172b2d; }
       main { width: 100%; margin: 0; }
-      .hero { padding: 24px; color: #fff; box-shadow: none; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-      section { margin-top: 14px; padding: 18px; box-shadow: none; break-inside: avoid; }
-      .question-card, .hit, tr { break-inside: avoid; }
-      details > * { display: block; }
-      summary { list-style: none; }
+      .hero { padding: 0 0 16px; border-radius: 0; border-bottom: 2px solid #063f47; }
+      .hero-copy, .hero-meta { color: #172b2d; }
+      section { padding: 16px; }
+      .report-nav, .font-license { display: none; }
+      .runs { grid-template-columns: 1fr; }
+      .run + .run { border-left: 0; border-top: 1px solid var(--line); padding: 16px 0 0; }
+      details::details-content { display: block; content-visibility: visible; }
+      details:not([open]) > :not(summary) { display: block !important; }
+      summary, h2, h3, h4 { break-after: avoid; }
+      .hit, .evidence-change { break-inside: avoid; }
+      .question-card { overflow: visible; }
+      .preview, pre, code { white-space: pre-wrap; overflow-wrap: anywhere; }
+      .result { font-size: 40px; }
+      a { text-decoration: none; }
     }
   </style>
 </head>
-
 <body>
-  {% macro display_metric(value, digits=3) -%}
-    {%- if value is none -%}
-      N/A
-    {%- else -%}
-      {{ ("%." ~ digits ~ "f") | format(value) }}
-    {%- endif -%}
-  {%- endmacro %}
-
-  {% macro display_percent(value) -%}
-    {%- if value is none -%}
-      N/A
-    {%- else -%}
-      {{ "%.1f%%" | format(value * 100) }}
-    {%- endif -%}
-  {%- endmacro %}
-
-  {% macro optional_value(value, fallback="Not configured") -%}
-    {%- if value is none -%}{{ fallback }}{%- else -%}{{ value }}{%- endif -%}
-  {%- endmacro %}
-
-  {% macro status_badge(value) -%}
-    {%- if value is none -%}
-      <span class="status neutral">Not applicable</span>
-    {%- elif value -%}
-      <span class="status success">Sufficient evidence</span>
-    {%- else -%}
-      <span class="status failure">Insufficient evidence</span>
-    {%- endif -%}
-  {%- endmacro %}
-
-  {% macro evaluation_summary(evaluation, label, label_class="") -%}
-    <section>
-      <div class="section-heading">
-        <div>
-          <h2>{{ label }} summary</h2>
-          <p>{{ evaluation.manifest.config.name }}</p>
-        </div>
-        <span class="label {{ label_class }}">{{ label }}</span>
-      </div>
-
-      <div class="metric-grid">
-        <div class="metric-card featured">
-          <span class="metric-label">Success rate</span>
-          <span class="metric-value">{{ display_percent(evaluation.summary.sufficient_evidence_rate) }}</span>
-          <span class="metric-detail">All required evidence retrieved</span>
-        </div>
-        <div class="metric-card">
-          <span class="metric-label">Successful</span>
-          <span class="metric-value">{{ evaluation.summary.successful }} / {{ evaluation.summary.answerable }}</span>
-          <span class="metric-detail">Answerable questions</span>
-        </div>
-        <div class="metric-card">
-          <span class="metric-label">Strategy</span>
-          <span class="metric-value">{{ evaluation.manifest.config.strategy | upper }}</span>
-        </div>
-        <div class="metric-card">
-          <span class="metric-label">Representation</span>
-          <span class="metric-value">{{ evaluation.manifest.config.representation | replace("_", " ") | title }}</span>
-        </div>
-        <div class="metric-card">
-          <span class="metric-label">Retrieval depth</span>
-          <span class="metric-value">k = {{ evaluation.manifest.config.k }}</span>
-        </div>
-        <div class="metric-card">
-          <span class="metric-label">Index time</span>
-          <span class="metric-value">{{ display_metric(evaluation.manifest.index_time_ms, 1) }} ms</span>
-        </div>
-      </div>
-
-      {% if evaluation.manifest.warnings %}
-        <div class="callout warning full">
-          <h3>Run warnings</h3>
-          <ul class="limitations">
-            {% for warning in evaluation.manifest.warnings %}<li>{{ warning }}</li>{% endfor %}
-          </ul>
+{% macro percent(value) -%}{% if value is none %}N/A{% elif (value * 100) % 1 == 0 %}{{ "%.0f%%" | format(value * 100) }}{% else %}{{ "%.1f%%" | format(value * 100) }}{% endif %}{%- endmacro %}
+{% macro metric(value) -%}{% if value is none %}N/A{% else %}{{ "%.3f" | format(value) }}{% endif %}{%- endmacro %}
+{% macro ids(values) -%}{% if values %}{{ values | join(", ") }}{% else %}None{% endif %}{%- endmacro %}
+{% macro sufficiency(value) -%}{% if value is none %}N/A · Unanswerable{% elif value %}Pass · Sufficient evidence{% else %}Fail · Insufficient evidence{% endif %}{%- endmacro %}
+{% macro run_details(question, label) %}
+  {% set found = namespace(ids=[]) %}
+  {% for hit in question.hits %}{% for id in hit.evidence_ids %}{% if id in question.required_evidence_ids and id not in found.ids %}{% set found.ids = found.ids + [id] %}{% endif %}{% endfor %}{% endfor %}
+  {% set missing = namespace(ids=[]) %}
+  {% for id in question.required_evidence_ids %}{% if id not in found.ids %}{% set missing.ids = missing.ids + [id] %}{% endif %}{% endfor %}
+  <div class="run">
+    <h3>{{ label }}</h3>
+    <p class="{% if question.sufficient_evidence is none %}muted{% elif question.sufficient_evidence %}success{% else %}danger{% endif %}">{{ sufficiency(question.sufficient_evidence) }}</p>
+    <dl class="metrics">
+      <div><dt>Evidence coverage</dt><dd>{{ percent(question.evidence_coverage) }}</dd></div>
+      <div><dt>First relevant rank</dt><dd>{{ question.first_relevant_rank if question.first_relevant_rank is not none else "N/A" }}</dd></div>
+      <div><dt>Reciprocal rank</dt><dd>{{ metric(question.reciprocal_rank) }}</dd></div>
+      <div><dt>Precision@k</dt><dd>{{ metric(question.precision_at_k) }}</dd></div>
+      <div><dt>Retrieved hits</dt><dd>{{ question.hits | length }}</dd></div>
+    </dl>
+    <div class="evidence-ids">
+      <p><strong>Required evidence:</strong> {{ ids(question.required_evidence_ids) }}</p>
+      <p><strong>Found required evidence:</strong> {{ ids(found.ids) }}</p>
+      <p><strong>Missing required evidence:</strong> {{ ids(missing.ids) }}</p>
+    </div>
+    <h4>Ranked evidence</h4>
+    <ol class="hits">
+      {% for hit in question.hits %}
+      <li class="hit">
+        <h4>#{{ hit.rank }} · <span>{{ hit.source_unit_id }}</span></h4>
+        <p class="hit-meta">Retriever score: {{ metric(hit.score) }} · Evidence IDs: {{ ids(hit.evidence_ids) }}</p>
+        {% if hit.metadata.get("heading_path") %}<p class="hit-meta">{{ hit.metadata.heading_path | join(" › ") }}</p>{% endif %}
+        <p class="preview">{{ hit.preview or "No source preview available." }}</p>
+      </li>
+      {% else %}<li class="muted">No results were retrieved for this question.</li>{% endfor %}
+    </ol>
+  </div>
+{% endmacro %}
+{% macro question_card(before, after=none, classification="Baseline result") %}
+  {% set latest = after if after is not none else before %}
+  <details class="question-card">
+    <summary>
+      <span class="question-id">{{ latest.question_id }}</span>
+      <span class="question-heading">{% if latest.get("question") %}{{ latest.question }}{% elif latest.required_evidence_ids %}Required: {{ ids(latest.required_evidence_ids) }}{% else %}Unanswerable question{% endif %}</span>
+      <span class="summary-metrics">
+        <span class="status {% if classification == 'Pass → Fail' %}danger{% elif classification == 'Fail → Fail' %}warning{% elif classification == 'Fail → Pass' %}success{% endif %}">{{ classification }}</span>
+        <span>Split: {{ latest.split }}</span>
+        <span>{{ sufficiency(latest.sufficient_evidence) }}</span>
+        <span>Coverage: {% if after %}{{ percent(before.evidence_coverage) }} → {% endif %}{{ percent(latest.evidence_coverage) }}</span>
+        <span>First relevant rank: {% if after %}{{ before.first_relevant_rank if before.first_relevant_rank is not none else "N/A" }} → {% endif %}{{ latest.first_relevant_rank if latest.first_relevant_rank is not none else "N/A" }}</span>
+      </span>
+    </summary>
+    <div class="investigation">
+      {% if after %}
+        {% set old = namespace(ids=[]) %}{% set new = namespace(ids=[]) %}
+        {% for hit in before.hits %}{% for id in hit.evidence_ids %}{% if id in before.required_evidence_ids and id not in old.ids %}{% set old.ids = old.ids + [id] %}{% endif %}{% endfor %}{% endfor %}
+        {% for hit in after.hits %}{% for id in hit.evidence_ids %}{% if id in after.required_evidence_ids and id not in new.ids %}{% set new.ids = new.ids + [id] %}{% endif %}{% endfor %}{% endfor %}
+        {% set gains = namespace(ids=[]) %}{% set losses = namespace(ids=[]) %}{% set missing = namespace(ids=[]) %}
+        {% for id in new.ids %}{% if id not in old.ids %}{% set gains.ids = gains.ids + [id] %}{% endif %}{% endfor %}
+        {% for id in old.ids %}{% if id not in new.ids %}{% set losses.ids = losses.ids + [id] %}{% endif %}{% endfor %}
+        {% for id in after.required_evidence_ids %}{% if id not in new.ids %}{% set missing.ids = missing.ids + [id] %}{% endif %}{% endfor %}
+        <div class="evidence-change">
+          <p><strong>Required evidence gained:</strong> {{ ids(gains.ids) }}</p>
+          <p><strong>Required evidence lost:</strong> {{ ids(losses.ids) }}</p>
+          <p><strong>Still missing:</strong> {{ ids(missing.ids) }}</p>
         </div>
       {% endif %}
-    </section>
-  {%- endmacro %}
-
-  {% macro question_results(evaluation, label, label_class="") -%}
-    <section>
-      <div class="section-heading">
-        <div>
-          <h2>{{ label }} question results</h2>
-          <p>Evidence-level metrics and ranked retrieval results for every reviewed question.</p>
-        </div>
-        <span class="label {{ label_class }}">{{ evaluation.questions | length }} questions</span>
+      <div class="{% if after %}runs{% endif %}">
+        {{ run_details(before, "Baseline") }}
+        {% if after %}{{ run_details(after, "Intervention") }}{% endif %}
       </div>
-
-      <div class="question-list">
-        {% for question in evaluation.questions %}
-          <article class="question-card {% if question.sufficient_evidence is none %}unanswerable{% elif question.sufficient_evidence %}success{% else %}unsuccessful{% endif %}">
-            <div class="question-header">
-              <div>
-                <h3>{{ question.question_id }}</h3>
-                <p>
-                  Split: {{ question.split | title }} ·
-                  {% if question.answerable %}Answerable{% else %}Unanswerable{% endif %} ·
-                  Required evidence:
-                  {% if question.required_evidence_ids %}
-                    {{ question.required_evidence_ids | join(", ") }}
-                  {% else %}
-                    None
-                  {% endif %}
-                </p>
-              </div>
-              {{ status_badge(question.sufficient_evidence) }}
-            </div>
-
-            <div class="question-metrics">
-              <div class="question-metric">
-                <span class="metric-label">Evidence coverage</span>
-                <strong>{{ display_percent(question.evidence_coverage) }}</strong>
-              </div>
-              <div class="question-metric">
-                <span class="metric-label">First relevant rank</span>
-                <strong>{{ optional_value(question.first_relevant_rank, "N/A") }}</strong>
-              </div>
-              <div class="question-metric">
-                <span class="metric-label">Reciprocal rank</span>
-                <strong>{{ display_metric(question.reciprocal_rank) }}</strong>
-              </div>
-              <div class="question-metric">
-                <span class="metric-label">Precision@k</span>
-                <strong>{{ display_metric(question.precision_at_k) }}</strong>
-              </div>
-              <div class="question-metric">
-                <span class="metric-label">Retrieved hits</span>
-                <strong>{{ question.hits | length }}</strong>
-              </div>
-            </div>
-
-            <details>
-              <summary>Inspect ranked evidence ({{ question.hits | length }} hits)</summary>
-              <div class="hits">
-                {% for hit in question.hits %}
-                  <article class="hit">
-                    <div class="hit-heading">
-                      <h4><span class="rank">#{{ hit.rank }}</span>{{ hit.source_unit_id }}</h4>
-                      <span class="score">Score {{ display_metric(hit.score, 4) }}</span>
-                    </div>
-                    <p class="evidence">
-                      <strong>Evidence IDs:</strong>
-                      {% if hit.evidence_ids %}{{ hit.evidence_ids | join(", ") }}{% else %}None{% endif %}
-                    </p>
-                    <p class="preview">{{ hit.preview }}</p>
-                  </article>
-                {% else %}
-                  <p class="neutral">No results were retrieved for this question.</p>
-                {% endfor %}
-              </div>
-            </details>
-          </article>
-        {% else %}
-          <p class="neutral">This evaluation contains no question results.</p>
-        {% endfor %}
-      </div>
-    </section>
-  {%- endmacro %}
-
-  {% macro reproducibility(evaluation, label) -%}
-    <div>
-      <h3>{{ label }}</h3>
-      <dl class="metadata-grid">
-        <div><dt>Run ID</dt><dd><code>{{ evaluation.manifest.run_id }}</code></dd></div>
-        <div><dt>Run created</dt><dd>{{ evaluation.manifest.created_at }}</dd></div>
-        <div><dt>Dataset hash</dt><dd><code>{{ evaluation.manifest.dataset_hash }}</code></dd></div>
-        <div><dt>Product version</dt><dd>{{ evaluation.manifest.product_version }}</dd></div>
-        <div><dt>Python version</dt><dd>{{ evaluation.manifest.python_version }}</dd></div>
-        <div><dt>Platform</dt><dd>{{ evaluation.manifest.platform }}</dd></div>
-        <div><dt>Model</dt><dd>{{ optional_value(evaluation.manifest.config.model) }}</dd></div>
-        <div><dt>Provider</dt><dd>{{ optional_value(evaluation.manifest.config.provider) }}</dd></div>
-      </dl>
     </div>
-  {%- endmacro %}
-
-  <main>
-    <header class="hero">
-      <p class="eyebrow">Local retrieval diagnostics · Evidence-first evaluation</p>
-      <h1>RAGvidence</h1>
-      <p class="hero-copy">
-        A reproducible report showing whether retrieval returned all evidence required to answer each reviewed question.
-      </p>
-      <div class="hero-meta">
-        <span>Generated {{ report.generated_at }}</span>
-        <span>Schema v{{ report.schema_version }}</span>
-        <span>Dataset <code>{{ report.baseline.manifest.dataset_hash }}</code></span>
-      </div>
-    </header>
-
-    {{ evaluation_summary(report.baseline, "Baseline") }}
-
-    {% if report.intervention is not none %}
-      {{ evaluation_summary(report.intervention, "Intervention", "intervention") }}
-    {% endif %}
-
-    {% if report.comparison is not none %}
-      <section>
-        <div class="section-heading">
-          <div>
-            <h2>Change analysis</h2>
-            <p>Question-level movement from the baseline to the intervention.</p>
-          </div>
-          <span class="label intervention">Comparison</span>
-        </div>
-
-        <div class="metric-grid">
-          <div class="metric-card">
-            <span class="metric-label">Fail → Pass</span>
-            <span class="metric-value pass">{{ report.comparison.summary.fail_to_pass }}</span>
-            <span class="metric-detail">Recovered questions</span>
-          </div>
-          <div class="metric-card">
-            <span class="metric-label">Pass → Fail</span>
-            <span class="metric-value failure">{{ report.comparison.summary.pass_to_fail }}</span>
-            <span class="metric-detail">Regressions to inspect</span>
-          </div>
-          <div class="metric-card">
-            <span class="metric-label">Pass → Pass</span>
-            <span class="metric-value">{{ report.comparison.summary.pass_to_pass }}</span>
-            <span class="metric-detail">Stable successes</span>
-          </div>
-          <div class="metric-card">
-            <span class="metric-label">Fail → Fail</span>
-            <span class="metric-value neutral">{{ report.comparison.summary.fail_to_fail }}</span>
-            <span class="metric-detail">Persistent failures</span>
-          </div>
-        </div>
-
-        <div class="table-wrapper" style="margin-top: 18px;">
-          <table>
-            <thead><tr><th>Question</th><th>Classification</th></tr></thead>
-            <tbody>
-              {% for change in report.comparison.changes %}
-                <tr>
-                  <td>{{ change.question_id }}</td>
-                  <td>
-                    {% if change.classification is none %}
-                      <span class="change">Not applicable</span>
-                    {% else %}
-                      <span class="change {{ change.classification }}">{{ change.classification | replace("_", " ") | title }}</span>
-                    {% endif %}
-                  </td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      </section>
-    {% endif %}
-
-    {% if report.diagnosis is not none %}
-      <section>
-        <div class="section-heading">
-          <div><h2>Evidence-backed diagnosis</h2><p>What changed, what the evidence supports, and what to test next.</p></div>
-          <span class="label">{{ report.diagnosis.confidence }} confidence</span>
-        </div>
-        <div class="callout-grid">
-          <div class="callout full {% if report.comparison.summary.pass_to_fail %}negative{% else %}positive{% endif %}">
-            <h3>Observed pattern</h3><p>{{ report.diagnosis.pattern }}</p>
-          </div>
-          <div class="callout"><h3>Evidence</h3><p>{{ report.diagnosis.evidence }}</p></div>
-          <div class="callout"><h3>Recommended next experiment</h3><p>{{ report.diagnosis.next_experiment }}</p></div>
-          <div class="callout warning full"><h3>Diagnostic limit</h3><p>{{ report.diagnosis.limit }}</p></div>
-        </div>
-      </section>
-    {% endif %}
-
-    {{ question_results(report.baseline, "Baseline") }}
-
-    {% if report.intervention is not none %}
-      {{ question_results(report.intervention, "Intervention", "intervention") }}
-    {% endif %}
-
-    <section>
-      <div class="section-heading">
-        <div><h2>Reproducibility</h2><p>Run identity and environment details needed to interpret or repeat this experiment.</p></div>
-        <span class="label">Run metadata</span>
-      </div>
-      <div class="callout-grid">
-        {{ reproducibility(report.baseline, "Baseline run") }}
-        {% if report.intervention is not none %}
-          {{ reproducibility(report.intervention, "Intervention run") }}
-        {% endif %}
-      </div>
-    </section>
-
-    <section>
-      <div class="section-heading">
-        <div><h2>Limitations</h2><p>Read these constraints before generalizing the result.</p></div>
-        <span class="label">Scope</span>
-      </div>
-      <ul class="limitations">
-        {% for limitation in report.limitations %}<li>{{ limitation }}</li>{% endfor %}
-      </ul>
-    </section>
-
-    <p class="footer">Generated locally by RAGvidence · No source documents or credentials are embedded beyond the recorded previews.</p>
-  </main>
+  </details>
+{% endmacro %}
+{% macro configuration(evaluation, label) %}
+  <div class="run-summary">
+    <h3>{{ label }} · {{ evaluation.manifest.config.name }}</h3>
+    <p class="rate">{{ percent(evaluation.summary.sufficient_evidence_rate) }}</p>
+    <p>{{ evaluation.summary.successful }} / {{ evaluation.summary.answerable }} answerable questions sufficient</p>
+    <p class="config">Strategy: {{ evaluation.manifest.config.strategy | upper }} · Representation: {{ evaluation.manifest.config.representation | replace("_", " ") }} · k={{ evaluation.manifest.config.k }}</p>
+    <p class="config">Index time: {{ "%.1f" | format(evaluation.manifest.index_time_ms) }} ms (secondary run metadata)</p>
+    {% if evaluation.manifest.warnings %}<p class="warning">Run warnings: {{ evaluation.manifest.warnings | join(" · ") }}</p>{% endif %}
+  </div>
+{% endmacro %}
+{% macro reproduction(evaluation, label) %}
+  <div>
+    <h3>{{ label }} · {{ evaluation.manifest.config.name }}</h3>
+    <dl>
+      {% for key, title in [("run_id", "Run ID"), ("created_at", "Run created"), ("dataset_hash", "Dataset hash"), ("product_version", "Product version"), ("python_version", "Python version"), ("platform", "Platform")] %}
+      <div><dt>{{ title }}</dt><dd>{{ evaluation.manifest[key] }}</dd></div>
+      {% endfor %}
+      <div><dt>Model</dt><dd>{{ evaluation.manifest.config.model or "Not configured" }}</dd></div>
+      <div><dt>Provider</dt><dd>{{ evaluation.manifest.config.provider or "Not configured" }}</dd></div>
+    </dl>
+  </div>
+{% endmacro %}
+{% set baseline = report.baseline %}
+{% set candidate = report.intervention %}
+{% set comparison = report.comparison %}
+{% set before_rate = baseline.summary.sufficient_evidence_rate %}
+{% set after_rate = candidate.summary.sufficient_evidence_rate if candidate else none %}
+<main>
+  <header id="summary" class="hero">
+    <p class="eyebrow">RAGvidence · Evidence retrieval report</p>
+    <h1>{{ baseline.manifest.config.name }}{% if candidate %} → {{ candidate.manifest.config.name }}{% endif %}</h1>
+    <p class="hero-copy">{% if candidate %}One controlled retrieval comparison{% else %}Baseline retrieval evaluation{% endif %} · {{ baseline.questions | length }} questions · {{ baseline.summary.answerable }} answerable · k={{ baseline.manifest.config.k }}</p>
+    <p class="result">{{ percent(before_rate) }}{% if candidate %} → {{ percent(after_rate) }}{% endif %}</p>
+    <p class="hero-copy">
+      {% if candidate and before_rate is not none and after_rate is not none %}
+        Evidence sufficiency {% if after_rate > before_rate %}improved{% elif after_rate < before_rate %}decreased{% else %}was unchanged{% endif %} from {{ percent(before_rate) }} to {{ percent(after_rate) }}.
+      {% elif candidate %}No answerable success-rate comparison is available.
+      {% else %}The baseline retrieved all required evidence for {{ baseline.summary.successful }} of {{ baseline.summary.answerable }} answerable questions.{% endif %}
+    </p>
+    {% if comparison %}<div class="outcomes"><span>{{ comparison.summary.fail_to_pass }} questions recovered</span><span>{{ comparison.summary.pass_to_fail }} regression{% if comparison.summary.pass_to_fail != 1 %}s{% endif %}</span><span>{{ comparison.summary.fail_to_fail }} unresolved failure{% if comparison.summary.fail_to_fail != 1 %}s{% endif %}</span></div>{% endif %}
+    <div class="hero-meta"><span>Generated {{ report.generated_at }}</span><span>Artifact schema v{{ report.schema_version }}</span></div>
+  </header>
+  <nav class="report-nav" aria-label="Report navigation">
+    <a href="#summary">Summary</a>
+    {% if comparison %}<a href="#change-analysis">Change analysis</a><a href="#diagnosis">Diagnosis</a><a href="#regressions">Regressions</a><a href="#unresolved-failures">Unresolved failures</a><a href="#improvements">Improvements</a><a href="#stable-results">Stable results</a><a href="#not-applicable">N/A cases</a>{% else %}<a href="#questions">Questions</a>{% endif %}
+    <a href="#reproducibility">Reproducibility</a><a href="#limitations">Limitations</a>
+  </nav>
+  <section id="comparison">
+    <h2>{% if candidate %}Baseline versus intervention{% else %}Baseline configuration{% endif %}</h2>
+    <p class="section-copy">Success means every required evidence ID appeared within the recorded retrieval depth.</p>
+    <div class="{% if candidate %}comparison{% endif %}">{{ configuration(baseline, "Baseline") }}{% if candidate %}{{ configuration(candidate, "Intervention") }}{% endif %}</div>
+    {% if candidate and before_rate is not none and after_rate is not none %}<p class="delta">{{ "%+.1f" | format((after_rate - before_rate) * 100) }} percentage points in evidence sufficiency</p>{% endif %}
+  </section>
+  {% if comparison %}
+  <section id="change-analysis">
+    <h2>Change analysis</h2>
+    <p class="section-copy">Review regressions first, then unresolved failures. Stable successes are grouped later.</p>
+    <div class="composition">
+      <a href="#regressions"><strong class="danger">{{ comparison.summary.pass_to_fail }}</strong><span>Pass → Fail · Regressions</span></a>
+      <a href="#unresolved-failures"><strong class="warning">{{ comparison.summary.fail_to_fail }}</strong><span>Fail → Fail · Unresolved</span></a>
+      <a href="#improvements"><strong class="success">{{ comparison.summary.fail_to_pass }}</strong><span>Fail → Pass · Recovered</span></a>
+      <a href="#stable-results"><strong>{{ comparison.summary.pass_to_pass }}</strong><span>Pass → Pass · Stable</span></a>
+    </div>
+    <p class="muted">{{ comparison.changes | selectattr("classification", "none") | list | length }} N/A cases are excluded from the answerable success-rate denominator.</p>
+  </section>
+  <section id="diagnosis">
+    <h2>Evidence-backed diagnosis</h2>
+    {% if report.diagnosis %}
+    <div class="diagnosis-grid">
+      <div><h3>Observed facts</h3><p>{{ report.diagnosis.evidence }}</p></div>
+      <div><h3>Diagnostic interpretation</h3><p><strong>Observed pattern:</strong> {{ report.diagnosis.pattern }}</p><p><strong>Recommended next experiment:</strong> {{ report.diagnosis.next_experiment }}</p><p><strong>Confidence:</strong> {{ report.diagnosis.confidence }}</p><p><strong>Limitation:</strong> {{ report.diagnosis.limit }}</p></div>
+    </div>
+    {% else %}<p>No diagnostic interpretation is available. Inspect the recorded evidence before choosing the next experiment.</p>{% endif %}
+  </section>
+  {% for key, anchor, title, label in [("pass_to_fail", "regressions", "Regressions", "Pass → Fail"), ("fail_to_fail", "unresolved-failures", "Unresolved failures", "Fail → Fail"), ("fail_to_pass", "improvements", "Improvements", "Fail → Pass"), ("pass_to_pass", "stable-results", "Stable results", "Pass → Pass"), (none, "not-applicable", "Unanswerable / N/A cases", "Not applicable")] %}
+  <section id="{{ anchor }}">
+    <h2>{{ title }}</h2>
+    <div class="question-list">
+      {% for change in comparison.changes if change.classification == key %}
+        {% set before = baseline.questions | selectattr("question_id", "equalto", change.question_id) | first %}
+        {% set after = candidate.questions | selectattr("question_id", "equalto", change.question_id) | first %}
+        {{ question_card(before, after, label) }}
+      {% else %}<p class="muted">No questions in this group.</p>{% endfor %}
+    </div>
+  </section>
+  {% endfor %}
+  {% else %}
+  <section id="questions">
+    <h2>Baseline question results</h2>
+    <p class="section-copy">Expand a question to inspect its metrics and ranked evidence.</p>
+    <div class="question-list">{% for question in baseline.questions %}{{ question_card(question) }}{% else %}<p>No question results available.</p>{% endfor %}</div>
+  </section>
+  {% endif %}
+  <section id="reproducibility">
+    <h2>Reproducibility</h2>
+    <p class="section-copy">Keep the same reviewed dataset and retrieval depth when comparing runs. Run identifiers and configuration refer to the recorded artifacts.</p>
+    <div class="metadata">{{ reproduction(baseline, "Baseline") }}{% if candidate %}{{ reproduction(candidate, "Intervention") }}{% endif %}</div>
+  </section>
+  <section id="limitations">
+    <h2>Limitations</h2>
+    <ul>{% for limitation in report.limitations %}<li>{{ limitation }}</li>{% endfor %}</ul>
+    <p>This report evaluates retrieved evidence; it does not establish causation or generated-answer correctness. Source previews can contain confidential content. Review before sharing.</p>
+    <p class="print-note">Printing includes every question and ranked evidence item, including closed disclosures. Navigation is omitted. Use this complete view when exporting to PDF.</p>
+  </section>
+  <footer>
+    <p>RAGvidence · Local-first evidence diagnostics · No report scripts or remote assets.</p>
+    <details class="font-license"><summary>Bundled Geist font license</summary><pre>{{ fonts.license }}</pre></details>
+  </footer>
+</main>
 </body>
 </html>
