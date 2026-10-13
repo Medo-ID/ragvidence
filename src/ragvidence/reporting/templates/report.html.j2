@@ -96,12 +96,40 @@
       @page { margin: 12mm; }
       body, .hero, section, summary, .run-summary, .composition a { background: #fff; color: #172b2d; }
       main { width: 100%; margin: 0; }
+      body { font-size: 11pt; line-height: 1.5; }
+      h1 { font-size: 24pt; }
+      h2 { font-size: 18pt; }
+      h3 { font-size: 12pt; }
+      h4 { font-size: 11pt; }
+      dt, .summary-metrics, .hit-meta, .config, .status { font-size: 10pt; }
+      code, pre { font-size: 9.5pt; }
+      p { margin-bottom: 6px; }
+      dl { margin-top: 8px; }
+      section { margin: 12px 0; }
+      .comparison { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+      .run-summary { padding: 12px; }
+      .metrics { gap: 6px 12px; }
+      .evidence-ids { margin: 8px 0; }
+      .evidence-change { margin-bottom: 12px; padding: 8px 12px; }
+      .hits { margin-top: 8px; gap: 12px; }
+      .hit { padding-top: 10px; }
+      .question-heading { display: inline; margin: 0 0 0 12px; }
+      .summary-metrics { gap: 4px 12px; }
+      .metrics > div { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px; }
+      .metrics dd { margin: 0; }
+      .metrics dt::after { content: ":"; }
+      .evidence-ids { font-size: 10pt; }
+      .hit h4, .hit-meta { margin-bottom: 4px; }
+      .preview { margin: 6px 0 0; font-size: 10.5pt; line-height: 1.4; }
       .hero { padding: 0 0 16px; border-radius: 0; border-bottom: 2px solid #063f47; }
       .hero-copy, .hero-meta { color: #172b2d; }
       section { padding: 16px; }
       .report-nav, .font-license { display: none; }
-      .runs { grid-template-columns: 1fr; }
-      .run + .run { border-left: 0; border-top: 1px solid var(--line); padding: 16px 0 0; }
+      .runs { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+      .run + .run { border-left: 1px solid var(--line); border-top: 0; padding: 0 0 0 16px; }
+      .question-card { break-inside: avoid; }
+      .investigation { padding: 12px; }
+      summary { padding: 12px; }
       details::details-content { display: block; content-visibility: visible; }
       details:not([open]) > :not(summary) { display: block !important; }
       summary, h2, h3, h4 { break-after: avoid; }
