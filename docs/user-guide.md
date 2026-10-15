@@ -126,6 +126,13 @@ ragvi benchmark workspaces/customer-support \
 
 This produces four runs: body and heading-context for both strategies. Evaluate the specific pair representing the decision you are testing. Avoid changing strategy, representation, model, labels, and `k` in a single comparison because you will not know which change caused the result.
 
+## Additional native retrieval experiments
+
+For native hybrid RRF, parent-child retrieval, recursive/Markdown splitting,
+query variants, reviewed contextual prefixes and local cross-encoder reranking,
+see [RAG technique coverage and examples](rag-technique-coverage.md). Use
+`ragvi experiment WORKSPACE CONFIG_FILE` to vary one component at a time.
+
 ## Import an existing retriever
 
 Export one JSON object per question:

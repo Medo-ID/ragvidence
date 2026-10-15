@@ -1,5 +1,7 @@
 """Human-readable Markdown report derived from authoritative JSON."""
 
+import html
+import json
 from typing import Any
 
 
@@ -14,6 +16,12 @@ def _render_evaluation(evaluation: dict[str, Any], heading: str) -> list[str]:
         f"- Retrieval depth: `k={config['k']}`",
         f"- Dataset hash: `{manifest['dataset_hash']}`",
         f"- Sufficient evidence: **{summary['successful']}/{summary['answerable']}**",
+        "",
+        "Full retrieval configuration:",
+        "",
+        "<pre>" + html.escape(json.dumps(config, indent=2)) + "</pre>",
+        "",
+        *(f"- Run warning: {warning}" for warning in manifest.get("warnings", [])),
         "",
         "## Question results",
         "",
@@ -35,6 +43,10 @@ def _render_evaluation(evaluation: dict[str, Any], heading: str) -> list[str]:
 
 
 def render_markdown(report: dict[str, Any]) -> str:
+    if report.get("kind") == "inspection":
+        from ragvidence.reporting.inspection import render_inspection_markdown
+
+        return render_inspection_markdown(report)
     lines = ["# RAGvidence report", ""]
     lines.extend(_render_evaluation(report["baseline"], "Baseline"))
     if report.get("intervention") is not None:

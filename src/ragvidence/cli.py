@@ -11,6 +11,7 @@ from rich.console import Console
 from rich.table import Table
 
 from ragvidence import __edition__, __version__
+from ragvidence.artifacts import write_json, write_text
 from ragvidence.comparison import compare_evaluations
 from ragvidence.data import DatasetError, load_dataset
 from ragvidence.diagnosis import diagnose as build_diagnosis
@@ -19,8 +20,10 @@ from ragvidence.generation import generate_answers
 from ragvidence.health import run_health
 from ragvidence.importer import import_retrieval_run
 from ragvidence.models import ExperimentRun, StrategyConfig
-from ragvidence.reporting import build_report, render_markdown
+from ragvidence.portable_cli import register_portable_commands
+from ragvidence.reporting import build_report
 from ragvidence.reporting.html import render_html
+from ragvidence.reporting.render import render_report
 from ragvidence.runner import run_experiment, write_run
 from ragvidence.verification import run_verification
 from ragvidence.workspace import create_workspace, restore_workspace
@@ -33,6 +36,7 @@ app = typer.Typer(
 workspace_app = typer.Typer(help="Manage recoverable experiment workspaces.")
 app.add_typer(workspace_app, name="workspace")
 console = Console()
+register_portable_commands(app, console)
 DEFAULT_ROOT = Path("workspaces")
 
 
@@ -127,20 +131,14 @@ def tutorial(
             run = run_experiment(workspace, config)
             run_path = workspace / "runs" / f"{config.name}.json"
             write_run(run, run_path)
-            _, questions = load_dataset(workspace)
-            evaluation = evaluate_run(run, questions)
+            sources, questions = load_dataset(workspace)
+            evaluation = evaluate_run(run, questions, sources=sources)
             evaluation_path = workspace / "evaluations" / f"{config.name}.json"
-            evaluation_path.parent.mkdir(parents=True, exist_ok=True)
-            evaluation_path.write_text(json.dumps(evaluation, indent=2), encoding="utf-8")
+            write_json(evaluation_path, evaluation)
             evaluations.append(evaluation)
 
         report_path = workspace / "reports" / "tutorial.html"
-        report_path.parent.mkdir(parents=True, exist_ok=True)
-        template = Path(__file__).parent / "reporting/templates/report.html.j2"
-        report_path.write_text(
-            render_html(build_report(evaluations[0], evaluations[1]), template),
-            encoding="utf-8",
-        )
+        write_text(report_path, render_report(build_report(evaluations[0], evaluations[1]), "html"))
     except (DatasetError, FileExistsError, OSError, RuntimeError, ValueError) as exc:
         if isinstance(exc, FileExistsError):
             fail(
@@ -192,9 +190,15 @@ def benchmark(
 ) -> None:
     """Run body and heading-context representations."""
     requested = [value.strip() for value in strategies.split(",") if value.strip()]
-    unsupported = set(requested) - {"bm25", "semantic"}
+    unsupported = set(requested) - {"bm25", "semantic", "hybrid"}
     if unsupported:
         raise typer.BadParameter(f"Unsupported strategies: {sorted(unsupported)}")
+    if not requested:
+        raise typer.BadParameter("Choose at least one retrieval strategy")
+    if k < 1:
+        raise typer.BadParameter("k must be positive")
+    if provider not in {"fastembed", "ollama", "openai_compatible"}:
+        raise typer.BadParameter("provider must be fastembed, ollama, or openai_compatible")
     for strategy in requested:
         for representation in ("body", "heading_context"):
             name = f"{strategy}-{representation}"
@@ -203,10 +207,10 @@ def benchmark(
                 strategy=strategy,
                 representation=representation,
                 k=k,
-                model=model if strategy == "semantic" else None,
-                provider=provider if strategy == "semantic" else None,
+                model=model if strategy in {"semantic", "hybrid"} else None,
+                provider=provider if strategy in {"semantic", "hybrid"} else None,
             )
-            if strategy == "semantic" and provider != "fastembed":
+            if strategy in {"semantic", "hybrid"} and provider != "fastembed":
                 console.print(
                     f"[yellow]DISCLOSURE[/yellow] {provider} will receive source text and queries."
                 )
@@ -238,19 +242,50 @@ def import_run(
 
 
 @app.command()
+def experiment(workspace: Path, config_file: Path) -> None:
+    """Run one reproducible retrieval pipeline from a JSON configuration."""
+    from ragvidence.config import Settings
+
+    try:
+        config = StrategyConfig.model_validate_json(config_file.read_text(encoding="utf-8"))
+        if any(
+            char not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_"
+            for char in config.name
+        ):
+            raise ValueError("Experiment name must contain only letters, numbers, - or _")
+        destination = workspace / "runs" / f"{config.name}.json"
+        if destination.exists():
+            raise FileExistsError(f"Refusing to overwrite existing run: {destination}")
+        if config.strategy in {"semantic", "hybrid"}:
+            provider_name = config.provider or Settings().embedding_provider
+            if provider_name != "fastembed":
+                console.print(
+                    f"[yellow]DISCLOSURE[/yellow] {provider_name} will receive "
+                    "source text and all search queries, including supplied variants."
+                )
+        if config.reranker_model:
+            console.print("Local reranking may download the selected model on first use.")
+        run = run_experiment(workspace, config)
+        write_run(run, destination)
+    except (OSError, ValueError, RuntimeError) as exc:
+        fail(str(exc))
+    console.print(f"[green]SAVED[/green] {destination}")
+
+
+@app.command()
 def evaluate(workspace: Path, run_file: Path) -> None:
     """Evaluate a run using reviewed evidence labels."""
     try:
-        _, questions = load_dataset(workspace)
+        sources, questions = load_dataset(workspace)
         run = ExperimentRun.model_validate_json(run_file.read_text(encoding="utf-8"))
-        result = evaluate_run(run, questions)
+        result = evaluate_run(run, questions, sources=sources)
     except (DatasetError, OSError, ValueError, NotImplementedError) as exc:
         fail(str(exc) or "Evaluation could not be completed")
     destination = workspace / "evaluations" / f"{run.manifest.config.name}.json"
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    if destination.exists():
-        fail(f"Refusing to overwrite: {destination}")
-    destination.write_text(json.dumps(result, indent=2), encoding="utf-8")
+    try:
+        write_json(destination, result)
+    except (OSError, ValueError) as exc:
+        fail(str(exc))
     console.print(f"[green]SAVED[/green] {destination}")
 
 
@@ -269,10 +304,10 @@ def generate(workspace: Path, run_file: Path, output: Path) -> None:
         result = generate_answers(workspace, run, settings)
     except (OSError, ValueError, RuntimeError) as exc:
         fail(str(exc))
-    if output.exists():
-        fail(f"Refusing to overwrite: {output}")
-    output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(json.dumps(result, indent=2), encoding="utf-8")
+    try:
+        write_json(output, result)
+    except (OSError, ValueError) as exc:
+        fail(str(exc))
     console.print(f"[green]SAVED[/green] {output}")
 
 
@@ -285,10 +320,10 @@ def compare(baseline: Path, intervention: Path, output: Path) -> None:
         )
     except (OSError, ValueError, json.JSONDecodeError, NotImplementedError) as exc:
         fail(str(exc) or "Comparison could not be completed")
-    if output.exists():
-        fail(f"Refusing to overwrite: {output}")
-    output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(json.dumps(result, indent=2), encoding="utf-8")
+    try:
+        write_json(output, result)
+    except (OSError, ValueError) as exc:
+        fail(str(exc))
     console.print_json(data=result["summary"])
 
 
@@ -349,17 +384,16 @@ def report(
         payload = build_report(baseline_data, intervention_data)
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         fail(str(exc))
-    if format == "json":
-        content = json.dumps(payload, indent=2)
-    elif format == "markdown":
-        content = render_markdown(payload)
-    else:
-        selected = template or Path(__file__).parent / "reporting/templates/report.html.j2"
-        if not selected.is_file():
-            raise typer.BadParameter("The installed HTML report template is missing")
-        content = render_html(payload, selected)
-    output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(content, encoding="utf-8")
+    try:
+        if template is not None and format == "html":
+            if not template.is_file():
+                raise ValueError("The selected HTML report template is missing")
+            content = render_html(payload, template)
+        else:
+            content = render_report(payload, format)
+        write_text(output, content)
+    except (OSError, ValueError) as exc:
+        fail(str(exc))
     console.print(f"[green]SAVED[/green] {output}")
 
 

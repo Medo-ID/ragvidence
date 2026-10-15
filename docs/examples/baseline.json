@@ -1,0 +1,6 @@
+{
+  "name": "baseline",
+  "strategy": "bm25",
+  "representation": "heading_context",
+  "k": 2
+}

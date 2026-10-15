@@ -8,7 +8,7 @@ import bm25s
 from ragvidence.models import RetrievalHit
 from ragvidence.representation import RetrievalRecord
 
-TOKEN_PATTERN = re.compile(r"[a-z0-9]+(?:[._-][a-z0-9]+)*", re.IGNORECASE)
+TOKEN_PATTERN = re.compile(r"[^\W_]+(?:[._-][^\W_]+)*", re.UNICODE)
 
 
 def tokenize(text: str) -> list[str]:
@@ -24,6 +24,8 @@ class BM25Strategy:
     def index(self, records: Sequence[RetrievalRecord]) -> None:
         self._records = list(records)
         corpus_tokens = [tokenize(item.searchable_text) for item in self._records]
+        if not any(corpus_tokens):
+            raise ValueError("The input contains no searchable words for BM25")
         self._retriever = bm25s.BM25()
         self._retriever.index(corpus_tokens, show_progress=False)
 

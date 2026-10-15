@@ -52,6 +52,7 @@ packages = ["src/ragvidence"]
 include = [
   "/src",
   "/tests",
+  "/scripts",
   "/docs",
   "/README.md",
   "/LICENSE.md",
@@ -65,7 +66,7 @@ include = [
   "/pyproject.toml",
   "/uv.lock",
 ]
-exclude = ["/docs/maintainer"]
+exclude = ["/docs/maintainer", "/docs/portable-cli-design.md"]
 
 [build-system]
 requires = ["hatchling"]

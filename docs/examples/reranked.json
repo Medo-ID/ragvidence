@@ -1,0 +1,8 @@
+{
+  "name": "reranked",
+  "strategy": "bm25",
+  "representation": "heading_context",
+  "k": 2,
+  "candidate_k": 20,
+  "reranker_model": "Xenova/ms-marco-MiniLM-L-6-v2"
+}

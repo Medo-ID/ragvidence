@@ -1,0 +1,10 @@
+{
+  "name": "parent-markdown",
+  "strategy": "bm25",
+  "representation": "heading_context",
+  "k": 2,
+  "candidate_k": 20,
+  "child_splitter": "markdown",
+  "child_size": 120,
+  "child_overlap": 20
+}

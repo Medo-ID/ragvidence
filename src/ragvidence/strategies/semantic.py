@@ -1,14 +1,16 @@
 """Local dense retrieval with a reusable provider-independent vector cache."""
 
-import hashlib
-import json
+import io
 from collections.abc import Sequence
+from contextlib import suppress
 from pathlib import Path
 
 import numpy as np
 
+from ragvidence.artifacts import content_hash, write_bytes
 from ragvidence.models import RetrievalHit
 from ragvidence.providers import EmbeddingProvider, FastEmbedProvider
+from ragvidence.providers.vectors import document_vectors, query_vector
 from ragvidence.representation import RetrievalRecord
 
 
@@ -29,34 +31,32 @@ class SemanticStrategy:
 
     def index(self, records: Sequence[RetrievalRecord]) -> None:
         self._records = list(records)
+        self.cache_hit = False
         texts = [item.searchable_text for item in self._records]
         cache_path = self._cache_path(texts)
         if cache_path is not None and cache_path.is_file():
-            with cache_path.open("rb") as handle:
-                vectors = np.load(handle, allow_pickle=False)
-            if vectors.ndim != 2 or vectors.shape[0] != len(texts):
-                raise RuntimeError(f"Invalid semantic cache shape: {cache_path}")
+            try:
+                with cache_path.open("rb") as handle:
+                    vectors = document_vectors(np.load(handle, allow_pickle=False), len(texts))
+            except (OSError, ValueError, RuntimeError) as exc:
+                raise RuntimeError(f"Invalid semantic cache: {cache_path}") from exc
             self.cache_hit = True
         else:
-            vectors = self._provider.embed_documents(texts)
-            if vectors.ndim != 2 or vectors.shape[0] != len(texts):
-                raise RuntimeError("Embedding provider returned an invalid document matrix")
+            vectors = document_vectors(self._provider.embed_documents(texts), len(texts))
             if cache_path is not None:
-                cache_path.parent.mkdir(parents=True, exist_ok=True)
-                temporary = cache_path.with_suffix(".tmp")
-                with temporary.open("wb") as handle:
-                    np.save(handle, vectors, allow_pickle=False)
-                temporary.replace(cache_path)
+                buffer = io.BytesIO()
+                np.save(buffer, vectors, allow_pickle=False)
+                # A concurrent indexer may publish this immutable cache first.
+                with suppress(FileExistsError):
+                    write_bytes(cache_path, buffer.getvalue())
         self._vectors = _normalize(np.asarray(vectors, dtype=np.float32))
 
     def search(self, query: str, *, k: int) -> list[RetrievalHit]:
         if self._vectors is None:
             raise RuntimeError("index() must be called before search()")
-        raw_query = np.asarray(self._provider.embed_query(query), dtype=np.float32)
-        if raw_query.ndim != 1 or raw_query.shape[0] != self._vectors.shape[1]:
-            raise RuntimeError("Embedding provider returned an invalid query vector")
-        query_vector = _normalize(raw_query[None, :])[0]
-        scores = self._vectors @ query_vector
+        raw_query = query_vector(self._provider.embed_query(query), self._vectors.shape[1])
+        normalized_query = _normalize(raw_query[None, :])[0]
+        scores = self._vectors @ normalized_query
         indexes = np.argsort(-scores, kind="stable")[: min(k, len(scores))]
         return [
             RetrievalHit(
@@ -73,14 +73,17 @@ class SemanticStrategy:
     def _cache_path(self, texts: list[str]) -> Path | None:
         if self._cache_dir is None:
             return None
-        payload = json.dumps(
-            {"model": self._provider.model_name, "texts": texts},
-            sort_keys=True,
-            separators=(",", ":"),
-        ).encode()
-        return self._cache_dir / f"{hashlib.sha256(payload).hexdigest()}.npy"
+        identity = getattr(
+            self._provider,
+            "cache_identity",
+            {
+                "adapter": f"{type(self._provider).__module__}.{type(self._provider).__qualname__}",
+                "model": self._provider.model_name,
+            },
+        )
+        return self._cache_dir / f"{content_hash({'identity': identity, 'texts': texts})}.npy"
 
 
 def _normalize(vectors: np.ndarray) -> np.ndarray:
-    norms = np.linalg.norm(vectors, axis=1, keepdims=True)
-    return vectors / np.maximum(norms, 1e-12)
+    norms = np.linalg.norm(vectors.astype(np.float64), axis=1, keepdims=True)
+    return (vectors / norms).astype(np.float32)

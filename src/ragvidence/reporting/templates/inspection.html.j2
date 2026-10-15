@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RAGvidence · {{ report.input.name }}</title>
+  <style>
+    @font-face { font-family: Geist; src: url(data:font/woff2;base64,{{ fonts.sans }}) format('woff2'); }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #173638; background: #f5f7f5; font: 16px/1.6 Geist, system-ui, sans-serif; }
+    main { max-width: 1000px; margin: auto; padding: 36px 24px; }
+    header, section { background: #fff; border: 1px solid #d5dfda; border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+    header { border-top: 5px solid #13635b; }
+    h1 { font-size: clamp(24px, 4vw, 36px); line-height: 1.2; margin: 12px 0; }
+    h2 { font-size: 22px; } h3 { font-size: 17px; }
+    .eyebrow, .status { color: #29675e; font-weight: 600; }
+    .meta { color: #49645f; font-size: 14px; }
+    .metrics { display: flex; flex-wrap: wrap; gap: 12px 28px; }
+    .hit { border-top: 1px solid #d5dfda; margin-top: 20px; padding-top: 8px; }
+    pre, code, .path { overflow-wrap: anywhere; white-space: pre-wrap; }
+    pre { font-family: inherit; padding: 16px; background: #f2f6f3; border-radius: 6px; }
+    details { font-size: 14px; } ul { padding-left: 24px; }
+    @media print { body { background: #fff; } main { max-width: none; padding: 0; } section { break-inside: auto; } .hit { break-inside: avoid; } }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="eyebrow">RAGvidence · Local data diagnostics</div>
+    <h1>{{ report.input.name }}</h1>
+    <p class="status">{{ report.evaluation_level }}</p>
+    <p>Technique: {{ report.manifest.config.strategy | upper }} · k={{ report.manifest.config.k }}</p>
+    <p class="meta">Passage size: {{ report.preparation.chunk_size }} characters · Overlap: {{ report.preparation.chunk_overlap }} characters</p>
+    <div class="metrics">
+      <span>{{ report.input.document_count }} source documents</span>
+      <span>{{ report.input.passage_count }} passages</span>
+      <span>{{ report.questions | length }} questions</span>
+      <span>{{ report.input.source_characters }} source characters</span>
+    </div>
+    {% for observation in report.observations %}<p>{{ observation }}</p>{% endfor %}
+  </header>
+  {% for question in report.questions %}
+  <section>
+    <h2>{{ question.question }}</h2>
+    <p class="meta">{{ question.question_id }} · {{ "%.2f" | format(question.query_time_ms) }} ms · {{ question.context_characters }} context characters</p>
+    {% for observation in question.observations %}<p>{{ observation }}</p>{% endfor %}
+    {% for hit in question.hits %}
+    <article class="hit">
+      <h3>#{{ hit.rank }} · <span class="path">{{ hit.source_path }}</span></h3>
+      <p class="meta">Score: {{ "%.6f" | format(hit.score) }} · Lines {{ hit.line_start }}–{{ hit.line_end }} · Characters {{ hit.start }}–{{ hit.end }}</p>
+      {% if hit.heading_path %}<p>{{ hit.heading_path | join(" › ") }}</p>{% endif %}
+      <pre>{{ hit.text }}</pre>
+    </article>
+    {% endfor %}
+  </section>
+  {% endfor %}
+  {% if report.input.skipped %}
+  <section>
+    <h2>Skipped inputs</h2>
+    <ul>{% for item in report.input.skipped %}<li><span class="path">{{ item.path }}</span>: {{ item.reason }}</li>{% endfor %}</ul>
+  </section>
+  {% endif %}
+  <section>
+    <h2>Reproducibility</h2>
+    <p class="meta">Run: {{ report.manifest.run_id }} · Generated {{ report.generated_at }}</p>
+    <p class="meta path">Corpus: {{ report.input.corpus_hash }}</p>
+    <details><summary>Resolved configuration</summary><pre>{{ report.manifest.config | tojson(indent=2) }}</pre></details>
+  </section>
+  <section>
+    <h2>Limitations</h2>
+    <ul>{% for limitation in report.limitations %}<li>{{ limitation }}</li>{% endfor %}</ul>
+    <details><summary>Bundled Geist font license</summary><pre>{{ fonts.license }}</pre></details>
+  </section>
+</main>
+</body>
+</html>

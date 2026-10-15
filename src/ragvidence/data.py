@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-import json
+from collections import Counter
 from pathlib import Path
 
 from pydantic import BaseModel, ValidationError
 
-from ragvidence.models import QuestionCase, SourceUnit
+from ragvidence.artifacts import canonical_bytes
+from ragvidence.models import QuestionCase, SearchQuestion, SourceUnit
 
 
 class DatasetError(ValueError):
@@ -39,7 +40,9 @@ def load_dataset(root: Path) -> tuple[list[SourceUnit], list[QuestionCase]]:
     return sources, questions
 
 
-def validate_dataset(sources: list[SourceUnit], questions: list[QuestionCase]) -> None:
+def validate_search_inputs(sources: list[SourceUnit], questions: list[SearchQuestion]) -> None:
+    if not sources:
+        raise DatasetError("Expected at least one source unit")
     source_ids = [item.source_unit_id for item in sources]
     question_ids = [item.question_id for item in questions]
     duplicate_sources = _duplicates(source_ids)
@@ -49,6 +52,9 @@ def validate_dataset(sources: list[SourceUnit], questions: list[QuestionCase]) -
     if duplicate_questions:
         raise DatasetError(f"Duplicate question_id values: {sorted(duplicate_questions)}")
 
+
+def validate_dataset(sources: list[SourceUnit], questions: list[QuestionCase]) -> None:
+    validate_search_inputs(sources, questions)
     evidence = {evidence_id for source in sources for evidence_id in source.evidence_ids}
     missing = {
         evidence_id
@@ -60,13 +66,11 @@ def validate_dataset(sources: list[SourceUnit], questions: list[QuestionCase]) -
         raise DatasetError(f"Questions reference unknown evidence IDs: {sorted(missing)}")
 
 
-def canonical_dataset_bytes(sources: list[SourceUnit], questions: list[QuestionCase]) -> bytes:
-    value = {
-        "sources": [item.model_dump(mode="json") for item in sources],
-        "questions": [item.model_dump(mode="json") for item in questions],
-    }
-    return json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
+def canonical_dataset_bytes(
+    sources: list[SourceUnit], questions: list[QuestionCase] | list[SearchQuestion]
+) -> bytes:
+    return canonical_bytes({"sources": sources, "questions": questions})
 
 
 def _duplicates(values: list[str]) -> set[str]:
-    return {value for value in values if values.count(value) > 1}
+    return {value for value, count in Counter(values).items() if count > 1}

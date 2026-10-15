@@ -11,8 +11,11 @@ from pathlib import Path
 from typing import Any
 
 from ragvidence import __version__
+from ragvidence.artifacts import HASH_ALGORITHM, content_hash
+from ragvidence.context import context_fields
 from ragvidence.data import DatasetError, canonical_dataset_bytes, load_dataset
 from ragvidence.models import ExperimentRun, QueryRun, RetrievalHit, RunManifest, StrategyConfig
+from ragvidence.provenance import corpus_identity, question_identity, reference_identity
 
 
 def import_retrieval_run(
@@ -40,7 +43,14 @@ def import_retrieval_run(
             raise DatasetError(f"{input_path}:{line_number}: duplicate question_id {question_id!r}")
         seen.add(question_id)
         hits = _parse_hits(input_path, line_number, record.get("hits"), source_by_id, k)
-        queries.append(QueryRun(question_id=question_id, hits=hits, query_time_ms=0.0))
+        queries.append(
+            QueryRun(
+                question_id=question_id,
+                hits=hits,
+                query_time_ms=None,
+                **context_fields(hits, source_by_id),
+            )
+        )
 
     missing = question_ids - seen
     if missing:
@@ -52,15 +62,25 @@ def import_retrieval_run(
     run_key = f"{name}:{dataset_hash}:{timestamp}".encode()
     return ExperimentRun(
         manifest=RunManifest(
+            schema_version=2,
+            hash_algorithm=HASH_ALGORITHM,
             run_id=hashlib.sha256(run_key).hexdigest()[:12],
             created_at=timestamp,
             product_version=__version__,
             python_version=sys.version.split()[0],
             platform=platform.platform(),
             dataset_hash=dataset_hash,
+            corpus_hash=corpus_identity(sources),
+            questions_hash=question_identity(questions),
+            references_hash=reference_identity(sources, questions),
+            configuration_hash=content_hash(config),
             config=config,
-            index_time_ms=0.0,
-            warnings=["Timing is unavailable for imported retrieval results."],
+            index_time_ms=None,
+            warnings=[
+                "Timing is unavailable for imported retrieval results.",
+                "ID-only import evaluates the registered source units. Actual context "
+                "returned by the external system was not supplied.",
+            ],
         ),
         queries=queries,
     )
@@ -98,11 +118,11 @@ def _parse_hits(
         raise DatasetError(f"{path}:{line_number}: hits must be a list")
     hits = []
     seen_sources: set[str] = set()
-    for expected_rank, raw_hit in enumerate(value[:k], start=1):
+    for expected_rank, raw_hit in enumerate(value, start=1):
         if not isinstance(raw_hit, dict):
             raise DatasetError(f"{path}:{line_number}: hit {expected_rank} must be an object")
         source_id = raw_hit.get("source_unit_id")
-        if source_id not in source_by_id:
+        if not isinstance(source_id, str) or source_id not in source_by_id:
             raise DatasetError(
                 f"{path}:{line_number}: hit {expected_rank} references unknown source {source_id!r}"
             )
@@ -110,7 +130,7 @@ def _parse_hits(
             raise DatasetError(f"{path}:{line_number}: duplicate source {source_id!r}")
         seen_sources.add(source_id)
         supplied_rank = raw_hit.get("rank", expected_rank)
-        if supplied_rank != expected_rank:
+        if type(supplied_rank) is not int or supplied_rank != expected_rank:
             raise DatasetError(
                 f"{path}:{line_number}: expected contiguous rank {expected_rank}, "
                 f"got {supplied_rank!r}"
@@ -129,4 +149,4 @@ def _parse_hits(
                 metadata={"document_id": source.document_id, "imported": True},
             )
         )
-    return hits
+    return hits[:k]

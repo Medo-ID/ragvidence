@@ -11,3 +11,10 @@ Provider URLs are restricted to `http` and `https` and may not contain embedded 
 For semantic retrieval, choose `--provider ollama` or `--provider openai_compatible` and configure the corresponding `RAGVIDENCE_EMBEDDING_*` values. For optional answer inspection, configure `RAGVIDENCE_GENERATION_*` and run `ragvi generate`. Generated answers are kept separate from retrieval labels and never change evaluation scores.
 
 Before sharing a report, inspect it for confidential source names, metadata and previews. “Local by default” does not make an exported report safe automatically.
+
+The portable BM25 path ignores `.env` in the input/current directory, never sends
+data to a provider, and leaves original files unchanged. Portable report exports
+contain full returned passages. Its internal `snapshot.json` contains original
+loaded text; keep internal artifacts separate from the selected shareable report.
+New workspace evaluations also retain a private source/run snapshot for integrity
+validation; report exports omit that internal validation snapshot.

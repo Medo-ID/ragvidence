@@ -9,6 +9,9 @@ from urllib.request import Request, urlopen
 
 import numpy as np
 
+from ragvidence.artifacts import content_hash
+from ragvidence.providers.vectors import document_vectors
+
 MAX_RESPONSE_BYTES = 25 * 1024 * 1024
 
 
@@ -47,6 +50,11 @@ class OpenAICompatibleEmbeddingProvider:
     def __init__(self, model_name: str, base_url: str, api_key: str | None = None) -> None:
         self.model_name = model_name
         self.base_url = base_url.rstrip("/")
+        self.cache_identity = {
+            "adapter": "openai-compatible-v1",
+            "model": model_name,
+            "endpoint": content_hash(self.base_url),
+        }
         self._headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
 
     def embed_documents(self, texts: list[str]) -> np.ndarray:
@@ -60,8 +68,16 @@ class OpenAICompatibleEmbeddingProvider:
             f"{self.base_url}/embeddings", {"model": self.model_name, "input": texts}, self._headers
         )
         try:
-            ordered = sorted(value["data"], key=lambda item: item["index"])
-            return np.asarray([item["embedding"] for item in ordered], dtype=np.float32)
+            data = value["data"]
+            if not isinstance(data, list) or len(data) != len(texts):
+                raise ValueError("Invalid embedding count")
+            indexes = [item["index"] for item in data]
+            if any(type(index) is not int for index in indexes) or sorted(indexes) != list(
+                range(len(texts))
+            ):
+                raise ValueError("Invalid embedding indexes")
+            ordered = sorted(data, key=lambda item: item["index"])
+            return document_vectors([item["embedding"] for item in ordered], len(texts))
         except (KeyError, TypeError, ValueError) as exc:
             raise RuntimeError("Provider response is missing valid embedding data") from exc
 
@@ -70,13 +86,18 @@ class OllamaEmbeddingProvider:
     def __init__(self, model_name: str, base_url: str = "http://localhost:11434") -> None:
         self.model_name = model_name
         self.base_url = base_url.rstrip("/")
+        self.cache_identity = {
+            "adapter": "ollama-v1",
+            "model": model_name,
+            "endpoint": content_hash(self.base_url),
+        }
 
     def embed_documents(self, texts: list[str]) -> np.ndarray:
         value = _post_json(
             f"{self.base_url}/api/embed", {"model": self.model_name, "input": texts}, {}
         )
         try:
-            return np.asarray(value["embeddings"], dtype=np.float32)
+            return document_vectors(value["embeddings"], len(texts))
         except (KeyError, TypeError, ValueError) as exc:
             raise RuntimeError("Ollama response is missing valid embeddings") from exc
 

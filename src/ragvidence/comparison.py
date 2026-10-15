@@ -3,9 +3,12 @@
 from typing import Any
 
 from ragvidence.evaluation.metrics import classify_change
+from ragvidence.evaluation.validation import validate_evaluation
 
 
 def compare_evaluations(baseline: dict[str, Any], intervention: dict[str, Any]) -> dict[str, Any]:
+    validate_evaluation(baseline)
+    validate_evaluation(intervention)
     baseline_manifest = baseline["manifest"]
     intervention_manifest = intervention["manifest"]
     if baseline_manifest["dataset_hash"] != intervention_manifest["dataset_hash"]:

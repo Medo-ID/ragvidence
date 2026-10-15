@@ -17,9 +17,7 @@ def test_remote_provider_rejects_non_http_url() -> None:
 
 
 def test_remote_provider_rejects_embedded_credentials() -> None:
-    provider = OpenAICompatibleEmbeddingProvider(
-        "model", "https://user:password@example.test/v1"
-    )
+    provider = OpenAICompatibleEmbeddingProvider("model", "https://user:password@example.test/v1")
 
     with pytest.raises(RuntimeError, match="must not contain embedded credentials"):
         provider.embed_query("query")
@@ -52,3 +50,17 @@ def test_chat_adapter_extracts_content(monkeypatch) -> None:
     )
     provider = ChatProvider("openai_compatible", "model", "https://example.test/v1")
     assert provider.answer("system", "user") == "answer"
+
+
+@pytest.mark.parametrize("indexes", [[0, 0], [1, 2], [-1, 0], [True, 0]])
+def test_embedding_adapter_rejects_invalid_response_indexes(monkeypatch, indexes):
+    monkeypatch.setattr(
+        remote,
+        "_post_json",
+        lambda *args, **kwargs: {
+            "data": [{"index": index, "embedding": [1, 0]} for index in indexes]
+        },
+    )
+    provider = OpenAICompatibleEmbeddingProvider("model", "https://example.test/v1")
+    with pytest.raises(RuntimeError):
+        provider.embed_documents(["a", "b"])

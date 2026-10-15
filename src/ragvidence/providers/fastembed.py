@@ -10,6 +10,12 @@ class FastEmbedProvider:
         except ImportError as exc:
             raise RuntimeError("Semantic retrieval requires: uv sync --extra semantic") from exc
         self.model_name = model_name
+        self.cache_identity = {
+            "adapter": "fastembed-v1",
+            "model": model_name,
+            "document_encoding": "embed",
+            "query_encoding": "query_embed",
+        }
         self._model = TextEmbedding(model_name=model_name)
 
     def embed_documents(self, texts: list[str]) -> np.ndarray:

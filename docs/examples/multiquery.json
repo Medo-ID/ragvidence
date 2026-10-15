@@ -1,0 +1,10 @@
+{
+  "name": "multiquery",
+  "strategy": "bm25",
+  "representation": "heading_context",
+  "k": 2,
+  "candidate_k": 20,
+  "query_variants": {
+    "DEV-01": ["Orion DeskHub firmware 4.2 pairing reset button hold duration"]
+  }
+}

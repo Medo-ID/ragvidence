@@ -1,0 +1,3 @@
+How long should I hold the pairing button on firmware 4.2?
+What settings are preserved after a pairing reset?
+What power connection does the hub need?

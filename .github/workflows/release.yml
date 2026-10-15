@@ -30,10 +30,11 @@ jobs:
       - name: Test and build
         run: |
           uv sync --frozen --dev
-          uv run ruff check src tests
+          uv run ruff check src tests scripts
           uv run pytest
           uv run ragvi verify
           uv build
+          uv run python scripts/check_portable_install.py
           (cd dist && sha256sum *.whl *.tar.gz > SHA256SUMS.txt)
       - name: Store package distributions
         uses: actions/upload-artifact@v5

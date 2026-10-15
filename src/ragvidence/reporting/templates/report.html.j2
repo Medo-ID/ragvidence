@@ -221,7 +221,7 @@
     <p class="rate">{{ percent(evaluation.summary.sufficient_evidence_rate) }}</p>
     <p>{{ evaluation.summary.successful }} / {{ evaluation.summary.answerable }} answerable questions sufficient</p>
     <p class="config">Strategy: {{ evaluation.manifest.config.strategy | upper }} · Representation: {{ evaluation.manifest.config.representation | replace("_", " ") }} · k={{ evaluation.manifest.config.k }}</p>
-    <p class="config">Index time: {{ "%.1f" | format(evaluation.manifest.index_time_ms) }} ms (secondary run metadata)</p>
+    <p class="config">Index time: {% if evaluation.manifest.index_time_ms is not none %}{{ "%.1f" | format(evaluation.manifest.index_time_ms) }} ms{% else %}Unavailable{% endif %} (secondary run metadata)</p>
     {% if evaluation.manifest.warnings %}<p class="warning">Run warnings: {{ evaluation.manifest.warnings | join(" · ") }}</p>{% endif %}
   </div>
 {% endmacro %}
@@ -234,6 +234,7 @@
       {% endfor %}
       <div><dt>Model</dt><dd>{{ evaluation.manifest.config.model or "Not configured" }}</dd></div>
       <div><dt>Provider</dt><dd>{{ evaluation.manifest.config.provider or "Not configured" }}</dd></div>
+      <div><dt>Full retrieval configuration</dt><dd><pre style="white-space: pre-wrap; overflow-wrap: anywhere">{{ evaluation.manifest.config | tojson(indent=2) }}</pre></dd></div>
     </dl>
   </div>
 {% endmacro %}

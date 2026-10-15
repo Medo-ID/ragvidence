@@ -54,6 +54,20 @@ Python 3.12 is pinned in `.python-version`; `uv` can install the required Python
 
 ## First report
 
+The development source also includes the first portable file/folder command:
+
+```bash
+uv run ragvi bm25 ./manual.txt --query "How do I reset the device?"
+uv run ragvi bm25 ./docs --questions ./questions.txt --format html --format json
+```
+
+It reads TXT/Markdown, prepares passages automatically, prints retrieved results,
+and writes reports under `ragvi-reports/`. No workspace setup is needed. Without
+questions it produces source diagnostics; without reviewed evidence it does not
+invent retrieval-quality scores. After installing a wheel built from this source,
+invoke `ragvi` directly from any directory. See [Portable file usage](docs/portable-file-usage.md).
+This command is not yet part of the published PyPI release.
+
 The tutorial writes a complete comparison to:
 
 ```text
@@ -80,6 +94,12 @@ Then follow [Getting started](https://ragvidence.medo-id.com/docs/first-tutorial
 The complete CLI reference is in [Command reference](https://ragvidence.medo-id.com/docs/commands).
 
 ## What is included
+
+The development source build also supports JSON-configured hybrid RRF search,
+parent-child retrieval with recursive or Markdown splitting and overlap,
+supplied query variants and contextual prefixes, and optional local cross-encoder
+reranking. See [technique coverage, examples, and remaining gaps](docs/rag-technique-coverage.md).
+These additions are not yet published to PyPI.
 
 - Controlled body versus heading-context experiments
 - BM25 lexical retrieval

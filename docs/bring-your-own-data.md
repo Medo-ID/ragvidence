@@ -1,5 +1,10 @@
 # Bring your own data
 
+For ordinary TXT/Markdown files or folders, start with the development build's
+[portable BM25 command](portable-file-usage.md). It needs no manually prepared
+workspace and supports unscored inspection. The schemas below are for reviewed
+workspace evaluation, which requires expected evidence.
+
 Start with a small reviewed slice—roughly 10–50 source units and 10–30 questions. The value comes from trustworthy labels, not corpus size.
 
 ## `sources.jsonl`
@@ -15,7 +20,8 @@ One JSON object per retrievable unit:
 - `heading_path`: authentic source headings; never generated gold-answer text.
 - `body`: original text used in the body-only baseline.
 - `evidence_ids`: reviewed facts/passages represented by this unit.
-- `metadata`: optional information; not searched in v1.
+- `metadata`: optional information; not generally indexed. The development
+  `contextual` representation explicitly indexes a reviewed `context_prefix`.
 
 ## `questions.jsonl`
 

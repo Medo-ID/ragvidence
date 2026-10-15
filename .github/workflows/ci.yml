@@ -21,10 +21,12 @@ jobs:
       - name: Sync locked dependencies
         run: uv sync --frozen --dev
       - name: Lint
-        run: uv run ruff check src tests
+        run: uv run ruff check src tests scripts
       - name: Test
         run: uv run pytest
       - name: Verify release fixtures
         run: uv run ragvi verify
       - name: Build distributions
         run: uv build
+      - name: Verify the installed portable command
+        run: uv run python scripts/check_portable_install.py

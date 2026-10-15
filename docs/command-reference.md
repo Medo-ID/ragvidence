@@ -11,7 +11,9 @@ Use `ragvi COMMAND --help` for the authoritative options installed with your ver
 | `ragvi quickstart` | Copy only the bundled heading-context exercise. |
 | `ragvi init NAME` | Create a named editable experiment. |
 | `ragvi validate WORKSPACE` | Validate schemas, unique IDs, answerability, and evidence references. |
+| `ragvi bm25 INPUT` | Development build: inspect TXT/Markdown files or folders and export reports without workspace setup. |
 | `ragvi benchmark WORKSPACE` | Run body and heading-context retrieval configurations. |
+| `ragvi experiment WORKSPACE CONFIG_FILE` | Run a JSON-configured retrieval pipeline with optional hybrid search, children, query variants and reranking. |
 | `ragvi inspect RUN --question ID` | Inspect ranked evidence for one question. |
 | `ragvi import-run WORKSPACE FILE --name NAME` | Normalize ranked results from an external retriever. |
 | `ragvi evaluate WORKSPACE RUN` | Calculate evidence-level metrics. |
@@ -30,3 +32,11 @@ ragvi workspace restore --help
 ```
 
 `--root` changes the managed workspace directory for commands that create or restore workspaces. Output files are never silently overwritten.
+
+See [Portable file usage](portable-file-usage.md) for `bm25` question flags,
+automatic HTML output, JSON/Markdown selection and the distinction between
+source diagnostics, unscored retrieval inspection and reviewed evaluation.
+
+`benchmark --strategies` accepts `bm25`, `semantic`, and `hybrid`, separated by commas.
+See [RAG technique coverage](rag-technique-coverage.md) for experiment settings,
+examples, implementation limits and techniques still missing from the reference resource.
