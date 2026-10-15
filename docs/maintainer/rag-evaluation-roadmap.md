@@ -1,7 +1,7 @@
 # Portable RAG diagnosis and technique comparison plan
 
-Date: 2026-10-15. Status: implementation started. The initial integrity foundation
-and portable BM25 TXT/Markdown workflow are implemented in development; later
+Date: 2026-10-15. Status: M1–M3 implemented in development. The integrity foundation,
+portable BM25, additional file loaders and portable configuration are available; later
 milestones remain planned. No new release has been published. See
 [implementation evidence](portable-implementation-evidence.md) for delivered scope.
 
@@ -11,7 +11,8 @@ This direction is feasible using the existing Python CLI, native retrieval
 strategies, provider adapters and self-contained report renderers. The product
 layers include ordinary-file ingestion, unlabeled question handling, shared
 application orchestration, exact context recording and automatic report creation.
-The initial portable implementation now covers TXT/Markdown and BM25; the original
+The portable implementation covers BM25 over TXT/Markdown, HTML, document JSON/JSONL,
+CSV and optional text PDFs; the original
 workspace loader still serves the existing reviewed-data workflows.
 
 The product promise is: **install once, diagnose a RAG technique on your own data,
@@ -234,6 +235,9 @@ absolute paths, Unicode/spaces, output overrides and no-overwrite. The report
 remains readable after cache removal. This milestone delivers a usable product slice.
 
 ### M3 — More input formats and portable configuration
+
+Delivered in development. See [verification evidence](portable-implementation-evidence.md)
+and [current usage](../portable-file-usage.md) for tested formats and extraction limits.
 
 Scope:
 

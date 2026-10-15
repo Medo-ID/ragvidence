@@ -2,7 +2,14 @@
 
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    field_validator,
+    model_serializer,
+    model_validator,
+)
 
 
 class StrictModel(BaseModel):
@@ -137,15 +144,32 @@ class ContextPassage(StrictModel):
 class InputPreparation(StrictModel):
     """Materialization settings used before retrieval indexing."""
 
-    implementation: Literal["portable-text-v1"] = "portable-text-v1"
+    implementation: Literal["portable-text-v1", "portable-files-v1"] = "portable-text-v1"
     length_unit: Literal["characters"] = "characters"
     chunk_size: int = Field(ge=1)
     chunk_overlap: int = Field(ge=0)
+    text_field: str | None = None
+    include_patterns: list[str] = Field(default_factory=list)
+    exclude_patterns: list[str] = Field(default_factory=list)
+    limits: dict[str, int] = Field(default_factory=dict)
+
+    @model_serializer(mode="wrap")
+    def serialize_preparation(self, handler):
+        data = handler(self)
+        if self.implementation == "portable-text-v1":
+            # Preserve identities of snapshots/runs written by the first portable release.
+            for key in ("text_field", "include_patterns", "exclude_patterns", "limits"):
+                data.pop(key, None)
+        return data
 
     @model_validator(mode="after")
     def check_overlap(self) -> "InputPreparation":
         if self.chunk_overlap >= self.chunk_size:
             raise ValueError("Chunk overlap must be smaller than chunk size")
+        if self.implementation == "portable-text-v1" and (
+            self.text_field or self.include_patterns or self.exclude_patterns or self.limits
+        ):
+            raise ValueError("Extended ingestion settings require portable-files-v1")
         return self
 
 

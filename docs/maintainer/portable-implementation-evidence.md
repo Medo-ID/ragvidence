@@ -1,7 +1,8 @@
-# Initial portable implementation evidence
+# Portable implementation evidence
 
-Date: 2026-10-15. Scope: initial M1 integrity foundation and M2 portable BM25
-workflow in the development source. No package has been published by this work.
+Date: 2026-10-15. Scope: M1 integrity foundation, M2 portable BM25 and M3 additional
+loaders/configuration in the development source. M1/M2 were committed as `4479a05`
+before starting M3. No package has been published by this work.
 
 ## Delivered behavior
 
@@ -24,6 +25,34 @@ uv run ragvi bm25 ./manual.txt --query "Reset instructions" --format html --form
   Actual input preparation settings are retained separately from retrieval settings.
 - Questions/output roots, hidden paths, links and generated run directories are
   excluded from source discovery. File/count/byte limits and skipped inputs are explicit.
+
+## M3 loaders and portable configuration
+
+- Offline HTML, document JSON/JSONL and CSV use separate parser adapters feeding
+  the same snapshot/chunk/retrieval/report service. Optional pypdf 6.20.1 extracts
+  text pages without OCR. Missing extras explain how to install them; no automatic
+  dependency installation occurs.
+- Source units retain original page, record, JSONL line, CSV row/physical line range
+  or HTML section/heading paths, file/text hashes and parser identity. The reports
+  show these locations and the exact extracted passages. Physical CSV starts remain
+  correct across blank lines and quoted multiline records; newline-ended passages
+  do not claim an extra line.
+- Only one unambiguous text/content/body field is selected automatically. Other or
+  ambiguous schemas require `--text-field`. Metadata stays separate from searchable
+  bodies; question/evaluation records and tool artifacts are rejected as documents.
+- Include/exclude patterns and file/byte/record/extracted-character budgets are
+  configurable. Skipped files, failed extractions and parser warnings are distinct
+  in terminal and exports. Global budgets fail rather than silently drop inputs.
+- CLI overrides environment, explicit config, user config and defaults, in that
+  order. Explicit dotenv values sit below process environment. Config-relative
+  paths, missing/invalid settings, list environment values and platform config paths
+  have tests. No cwd config/dotenv discovery occurs. Provider secrets are excluded
+  from all artifacts, including explicit-env-file runs.
+- Old `portable-text-v1` preparation serialization retains its original shape for
+  identity validation. New runs identify `portable-files-v1` and record ingestion policy.
+- Reviewed fixtures independently specify visible HTML, JSON records, multiline CSV,
+  JSONL physical lines and a manually authored three-page PDF with an image-only
+  middle page. Real parser tests cover empty, encrypted, malformed and limited PDFs.
 
 ## Shared architecture changes
 
@@ -49,6 +78,7 @@ uv run ragvi bm25 ./manual.txt --query "Reset instructions" --format html --form
 ## Verification
 
 ```bash
+uv sync --frozen --dev --extra pdf
 .venv/bin/ruff check src tests scripts
 .venv/bin/pytest
 .venv/bin/ragvi verify
@@ -57,7 +87,8 @@ uv build
 git diff --check
 ```
 
-The test suite contains **150 passing tests** at this delivery boundary. It includes
+The test suite contains **196 passing tests** with the PDF extra installed (150 at
+the M1/M2 commit boundary, plus 46 M3 checks). It includes
 cross-process hash-seed checks for dataset identities and saved evaluations;
 tampered artifacts; missing/duplicate questions; forged evidence/context; invalid
 provider vectors/indexes/caches; input extraction/offsets; question-file exclusion;
@@ -66,16 +97,16 @@ formats; escaped source content; and unchanged source files.
 
 The built wheel was installed into isolated temporary tool/bin directories and
 invoked as `ragvi` from an unrelated customer folder. Checks cover spaces and Unicode
-in paths, all three exports, source-only execution, installation verification and
-the existing tutorial. CI and release preparation run this same check. This run
+in paths, all three exports, source-only execution, HTML/JSON/JSONL/CSV loading,
+explicit configuration, missing optional PDF support, installation verification and
+the existing tutorial. CI and release preparation run this same check, and install
+the PDF extra for the real parser tests. These runs
 was on Linux; it is not evidence of Windows/macOS execution.
 
 ## Remaining roadmap work
 
-- Additional raw-file loaders: HTML, structured JSON/JSONL, CSV and optional PDFs.
 - Direct portable entry points and reviewed span-based scoring for other techniques,
   with a capability catalog and complete stage traces.
-- User-level configuration, explicit config/env-file options and further loader controls.
 - Multi-technique comparison/suite commands, split/slice aggregation, fair token
   budgets, uncertainty/resource summaries and decision reports.
 - Metadata filters, MMR, automatic rewriting and extractive compression.
@@ -83,4 +114,6 @@ was on Linux; it is not evidence of Windows/macOS execution.
 - Pinned model-revision fingerprints where provider APIs expose them, plus the
   wider model/OS coverage and release gates specified by later milestones.
 
-These remaining features are not claimed by the portable BM25 implementation.
+These remaining features are not claimed by the portable BM25 implementation. PDF/
+HTML extraction does not establish visual/table/column fidelity; input limits are
+not a memory sandbox. Windows/macOS installed execution remains unverified.

@@ -1,8 +1,9 @@
 # Portable file and folder CLI design
 
-Status: BM25 over TXT/Markdown is implemented in the development source, with
-questions, automatic passages and HTML/JSON/Markdown reports. It is not yet published
-to PyPI. Other direct technique commands and loaders below remain proposed. See
+Status: M1–M3 are implemented in the development source: portable BM25 over TXT,
+Markdown, HTML, document JSON/JSONL, CSV and optional text PDFs, with questions,
+automatic passages, portable configuration and HTML/JSON/Markdown reports. It is
+not yet published to PyPI. Other direct technique commands below remain proposed. See
 [current usage](portable-file-usage.md) for the implemented command.
 
 This specifies

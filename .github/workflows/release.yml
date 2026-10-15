@@ -29,9 +29,9 @@ jobs:
         run: test "${GITHUB_REF_NAME#v}" = "$(uv version --short)"
       - name: Test and build
         run: |
-          uv sync --frozen --dev
+          uv sync --frozen --dev --extra pdf
           uv run ruff check src tests scripts
-          uv run pytest
+          uv run --extra pdf pytest
           uv run ragvi verify
           uv build
           uv run python scripts/check_portable_install.py

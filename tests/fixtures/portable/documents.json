@@ -1,0 +1,4 @@
+[
+  {"id": "reset", "text": "Hold reset for eight seconds.\nThen release.", "metadata": {"category": "Device α"}},
+  {"id": "power", "text": "Use USB-C power.", "tags": ["power", "cable"]}
+]

@@ -61,7 +61,8 @@ uv run ragvi bm25 ./manual.txt --query "How do I reset the device?"
 uv run ragvi bm25 ./docs --questions ./questions.txt --format html --format json
 ```
 
-It reads TXT/Markdown, prepares passages automatically, prints retrieved results,
+It reads TXT, Markdown, HTML, document JSON/JSONL and CSV (text PDFs with the optional
+`pdf` extra), prepares passages automatically, prints retrieved results,
 and writes reports under `ragvi-reports/`. No workspace setup is needed. Without
 questions it produces source diagnostics; without reviewed evidence it does not
 invent retrieval-quality scores. After installing a wheel built from this source,

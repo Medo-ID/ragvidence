@@ -1,17 +1,42 @@
 """Deterministic, bounded discovery which never follows symbolic links."""
 
 import os
+from fnmatch import fnmatchcase
 from pathlib import Path
 
 from ragvidence.ingestion.models import InputNotice
 
-TEXT_EXTENSIONS = {".txt", ".md", ".markdown"}
+SUPPORTED_EXTENSIONS = {
+    ".txt",
+    ".md",
+    ".markdown",
+    ".html",
+    ".htm",
+    ".json",
+    ".jsonl",
+    ".csv",
+    ".pdf",
+}
 EXCLUDED_DIRECTORIES = {"ragvi-reports", "workspaces", "node_modules", "__pycache__"}
 
 
 def discover_files(
-    source: Path, *, exclude: list[Path], max_files: int = 1000
+    source: Path,
+    *,
+    exclude: list[Path],
+    max_files: int = 1000,
+    include_patterns: list[str] | None = None,
+    exclude_patterns: list[str] | None = None,
 ) -> tuple[list[Path], list[InputNotice]]:
+    if max_files < 1:
+        raise ValueError("max_files must be positive")
+
+    def selected(path: Path) -> bool:
+        name = path.relative_to(source if source.is_dir() else source.parent).as_posix()
+        return (
+            not include_patterns or any(fnmatchcase(name, pattern) for pattern in include_patterns)
+        ) and not any(fnmatchcase(name, pattern) for pattern in (exclude_patterns or []))
+
     if source.is_symlink():
         raise ValueError(f"Symbolic-link input is not supported: {source}")
     if not source.exists():
@@ -21,8 +46,13 @@ def discover_files(
     if source.is_file():
         if source.resolve() in excluded:
             raise ValueError("The source input cannot also be a question file or output directory")
-        if source.suffix.lower() not in TEXT_EXTENSIONS:
-            raise ValueError(f"Unsupported input {source.suffix!r}; currently use TXT or Markdown")
+        if source.suffix.lower() not in SUPPORTED_EXTENSIONS:
+            raise ValueError(
+                f"Unsupported input {source.suffix!r}; "
+                "use TXT, Markdown, HTML, JSON, JSONL, CSV or PDF"
+            )
+        if not selected(source):
+            raise ValueError("Explicit input does not match include/exclude patterns")
         return [source], skipped
     if not source.is_dir():
         raise ValueError(f"Input must be a regular file or directory: {source}")
@@ -55,8 +85,10 @@ def discover_files(
             path = Path(root) / name
             if name.startswith(".") or path.is_symlink() or path.resolve() in excluded:
                 reason = "Excluded file or symbolic link"
-            elif path.suffix.lower() not in TEXT_EXTENSIONS:
+            elif path.suffix.lower() not in SUPPORTED_EXTENSIONS:
                 reason = "Unsupported file type"
+            elif not selected(path):
+                reason = "Excluded by include/exclude patterns"
             else:
                 files.append(path)
                 if len(files) > max_files:

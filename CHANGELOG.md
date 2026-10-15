@@ -4,6 +4,12 @@ All notable user-facing changes are documented here.
 
 ## Unreleased
 
+- Add offline HTML, document JSON/JSONL and CSV ingestion plus optional `pdf`
+  extraction, with page/record/row/heading locations and identified parsers.
+- Add explicit text-field selection, document/schema boundaries, input patterns,
+  configurable resource limits and separate skipped/failed/warning notices.
+- Add portable user/config/environment/CLI precedence and explicit `--env-file`;
+  configuration paths resolve relative to their files and credentials stay out of artifacts.
 - Add `ragvi bm25 INPUT` for ordinary UTF-8 TXT/Markdown files and folders, with
   question flags/files/prompts, automatic passages and HTML/JSON/Markdown exports.
 - Separate unscored questions from reviewed evaluation labels; show explicit

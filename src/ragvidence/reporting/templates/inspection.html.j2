@@ -32,7 +32,7 @@
     <p>Technique: {{ report.manifest.config.strategy | upper }} · k={{ report.manifest.config.k }}</p>
     <p class="meta">Passage size: {{ report.preparation.chunk_size }} characters · Overlap: {{ report.preparation.chunk_overlap }} characters</p>
     <div class="metrics">
-      <span>{{ report.input.document_count }} source documents</span>
+      <span>{{ report.input.file_count }} files · {{ report.input.document_count }} source units</span>
       <span>{{ report.input.passage_count }} passages</span>
       <span>{{ report.questions | length }} questions</span>
       <span>{{ report.input.source_characters }} source characters</span>
@@ -47,17 +47,22 @@
     {% for hit in question.hits %}
     <article class="hit">
       <h3>#{{ hit.rank }} · <span class="path">{{ hit.source_path }}</span></h3>
-      <p class="meta">Score: {{ "%.6f" | format(hit.score) }} · Lines {{ hit.line_start }}–{{ hit.line_end }} · Characters {{ hit.start }}–{{ hit.end }}</p>
+      <p class="meta">Score: {{ "%.6f" | format(hit.score) }} · {{ hit.location_label }} · Extracted lines {{ hit.line_start }}–{{ hit.line_end }} · Characters {{ hit.start }}–{{ hit.end }}</p>
       {% if hit.heading_path %}<p>{{ hit.heading_path | join(" › ") }}</p>{% endif %}
       <pre>{{ hit.text }}</pre>
     </article>
     {% endfor %}
   </section>
   {% endfor %}
+  <section>
+    <h2>Extracted sources</h2>
+    {% for source in report.input.sources %}<p class="meta"><span class="path">{{ source.source_path }}</span> · {{ source.location_label }} · {{ source.loader }} · {{ source.characters }} characters</p>{% endfor %}
+  </section>
   {% if report.input.skipped %}
   <section>
-    <h2>Skipped inputs</h2>
-    <ul>{% for item in report.input.skipped %}<li><span class="path">{{ item.path }}</span>: {{ item.reason }}</li>{% endfor %}</ul>
+    <h2>Input notices</h2>
+    <p>{{ report.input.skipped_count }} skipped · {{ report.input.failed_count }} failed · {{ report.input.warning_count }} warnings</p>
+    <ul>{% for item in report.input.skipped %}<li>{{ item.kind }} · <span class="path">{{ item.path }}</span>: {{ item.reason }}</li>{% endfor %}</ul>
   </section>
   {% endif %}
   <section>

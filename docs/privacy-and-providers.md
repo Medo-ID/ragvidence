@@ -12,7 +12,8 @@ For semantic retrieval, choose `--provider ollama` or `--provider openai_compati
 
 Before sharing a report, inspect it for confidential source names, metadata and previews. “Local by default” does not make an exported report safe automatically.
 
-The portable BM25 path ignores `.env` in the input/current directory, never sends
+The portable BM25 path ignores `.env` in the input/current directory unless explicitly
+selected with `--env-file`. It never sends
 data to a provider, and leaves original files unchanged. Portable report exports
 contain full returned passages. Its internal `snapshot.json` contains original
 loaded text; keep internal artifacts separate from the selected shareable report.

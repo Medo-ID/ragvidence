@@ -68,17 +68,27 @@ def run_portable(
     chunk_size: int = 500,
     chunk_overlap: int = 50,
     cache_dir: Path | None = None,
+    ingestion_options: dict[str, Any] | None = None,
+    excluded_inputs: list[Path] | None = None,
+    settings: Settings | None = None,
 ) -> PortableResult:
     selected_formats = normalize_formats(formats)
-    exclude = [output_root, *([question_file] if question_file else [])]
-    snapshot = load_corpus(source, exclude=exclude, size=chunk_size, overlap=chunk_overlap)
+    exclude = [
+        output_root,
+        cache_dir or default_cache_dir(),
+        *([question_file] if question_file else []),
+        *(excluded_inputs or []),
+    ]
+    snapshot = load_corpus(
+        source, exclude=exclude, size=chunk_size, overlap=chunk_overlap, **(ingestion_options or {})
+    )
     name = source.resolve().name
     directory = _create_output_directory(output_root, source.resolve().stem)
     try:
         write_json(directory / "snapshot.json", snapshot)
         write_json(directory / "questions.json", questions)
         # The portable path deliberately ignores any .env in the data directory.
-        settings = Settings(_env_file=None)
+        settings = settings or Settings(_env_file=None)
         identity = content_hash({"sources": snapshot.passages, "questions": questions})
         level = "retrieval_inspection" if questions else "ingestion_only"
         run = execute_retrieval(

@@ -27,11 +27,13 @@ def check_install(wheel: Path, directory: Path) -> None:
     client.mkdir()
     tool_bin = directory / "bin"
     env = {
-        **os.environ,
+        **{key: value for key, value in os.environ.items() if not key.startswith("RAGVIDENCE_")},
         "UV_TOOL_DIR": str(directory / "tools"),
         "UV_TOOL_BIN_DIR": str(tool_bin),
         "PYTHONPATH": "",
         "PATH": str(tool_bin) + os.pathsep + os.environ.get("PATH", ""),
+        "XDG_CONFIG_HOME": str(directory / "config"),
+        "APPDATA": str(directory / "roaming"),
     }
     run(
         ["uv", "tool", "install", "--offline", "--python", sys.executable, str(wheel)],
@@ -71,6 +73,44 @@ def check_install(wheel: Path, directory: Path) -> None:
     assert "eight seconds" in report["questions"][0]["hits"][0]["text"]
     assert (root / "report.html").is_file() and (root / "report.md").is_file()
     assert source.read_text(encoding="utf-8") == text
+    # Exercise all dependency-free structured loaders from the installed wheel.
+    mixed = client / "mixed data"
+    mixed.mkdir()
+    (mixed / "manual.html").write_text("<h1>Reset</h1><p>Hold for eight seconds.</p>")
+    (mixed / "documents.json").write_text('[{"text":"Reset for eight seconds."}]')
+    (mixed / "records.jsonl").write_text('{"body":"Reset for eight seconds."}\n')
+    (mixed / "rows.csv").write_text("id,content\nreset,Reset for eight seconds.\n")
+    options = client / "portable.toml"
+    options.write_text('k = 1\nformats = ["json"]\noutput = "mixed-results"\n')
+    run(
+        [
+            executable,
+            "bm25",
+            str(mixed),
+            "--query",
+            "reset",
+            "--config",
+            str(options),
+            "--no-input",
+        ],
+        cwd=client,
+        env=env,
+    )
+    mixed_report = next((client / "mixed-results").glob("*/report.json"))
+    mixed_data = json.loads(mixed_report.read_text())
+    assert mixed_data["input"]["file_count"] == 4
+    assert mixed_data["manifest"]["config"]["k"] == 1
+    assert mixed_data["questions"][0]["hits"][0]["location"]
+    pdf = client / "optional.pdf"
+    pdf.write_bytes(b"%PDF-1.4\n")
+    missing_extra = subprocess.run(
+        [executable, "bm25", str(pdf), "--no-input"],
+        cwd=client,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+    assert missing_extra.returncode != 0 and "ragvidence[pdf]" in missing_extra.stdout
     run(
         [executable, "bm25", str(source), "--no-input", "--output", str(client / "source-only")],
         cwd=client,
@@ -81,7 +121,8 @@ def check_install(wheel: Path, directory: Path) -> None:
     print(output.strip())
     print(
         "PASS: installed command, unrelated directory, Unicode/space paths, all exports, "
-        "source-only mode, unchanged input, verification and legacy tutorial"
+        "source-only mode, HTML/JSON/JSONL/CSV, explicit configuration, missing PDF extra, "
+        "unchanged input, verification and legacy tutorial"
     )
 
 

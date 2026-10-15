@@ -9,6 +9,7 @@ from ragvidence.models import InputPreparation, SourceUnit, StrictModel
 class InputNotice(StrictModel):
     path: str
     reason: str
+    kind: Literal["skipped", "failed", "warning"] = "skipped"
 
 
 class CorpusSnapshot(StrictModel):

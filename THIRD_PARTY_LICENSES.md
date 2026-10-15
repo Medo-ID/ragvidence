@@ -1,6 +1,8 @@
 # Resolved dependency license inventory
 
-Generated from the locked Free and semantic runtime environment for version 0.1.0. Package metadata is informational; upstream license files remain authoritative.
+Generated from the locked Free and semantic runtime environment for version 0.1.0;
+extended with the optional PDF runtime in development. Package metadata is
+informational; upstream license files remain authoritative.
 
 | Name               | Version   | License                                            | URL                                                                  |
 |--------------------|-----------|----------------------------------------------------|----------------------------------------------------------------------|
@@ -39,6 +41,7 @@ Generated from the locked Free and semantic runtime environment for version 0.1.
 | pydantic-settings  | 2.15.0    | MIT                                                | https://github.com/pydantic/pydantic-settings                        |
 | pydantic_core      | 2.50.1    | MIT                                                | https://github.com/pydantic                                          |
 | python-dotenv      | 1.2.4     | BSD-3-Clause                                       | https://github.com/theskumar/python-dotenv                           |
+| pypdf (optional)   | 6.20.1    | BSD-3-Clause                                       | https://github.com/py-pdf/pypdf                                     |
 | requests           | 2.34.2    | Apache Software License                            | https://github.com/psf/requests                                      |
 | rich               | 14.3.4    | MIT License                                        | https://github.com/Textualize/rich                                   |
 | scipy              | 1.18.1    | BSD License                                        | https://scipy.org/                                                   |

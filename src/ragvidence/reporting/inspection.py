@@ -8,6 +8,26 @@ from ragvidence.ingestion.models import CorpusSnapshot
 from ragvidence.models import ExperimentRun, SearchQuestion
 
 
+def source_location(metadata: dict[str, Any]) -> str:
+    """Human location in the file; character/line offsets refer to extracted text."""
+    location = metadata.get("location", {})
+    parts = []
+    for field, label in (
+        ("page", "Page"),
+        ("record", "Record"),
+        ("row", "Row"),
+        ("html_section", "HTML section"),
+        ("file_line", "File line"),
+    ):
+        if field in location:
+            parts.append(f"{label} {location[field]}")
+    if "file_line_start" in location:
+        parts.append(f"File lines {location['file_line_start']}–{location['file_line_end']}")
+    if "text_field" in location:
+        parts.append(f"Field {location['text_field']}")
+    return " · ".join(parts) or "Source text"
+
+
 def build_inspection_report(
     snapshot: CorpusSnapshot, questions: list[SearchQuestion], run: ExperimentRun, *, name: str
 ) -> dict[str, Any]:
@@ -24,6 +44,9 @@ def build_inspection_report(
                     "text": context.text,
                     "heading_path": context.heading_path,
                     "source_path": source.metadata["source_path"],
+                    "location": source.metadata.get("location", {}),
+                    "location_label": source_location(source.metadata),
+                    "loader": source.metadata["loader"],
                     "start": context.start,
                     "end": context.end,
                     "line_start": source.metadata["line_start"],
@@ -60,10 +83,28 @@ def build_inspection_report(
             "name": name,
             "corpus_hash": snapshot.corpus_hash,
             "document_count": len(snapshot.documents),
+            "file_count": len({source.metadata["source_path"] for source in snapshot.documents}),
             "passage_count": len(snapshot.passages),
             "source_characters": sum(len(source.body) for source in snapshot.documents),
             "indexed_characters": sum(len(source.body) for source in snapshot.passages),
             "skipped": [notice.model_dump() for notice in snapshot.skipped],
+            "skipped_count": sum(notice.kind == "skipped" for notice in snapshot.skipped),
+            "failed_count": sum(notice.kind == "failed" for notice in snapshot.skipped),
+            "warning_count": sum(notice.kind == "warning" for notice in snapshot.skipped),
+            "sources": [
+                {
+                    "source_unit_id": source.source_unit_id,
+                    "source_path": source.metadata["source_path"],
+                    "location": source.metadata.get("location", {}),
+                    "location_label": source_location(source.metadata),
+                    "heading_path": source.heading_path,
+                    "loader": source.metadata["loader"],
+                    "file_sha256": source.metadata["file_sha256"],
+                    "text_hash": source.metadata["text_hash"],
+                    "characters": len(source.body),
+                }
+                for source in snapshot.documents
+            ],
         },
         "questions": results,
         "observations": (
@@ -76,6 +117,8 @@ def build_inspection_report(
             "answer correctness are not scored.",
             "Retriever scores describe this ranking; they are not probabilities of correctness.",
             "Chunk sizes and context measurements count characters, not model tokens.",
+            "Character and text-line offsets refer to the extracted page/record/section, "
+            "not byte offsets in the original file. Extraction does not verify layout fidelity.",
         ],
     }
 
@@ -118,15 +161,23 @@ def render_inspection_markdown(report: dict[str, Any]) -> str:
                     "",
                     f"### Rank {hit['rank']} · {escape(hit['source_path'])}",
                     "",
-                    f"Score: {hit['score']:.6f} · Lines {hit['line_start']}–{hit['line_end']}",
+                    f"Score: {hit['score']:.6f} · {escape(hit['location_label'])} · "
+                    f"Extracted lines {hit['line_start']}–{hit['line_end']}",
                     "",
                     "<pre>" + escape(hit["text"]) + "</pre>",
                 ]
             )
+    lines.extend(["", "## Extracted sources", ""])
+    lines.extend(
+        f"- {escape(item['source_path'])}: {escape(item['location_label'])} · "
+        f"{escape(item['loader'])} · {item['characters']} characters"
+        for item in info["sources"]
+    )
     if info["skipped"]:
-        lines.extend(["", "## Skipped inputs", ""])
+        lines.extend(["", "## Input notices", ""])
         lines.extend(
-            f"- {escape(item['path'])}: {escape(item['reason'])}" for item in info["skipped"]
+            f"- {escape(item['kind'])} · {escape(item['path'])}: {escape(item['reason'])}"
+            for item in info["skipped"]
         )
     lines.extend(["", "## Limitations", ""])
     lines.extend(f"- {escape(item)}" for item in report["limitations"])
