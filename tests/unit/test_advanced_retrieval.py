@@ -316,7 +316,7 @@ def test_runner_composes_hybrid_children_variants_and_reranking(monkeypatch):
             return np.asarray([1, 1], dtype=np.float32)
 
     class Reranker:
-        def __init__(self, model_name):
+        def __init__(self, model_name, *, cache_dir=None):
             assert model_name == "fake-reranker"
 
         def rerank(self, query, hits, texts, *, k):

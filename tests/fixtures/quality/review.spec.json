@@ -1,0 +1,27 @@
+{
+  "evidence": [
+    {"evidence_id":"RESET","quotes":[{"id":"reset","text":"eight seconds"}]},
+    {"evidence_id":"POWER","quotes":[{"id":"power","text":"USB-C"},{"id":"power","text":"Do not use the barrel connector."}]},
+    {"evidence_id":"WARRANTY","quotes":[{"id":"warranty","text":"two years"}]},
+    {"evidence_id":"WATER","quotes":[{"id":"warranty","text":"excludes water damage"}]},
+    {"evidence_id":"OFFLINE","quotes":[{"id":"network","text":"The orange indicator means the device is offline."}]},
+    {"evidence_id":"ONLINE","quotes":[{"id":"network","text":"A green indicator means a network connection is available."}]},
+    {"evidence_id":"BACKUP","quotes":[{"id":"backup","text":"Before upgrading firmware, export a configuration backup."}]},
+    {"evidence_id":"TOKENS","quotes":[{"id":"security","text":"Settings > Security"},{"id":"security","text":"Existing tokens are revoked immediately."}]},
+    {"evidence_id":"RESTRICTION","quotes":[{"id":"restriction","text":"Do not reset while firmware installation is running."}]}
+  ],
+  "questions": [
+    {"question_id":"RESET-DIRECT","question":"For Orion 4.2, how many seconds should I hold the reset button?","split":"dev","answerable":true,"required_evidence_ids":["RESET"],"tags":["identifier","reset"]},
+    {"question_id":"RESET-PARAPHRASE","question":"How long must I press the recessed pairing control?","split":"heldout","answerable":true,"required_evidence_ids":["RESET"],"tags":["paraphrase","reset"]},
+    {"question_id":"POWER","question":"Which power connector does Orion 4.2 need and which connector should I avoid?","split":"dev","answerable":true,"required_evidence_ids":["POWER"],"tags":["qualification"]},
+    {"question_id":"WARRANTY","question":"How long does warranty coverage last after purchase?","split":"dev","answerable":true,"required_evidence_ids":["WARRANTY"]},
+    {"question_id":"WATER","question":"Does the warranty cover damage from water?","split":"heldout","answerable":true,"required_evidence_ids":["WATER"],"tags":["qualification"]},
+    {"question_id":"OFFLINE","question":"What does an orange status light tell me?","split":"dev","answerable":true,"required_evidence_ids":["OFFLINE"]},
+    {"question_id":"ONLINE","question":"Which indicator shows that a network connection is available?","split":"heldout","answerable":true,"required_evidence_ids":["ONLINE"]},
+    {"question_id":"BACKUP","question":"What should I export before I install a firmware upgrade?","split":"dev","answerable":true,"required_evidence_ids":["BACKUP"]},
+    {"question_id":"TOKENS","question":"Where can an administrator rotate access tokens, and what happens to existing tokens?","split":"heldout","answerable":true,"required_evidence_ids":["TOKENS"],"tags":["multiple_spans"]},
+    {"question_id":"RESET-SAFE","question":"How long does reset take, and when must I avoid resetting the device?","split":"heldout","answerable":true,"required_evidence_ids":["RESET","RESTRICTION"],"tags":["multiple_sources","reset"]},
+    {"question_id":"RESTRICTION","question":"May I reset while firmware installation is running?","split":"dev","answerable":true,"required_evidence_ids":["RESTRICTION"]},
+    {"question_id":"BATTERY","question":"What is the battery capacity in milliamp hours?","split":"heldout","answerable":false,"tags":["unanswerable"]}
+  ]
+}

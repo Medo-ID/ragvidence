@@ -4,6 +4,17 @@ All notable user-facing changes are documented here.
 
 ## Unreleased
 
+- Add portable semantic, hybrid, rerank, parent-child, heading-context, contextual,
+  supplied multi-query and existing-system import commands with a capability catalog.
+- Score reviewed evidence against complete unions of original text spans; preserve
+  labels across chunk changes and expose dev/heldout denominators without answer scores.
+- Record stage candidates/scores/timings, nested fusion contributions and exact
+  context selection. Add distinct stage limits and whole-passage context budgets
+  with exact character or identified local-tokenizer counts.
+- Verify external original spans before scoring; label ID-only results as registered-unit
+  proxies and retain unavailable timings. Freeze private search sources/prefixes.
+- Stabilize BM25 ties in frozen input order, including empty/OOV queries. Measure
+  complete message contents in optional workspace generation without inventing provider usage.
 - Add offline HTML, document JSON/JSONL and CSV ingestion plus optional `pdf`
   extraction, with page/record/row/heading locations and identified parsers.
 - Add explicit text-field selection, document/schema boundaries, input patterns,

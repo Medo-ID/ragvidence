@@ -11,6 +11,7 @@ from pathlib import Path
 
 from ragvidence import __version__
 from ragvidence.artifacts import HASH_ALGORITHM, canonical_bytes, write_json
+from ragvidence.budgets import ContextCounter, select_context
 from ragvidence.config import Settings
 from ragvidence.context import context_fields
 from ragvidence.data import canonical_dataset_bytes, load_dataset, validate_search_inputs
@@ -21,6 +22,7 @@ from ragvidence.models import (
     RunManifest,
     SearchQuestion,
     SourceUnit,
+    StageTrace,
     StrategyConfig,
 )
 from ragvidence.pipeline import build_strategy, resolve_config
@@ -78,11 +80,14 @@ def execute_retrieval(
     if strategy:
         strategy.index(records)
     reranker = (
-        FastEmbedReranker(config.reranker_model) if questions and config.reranker_model else None
+        FastEmbedReranker(config.reranker_model, cache_dir=cache_dir / "models")
+        if questions and config.reranker_model
+        else None
     )
     index_ms = (time.perf_counter() - started) * 1000 if strategy is not None else None
     texts = {record.source.source_unit_id: record.searchable_text for record in records}
     sources_by_id = {source.source_unit_id: source for source in sources}
+    counter = ContextCounter(config.tokenizer_file, config.tokenizer_hash)
     query_runs = []
     for question in questions:
         query_started = time.perf_counter()
@@ -97,18 +102,67 @@ def execute_retrieval(
                 ]
             )
         )
-        depth = candidate_k if reranker or len(queries) > 1 else config.k
-        rankings = [strategy.search(query, k=depth) for query in queries]
+        depth = config.query_k or (
+            candidate_k if reranker or len(queries) > 1 or config.context_budget else config.k
+        )
+        rankings, stages = [], []
+        for query in queries:
+            stage_started = time.perf_counter()
+            ranking = strategy.search(query, k=depth)
+            rankings.append(ranking)
+            stages.extend(getattr(strategy, "last_trace", []))
+            stages.append(
+                StageTrace(
+                    name="retrieval",
+                    hits=ranking,
+                    elapsed_ms=(time.perf_counter() - stage_started) * 1000,
+                    details={"query": query, "limit": depth},
+                )
+            )
+        stage_started = time.perf_counter()
         hits = (
             fuse_rankings(rankings, k=depth, constant=config.rrf_constant)
             if len(rankings) > 1
             else rankings[0]
         )
+        if len(rankings) > 1:
+            stages.append(
+                StageTrace(
+                    name="multi_query_fusion",
+                    hits=hits,
+                    elapsed_ms=(time.perf_counter() - stage_started) * 1000,
+                )
+            )
         if reranker:
-            hits = reranker.rerank(question.question, hits, texts, k=config.k)
-        hits = hits[: config.k]
+            stage_started = time.perf_counter()
+            pool = hits[: config.rerank_k or candidate_k]
+            hits = reranker.rerank(question.question, pool, texts, k=len(pool))
+            stages.append(
+                StageTrace(
+                    name="reranking",
+                    hits=hits,
+                    elapsed_ms=(time.perf_counter() - stage_started) * 1000,
+                    details={
+                        "query": question.question,
+                        "input_ids": [hit.source_unit_id for hit in pool],
+                        "limit": config.rerank_k or candidate_k,
+                    },
+                )
+            )
         if any(hit.source_unit_id not in sources_by_id for hit in hits):
             raise ValueError("Retriever returned an unknown source ID")
+        stage_started = time.perf_counter()
+        hits, measurement = select_context(
+            hits, sources_by_id, k=config.k, budget=config.context_budget, counter=counter
+        )
+        stages.append(
+            StageTrace(
+                name="context_selection",
+                hits=hits,
+                elapsed_ms=(time.perf_counter() - stage_started) * 1000,
+                details=measurement,
+            )
+        )
         hits = [
             hit.model_copy(update={"evidence_ids": sources_by_id[hit.source_unit_id].evidence_ids})
             for hit in hits
@@ -120,14 +174,18 @@ def execute_retrieval(
                 hits=hits,
                 query_time_ms=(time.perf_counter() - query_started) * 1000,
                 search_queries=queries,
+                stages=stages,
+                context_measurement=measurement,
                 **context,
             )
         )
-    timestamp = datetime.now(UTC).replace(microsecond=0).isoformat()
-    run_key = canonical_bytes(
-        {"config": config, "dataset_hash": dataset_hash, "timestamp": datetime.now(UTC).isoformat()}
-    )
     warnings = []
+    if config.strategy in {"semantic", "hybrid"} or config.reranker_model:
+        warnings.append(
+            "Model adapters may truncate embedding/reranking inputs; exact truncation "
+            "counts are unavailable. Evidence scores describe returned original text, "
+            "not proof every character was encoded by a model."
+        )
     if config.child_splitter != "none":
         warnings.append(
             "Child retrieval returns full parent source units. Evidence metrics describe "
@@ -142,27 +200,59 @@ def execute_retrieval(
             "independent of evidence labels when preparing variants."
         )
     return ExperimentRun(
-        manifest=RunManifest(
-            schema_version=2,
-            hash_algorithm=HASH_ALGORITHM,
-            evaluation_level=evaluation_level,
-            run_id=hashlib.sha256(run_key).hexdigest()[:12],
-            created_at=timestamp,
-            product_version=__version__,
-            python_version=sys.version.split()[0],
-            platform=platform.platform(),
+        manifest=build_manifest(
+            sources,
+            questions,
+            config,
             dataset_hash=dataset_hash,
-            corpus_hash=corpus_hash or corpus_identity(sources),
-            questions_hash=question_identity(questions),
+            evaluation_level=evaluation_level,
             references_hash=references_hash,
-            representation_hash=representation_identity(sources, config),
-            configuration_hash=configuration_identity(config, input_preparation),
+            corpus_hash=corpus_hash,
             input_preparation=input_preparation,
-            config=config,
-            index_time_ms=index_ms,
+            index_ms=index_ms,
             warnings=warnings,
         ),
         queries=query_runs,
+    )
+
+
+def build_manifest(
+    sources: list[SourceUnit],
+    questions: list[SearchQuestion],
+    config: StrategyConfig,
+    *,
+    dataset_hash: str,
+    evaluation_level: str,
+    references_hash: str | None = None,
+    corpus_hash: str | None = None,
+    input_preparation: InputPreparation | None = None,
+    index_ms: float | None = None,
+    warnings: list[str] | None = None,
+) -> RunManifest:
+    """Record common provenance for executed and imported portable runs."""
+    timestamp = datetime.now(UTC).replace(microsecond=0).isoformat()
+    run_key = canonical_bytes(
+        {"config": config, "dataset_hash": dataset_hash, "timestamp": datetime.now(UTC).isoformat()}
+    )
+    return RunManifest(
+        schema_version=2,
+        hash_algorithm=HASH_ALGORITHM,
+        evaluation_level=evaluation_level,
+        run_id=hashlib.sha256(run_key).hexdigest()[:12],
+        created_at=timestamp,
+        product_version=__version__,
+        python_version=sys.version.split()[0],
+        platform=platform.platform(),
+        dataset_hash=dataset_hash,
+        corpus_hash=corpus_hash or corpus_identity(sources),
+        questions_hash=question_identity(questions),
+        references_hash=references_hash,
+        representation_hash=representation_identity(sources, config),
+        configuration_hash=configuration_identity(config, input_preparation),
+        input_preparation=input_preparation,
+        config=config,
+        index_time_ms=index_ms,
+        warnings=warnings or [],
     )
 
 

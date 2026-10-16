@@ -1,17 +1,21 @@
 """Optional local cross-encoder reranking of retrieved candidates."""
 
 import math
+from pathlib import Path
 
 from ragvidence.models import RetrievalHit
 
 
 class FastEmbedReranker:
-    def __init__(self, model_name: str) -> None:
+    def __init__(self, model_name: str, *, cache_dir: Path | None = None) -> None:
         try:
             from fastembed.rerank.cross_encoder import TextCrossEncoder
         except ImportError as exc:
-            raise RuntimeError("Local reranking requires: uv sync --extra semantic") from exc
-        self._model = TextCrossEncoder(model_name=model_name)
+            raise RuntimeError("Local reranking requires 'ragvidence[semantic]'") from exc
+        self._model = TextCrossEncoder(
+            model_name=model_name,
+            **({"cache_dir": str(cache_dir)} if cache_dir is not None else {}),
+        )
 
     def rerank(
         self, query: str, hits: list[RetrievalHit], texts: dict[str, str], *, k: int

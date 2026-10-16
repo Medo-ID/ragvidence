@@ -1,0 +1,9 @@
+{
+  "PORTABLE-RESET": [
+    "pairing reset duration",
+    "hold reset button"
+  ],
+  "PORTABLE-POWER": [
+    "power USB connector"
+  ]
+}

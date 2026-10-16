@@ -23,7 +23,9 @@ class SemanticStrategy:
         provider: EmbeddingProvider | None = None,
     ) -> None:
         self.model_name = model_name
-        self._provider = provider or FastEmbedProvider(model_name)
+        self._provider = provider or FastEmbedProvider(
+            model_name, cache_dir=cache_dir.parent / "models" if cache_dir else None
+        )
         self._cache_dir = cache_dir
         self._records: list[RetrievalRecord] = []
         self._vectors: np.ndarray | None = None

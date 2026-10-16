@@ -12,6 +12,13 @@ Use `ragvi COMMAND --help` for the authoritative options installed with your ver
 | `ragvi init NAME` | Create a named editable experiment. |
 | `ragvi validate WORKSPACE` | Validate schemas, unique IDs, answerability, and evidence references. |
 | `ragvi bm25 INPUT` | Development build: inspect TXT/Markdown, HTML, document JSON/JSONL, CSV or optional text PDFs and export reports without workspace setup. |
+| `ragvi techniques` | List portable techniques and requirements; `--format json` for automation. |
+| `ragvi semantic INPUT`, `ragvi hybrid INPUT` | Portable dense cosine or weighted lexical/dense fusion. |
+| `ragvi rerank INPUT` | Portable cross-encoder reranking with an explicit model. |
+| `ragvi parent-child INPUT` | Retrieve small children and return full original source units. |
+| `ragvi heading-context INPUT`, `ragvi contextual INPUT` | Index authentic headings or supplied reviewed prefixes. |
+| `ragvi multi-query INPUT` | Fuse original questions and supplied variants. |
+| `ragvi import-data INPUT` | Verify external original-span results or explicitly limited ID-only proxies. |
 | `ragvi benchmark WORKSPACE` | Run body and heading-context retrieval configurations. |
 | `ragvi experiment WORKSPACE CONFIG_FILE` | Run a JSON-configured retrieval pipeline with optional hybrid search, children, query variants and reranking. |
 | `ragvi inspect RUN --question ID` | Inspect ranked evidence for one question. |
@@ -36,6 +43,8 @@ ragvi workspace restore --help
 See [Portable file usage](portable-file-usage.md) for `bm25` question flags,
 automatic HTML output, JSON/Markdown selection and the distinction between
 source diagnostics, unscored retrieval inspection and reviewed evaluation.
+See [Portable techniques](portable-techniques.md) for `--reviewed`, stage limits,
+source-prefix/query-variant schemas, tokenizer budgets and exact context imports.
 
 `benchmark --strategies` accepts `bm25`, `semantic`, and `hybrid`, separated by commas.
 See [RAG technique coverage](rag-technique-coverage.md) for experiment settings,

@@ -1,8 +1,9 @@
 # Bring your own data
 
-For ordinary TXT/Markdown files or folders, start with the development build's
-[portable BM25 command](portable-file-usage.md). It needs no manually prepared
-workspace and supports unscored inspection. The schemas below are for reviewed
+For ordinary files or folders, start with the development build's
+[portable commands](portable-file-usage.md). They need no manually prepared
+workspace and support inspection or [reviewed span scoring](portable-techniques.md).
+The schemas below are for reviewed
 workspace evaluation, which requires expected evidence.
 
 Start with a small reviewed slice—roughly 10–50 source units and 10–30 questions. The value comes from trustworthy labels, not corpus size.

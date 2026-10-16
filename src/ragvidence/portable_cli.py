@@ -8,10 +8,11 @@ from typing import Annotated
 import typer
 from rich.console import Console
 
+from ragvidence.capabilities import CAPABILITIES, catalog, preset
 from ragvidence.config import Settings
-from ragvidence.models import StrategyConfig
 from ragvidence.portable import normalize_formats, run_portable
 from ragvidence.portable_config import resolve_portable_options
+from ragvidence.portable_inputs import load_variants
 from ragvidence.questions import load_questions
 
 
@@ -20,8 +21,8 @@ def input_is_terminal() -> bool:
 
 
 def register_portable_commands(app: typer.Typer, console: Console) -> None:
-    @app.command("bm25")
-    def bm25(
+    def inspect(
+        ctx: typer.Context,
         input_path: Annotated[
             Path,
             typer.Argument(
@@ -32,6 +33,58 @@ def register_portable_commands(app: typer.Typer, console: Console) -> None:
             list[str] | None, typer.Option("--query", help="Search question; repeatable")
         ] = None,
         questions: Annotated[Path | None, typer.Option(help="TXT, JSON or JSONL questions")] = None,
+        reviewed: Annotated[
+            Path | None, typer.Option(help="Reviewed questions and original evidence spans")
+        ] = None,
+        variants: Annotated[Path | None, typer.Option(help="Supplied query variants JSON")] = None,
+        prefixes: Annotated[
+            Path | None, typer.Option(help="Reviewed contextual prefixes JSON")
+        ] = None,
+        results: Annotated[
+            Path | None, typer.Option(help="External results JSONL for import-data")
+        ] = None,
+        base_retriever: Annotated[
+            str | None, typer.Option(help="Base for modifiers: bm25, semantic, hybrid")
+        ] = None,
+        provider: Annotated[
+            str | None, typer.Option(help="fastembed, ollama, openai_compatible")
+        ] = None,
+        model: Annotated[str | None, typer.Option(help="Embedding model")] = None,
+        lexical_weight: Annotated[
+            float | None, typer.Option(help="Hybrid lexical weight, between zero and one")
+        ] = None,
+        rrf_constant: Annotated[
+            int | None, typer.Option(min=0, help="Reciprocal rank fusion constant")
+        ] = None,
+        reranker_model: Annotated[
+            str | None, typer.Option(help="Local cross-encoder model")
+        ] = None,
+        representation: Annotated[
+            str | None, typer.Option(help="body, heading_context, contextual")
+        ] = None,
+        child_splitter: Annotated[str | None, typer.Option(help="recursive or markdown")] = None,
+        branch_k: Annotated[
+            int | None, typer.Option(min=1, help="Candidates per hybrid branch")
+        ] = None,
+        child_k: Annotated[
+            int | None, typer.Option(min=1, help="Children searched before parent deduplication")
+        ] = None,
+        query_k: Annotated[
+            int | None, typer.Option(min=1, help="Results per supplied search query")
+        ] = None,
+        rerank_k: Annotated[
+            int | None, typer.Option(min=1, help="Maximum candidates scored by reranker")
+        ] = None,
+        context_budget: Annotated[
+            int | None,
+            typer.Option(
+                min=1, help="Rendered context characters, or tokens with --tokenizer-file"
+            ),
+        ] = None,
+        tokenizer_file: Annotated[
+            Path | None,
+            typer.Option(help="Local Hugging Face tokenizer.json for exact context counting"),
+        ] = None,
         format: Annotated[
             list[str] | None, typer.Option("--format", help="html, json or markdown")
         ] = None,
@@ -76,7 +129,7 @@ def register_portable_commands(app: typer.Typer, console: Console) -> None:
             bool, typer.Option("--open", help="Open saved HTML in a browser")
         ] = False,
     ) -> None:
-        """Inspect BM25 on local data and save a report without project setup."""
+        """Diagnose this technique on local data and export traceable evidence."""
         try:
             options = resolve_portable_options(
                 {
@@ -94,6 +147,20 @@ def register_portable_commands(app: typer.Typer, console: Console) -> None:
                     "max_total_bytes": max_total_bytes,
                     "max_records": max_records,
                     "max_extracted_characters": max_extracted_characters,
+                    "base_retriever": base_retriever,
+                    "provider": provider,
+                    "model": model,
+                    "lexical_weight": lexical_weight,
+                    "rrf_constant": rrf_constant,
+                    "reranker_model": reranker_model,
+                    "representation": representation,
+                    "child_splitter": child_splitter,
+                    "branch_k": branch_k,
+                    "child_k": child_k,
+                    "query_k": query_k,
+                    "rerank_k": rerank_k,
+                    "context_budget": context_budget,
+                    "tokenizer_file": tokenizer_file,
                 },
                 config_file=config_file,
                 env_file=env_file,
@@ -101,8 +168,12 @@ def register_portable_commands(app: typer.Typer, console: Console) -> None:
             formats = normalize_formats(options.formats)
             if interactive and (no_input or not input_is_terminal()):
                 raise ValueError("--interactive requires terminal input and cannot use --no-input")
+            if reviewed and (query or questions):
+                raise ValueError(
+                    "--reviewed supplies questions; do not combine with --query/--questions"
+                )
             search_questions = load_questions(query or [], questions)
-            if not search_questions and not no_input and input_is_terminal():
+            if not reviewed and not search_questions and not no_input and input_is_terminal():
                 entered = typer.prompt(
                     "Question (leave empty for source diagnostics)", default="", show_default=False
                 )
@@ -113,10 +184,23 @@ def register_portable_commands(app: typer.Typer, console: Console) -> None:
                 formats = normalize_formats([value.strip() for value in selected.split(",")])
             if open_report and "html" not in formats:
                 raise ValueError("--open requires an HTML report; add --format html")
+            config = preset(ctx.command.name, options, variants=load_variants(variants))
+            settings = Settings(_env_file=env_file)
+            if (search_questions or reviewed) and config.strategy in {"semantic", "hybrid"}:
+                selected_provider = config.provider or settings.embedding_provider
+                if selected_provider != "fastembed":
+                    console.print(
+                        f"DISCLOSURE: {selected_provider} receives source text and search queries.",
+                        markup=False,
+                    )
+                else:
+                    console.print("Local embeddings may download the selected model on first use.")
+            if (search_questions or reviewed) and config.reranker_model:
+                console.print("Local reranking may download the selected model on first use.")
             result = run_portable(
                 input_path,
                 search_questions,
-                StrategyConfig(name="bm25", strategy="bm25", k=options.k),
+                config,
                 output_root=options.output,
                 formats=formats,
                 question_file=questions,
@@ -135,8 +219,15 @@ def register_portable_commands(app: typer.Typer, console: Console) -> None:
                         "max_extracted_characters",
                     }
                 ),
-                excluded_inputs=[path for path in (config_file, env_file) if path is not None],
-                settings=Settings(_env_file=env_file),
+                excluded_inputs=[
+                    path
+                    for path in (config_file, env_file, variants, options.tokenizer_file)
+                    if path is not None
+                ],
+                settings=settings,
+                reviewed_file=reviewed,
+                prefixes_file=prefixes,
+                results_file=results,
             )
         except (OSError, ValueError, RuntimeError) as exc:
             console.print(f"FAIL {exc}", markup=False)
@@ -158,6 +249,18 @@ def register_portable_commands(app: typer.Typer, console: Console) -> None:
             )
         for question in report["questions"]:
             console.print(f"\n{question['question']}", markup=False)
+            if question["metrics"]:
+                row = question["metrics"]
+                sufficient = (
+                    "N/A" if row["sufficient_evidence"] is None else row["sufficient_evidence"]
+                )
+                coverage = "N/A" if row["evidence_coverage"] is None else row["evidence_coverage"]
+                console.print(
+                    f"Sufficient evidence: {sufficient} · "
+                    f"Coverage: {coverage} · "
+                    f"Missing: {', '.join(row['missing_evidence_ids']) or 'none'}",
+                    markup=False,
+                )
             for hit in question["hits"]:
                 console.print(
                     f"  #{hit['rank']} {hit['source_path']} · {hit['score']:.4f}\n"
@@ -175,3 +278,26 @@ def register_portable_commands(app: typer.Typer, console: Console) -> None:
                     console.print("Browser unavailable; open the saved HTML report manually.")
             except (OSError, webbrowser.Error):
                 console.print("Browser unavailable; open the saved HTML report manually.")
+
+    for capability in CAPABILITIES:
+        app.command(capability.name, help=capability.description)(inspect)
+
+    @app.command("techniques")
+    def techniques(format: Annotated[str, typer.Option(help="terminal or json")] = "terminal"):
+        """List the implemented portable techniques and prerequisites."""
+        import json
+
+        if format == "json":
+            console.print(
+                json.dumps(catalog(), indent=2), markup=False, highlight=False, soft_wrap=True
+            )
+        elif format == "terminal":
+            for capability in CAPABILITIES:
+                console.print(
+                    f"{capability.name}: {capability.description}\n"
+                    f"  Requires: {capability.requirements}",
+                    markup=False,
+                )
+        else:
+            console.print("FAIL Supported catalog formats: terminal, json")
+            raise typer.Exit(1)

@@ -1,10 +1,11 @@
 """Search small children, return full parents with their reviewed evidence."""
 
+import time
 from collections.abc import Sequence
 from typing import Literal
 
 from ragvidence.chunking import child_spans
-from ragvidence.models import RetrievalHit, SourceUnit
+from ragvidence.models import RetrievalHit, SourceUnit, StageTrace
 from ragvidence.representation import RetrievalRecord
 from ragvidence.strategies.base import RetrievalStrategy
 
@@ -18,10 +19,13 @@ class ParentChildStrategy:
         size: int,
         overlap: int,
         candidate_k: int,
+        fixed_depth: bool = False,
     ) -> None:
         self.child_strategy = child_strategy
         self.splitter, self.size, self.overlap = splitter, size, overlap
         self.candidate_k = candidate_k
+        self.fixed_depth = fixed_depth
+        self.last_trace: list[StageTrace] = []
         self._parents: dict[str, tuple[SourceUnit, int, int]] = {}
 
     def index(self, records: Sequence[RetrievalRecord]) -> None:
@@ -44,7 +48,31 @@ class ParentChildStrategy:
         self.child_strategy.index(children)
 
     def search(self, query: str, *, k: int) -> list[RetrievalHit]:
-        children = self.child_strategy.search(query, k=max(k, self.candidate_k))
+        depth = self.candidate_k if self.fixed_depth else max(k, self.candidate_k)
+        started = time.perf_counter()
+        children = self.child_strategy.search(query, k=depth)
+        self.last_trace = list(getattr(self.child_strategy, "last_trace", []))
+        self.last_trace.append(
+            StageTrace(
+                name="children",
+                elapsed_ms=(time.perf_counter() - started) * 1000,
+                hits=children,
+                details={
+                    "query": query,
+                    "limit": depth,
+                    "locations": [
+                        {
+                            "child_id": hit.source_unit_id,
+                            "parent_id": self._parents[hit.source_unit_id][0].source_unit_id,
+                            "start": self._parents[hit.source_unit_id][1],
+                            "end": self._parents[hit.source_unit_id][2],
+                        }
+                        for hit in children
+                    ],
+                },
+            )
+        )
+        started = time.perf_counter()
         seen = set()
         parents = []
         for hit in children:
@@ -71,4 +99,12 @@ class ParentChildStrategy:
             )
             if len(parents) == k:
                 break
+        self.last_trace.append(
+            StageTrace(
+                name="parent_expansion",
+                hits=parents,
+                elapsed_ms=(time.perf_counter() - started) * 1000,
+                details={"query": query},
+            )
+        )
         return parents

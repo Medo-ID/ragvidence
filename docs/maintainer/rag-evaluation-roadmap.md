@@ -1,7 +1,9 @@
 # Portable RAG diagnosis and technique comparison plan
 
 Date: 2026-10-15. Status: M1–M3 implemented in development. The integrity foundation,
-portable BM25, additional file loaders and portable configuration are available; later
+portable BM25, additional file loaders and portable configuration are available.
+M4's portable techniques, span scoring, budgets and external imports are implemented
+and tested, including two fingerprinted embedding models on fixed reviewed data. Later
 milestones remain planned. No new release has been published. See
 [implementation evidence](portable-implementation-evidence.md) for delivered scope.
 
@@ -261,6 +263,15 @@ unsupported files, resource limits, mixed folders and settings precedence. Compa
 representative extracted text against reviewed originals, including table/layout limits.
 
 ### M4 — Existing techniques, exact evidence and optional existing-system baselines
+
+Implementation status: core execution path is in development, including all existing
+technique entry points, original-span union scoring, stage limits/traces, exact local
+tokenizer budgets and verified external spans/ID proxies. See [usage](../portable-techniques.md)
+and [recorded model compatibility](../../verification/portable-m4/model-check.json).
+The T11 compatibility check runs BGE small and MiniLM on the same eight-source,
+twelve-question reviewed corpus. Evidence records successes, failures and ties, with
+model/tokenizer file fingerprints. These bounded fixtures do not establish general
+production quality; broader domain/model/OS coverage remains part of release work.
 
 Scope:
 

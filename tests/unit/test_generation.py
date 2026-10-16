@@ -33,6 +33,11 @@ def test_generation_uses_validated_recorded_context(monkeypatch):
         message.endswith(query.rendered_context)
         for message, query in zip(observed, run.queries, strict=True)
     )
+    for answer, message in zip(answers["answers"], observed, strict=True):
+        measurement = answer["request_measurement"]
+        assert measurement["count"] == len(generation.SYSTEM_PROMPT) + len(message)
+        assert measurement["scope"] == "complete_message_contents"
+        assert measurement["provider_framing_count"] is None
 
 
 def test_retrieval_stages_do_not_receive_gold_labels(monkeypatch):

@@ -15,6 +15,8 @@ This inventory covers direct runtime dependencies selected for RAGvidence v0.1.0
 | FastEmbed (optional) | Local ONNX embedding runtime | Apache-2.0 |
 | pypdf (optional) | Text-bearing PDF page extraction | BSD-3-Clause |
 | BAAI/bge-small-en-v1.5 (downloaded optionally) | Default English embedding model | MIT |
+| sentence-transformers/all-MiniLM-L6-v2 (downloaded optionally) | Second embedding configuration in compatibility checks | Apache-2.0 |
+| Xenova/ms-marco-MiniLM-L-6-v2 (downloaded optionally) | Cross-encoder compatibility check | Apache-2.0 |
 
 FastEmbed installs transitive runtime dependencies whose versions and licenses may change when `uv.lock` is updated. The resolved inventory for this release is recorded in `THIRD_PARTY_LICENSES.md`. The `py-rust-stemmers` 0.1.8 package metadata does not declare a machine-readable license; its upstream repository license file must be checked manually before each commercial release.
 

@@ -73,6 +73,104 @@ def check_install(wheel: Path, directory: Path) -> None:
     assert "eight seconds" in report["questions"][0]["hits"][0]["text"]
     assert (root / "report.html").is_file() and (root / "report.md").is_file()
     assert source.read_text(encoding="utf-8") == text
+    capabilities = json.loads(
+        run([executable, "techniques", "--format", "json"], cwd=client, env=env)
+    )
+    assert {item["name"] for item in capabilities} >= {
+        "semantic",
+        "hybrid",
+        "parent-child",
+        "import-data",
+    }
+    original = report["input"]["sources"][0]
+    references = client / "reviewed.json"
+    start = text.index("eight seconds")
+    references.write_text(
+        json.dumps(
+            {
+                "corpus_hash": report["input"]["corpus_hash"],
+                "evidence": [
+                    {
+                        "evidence_id": "RESET",
+                        "spans": [
+                            {
+                                "source_id": original["source_unit_id"],
+                                "start": start,
+                                "end": start + 13,
+                                "text": "eight seconds",
+                            }
+                        ],
+                    }
+                ],
+                "questions": [
+                    {
+                        "question_id": "Q",
+                        "question": "reset",
+                        "split": "dev",
+                        "answerable": True,
+                        "required_evidence_ids": ["RESET"],
+                    }
+                ],
+            }
+        )
+    )
+    variants = client / "variants.json"
+    variants.write_text('{"Q":["reset button"]}')
+    prefixes = client / "prefixes.json"
+    prefixes.write_text(
+        json.dumps(
+            {
+                original["source_unit_id"]: {
+                    "text_hash": original["text_hash"],
+                    "prefix": "Device reset instructions",
+                }
+            }
+        )
+    )
+    imported = client / "results.jsonl"
+    imported.write_text(
+        json.dumps(
+            {
+                "question_id": "Q",
+                "hits": [
+                    {
+                        "source_id": original["source_unit_id"],
+                        "start": 0,
+                        "end": len(text),
+                        "text": text,
+                    }
+                ],
+            }
+        )
+    )
+    for technique, extra in [
+        ("parent-child", []),
+        ("heading-context", []),
+        ("multi-query", ["--variants", str(variants)]),
+        ("contextual", ["--prefixes", str(prefixes)]),
+        ("import-data", ["--results", str(imported)]),
+    ]:
+        destination = client / technique
+        run(
+            [
+                executable,
+                technique,
+                str(source),
+                "--reviewed",
+                str(references),
+                "--format",
+                "json",
+                "--output",
+                str(destination),
+                "--no-input",
+                *extra,
+            ],
+            cwd=client,
+            env=env,
+        )
+        evidence = json.loads(next(destination.glob("*/report.json")).read_text())
+        assert evidence["questions"][0]["metrics"]["sufficient_evidence"] is True
+        assert evidence["questions"][0]["stages"]
     # Exercise all dependency-free structured loaders from the installed wheel.
     mixed = client / "mixed data"
     mixed.mkdir()
@@ -122,6 +220,7 @@ def check_install(wheel: Path, directory: Path) -> None:
     print(
         "PASS: installed command, unrelated directory, Unicode/space paths, all exports, "
         "source-only mode, HTML/JSON/JSONL/CSV, explicit configuration, missing PDF extra, "
+        "reviewed spans, portable lexical modifiers, exact-context imports, "
         "unchanged input, verification and legacy tutorial"
     )
 

@@ -2,6 +2,7 @@
 
 from pathlib import Path
 
+from ragvidence.budgets import tokenizer_hash
 from ragvidence.config import Settings
 from ragvidence.models import StrategyConfig
 from ragvidence.providers import OllamaEmbeddingProvider, OpenAICompatibleEmbeddingProvider
@@ -19,11 +20,14 @@ def resolve_config(config: StrategyConfig, settings: Settings) -> StrategyConfig
         or config.child_splitter != "none"
         or config.query_variants
         or config.reranker_model
+        or config.context_budget
     )
     resolved = {
         **config.model_dump(),
         "candidate_k": config.candidate_k or (max(20, config.k) if extended else config.k),
     }
+    if config.tokenizer_file:
+        resolved["tokenizer_hash"] = tokenizer_hash(config.tokenizer_file)
     if config.strategy in {"semantic", "hybrid"}:
         resolved.update(
             model=config.model or settings.embedding_model,
@@ -63,7 +67,8 @@ def build_strategy(
         strategy = HybridStrategy(
             BM25Strategy(),
             semantic_strategy(config, cache_dir, settings),
-            candidate_k=config.candidate_k or config.k,
+            candidate_k=config.branch_k or config.candidate_k or config.k,
+            fixed_depth=config.branch_k is not None,
             lexical_weight=config.lexical_weight,
             constant=config.rrf_constant,
         )
@@ -75,6 +80,7 @@ def build_strategy(
             splitter=config.child_splitter,
             size=config.child_size,
             overlap=config.child_overlap,
-            candidate_k=config.candidate_k or config.k,
+            candidate_k=config.child_k or config.candidate_k or config.k,
+            fixed_depth=config.child_k is not None,
         )
     return strategy

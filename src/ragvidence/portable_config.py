@@ -5,7 +5,7 @@ import os
 import sys
 import tomllib
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from dotenv import dotenv_values
 from pydantic import Field, model_validator
@@ -28,6 +28,20 @@ class PortableOptions(StrictModel):
     max_total_bytes: int = Field(default=100 * 1024 * 1024, ge=1)
     max_records: int = Field(default=10000, ge=1)
     max_extracted_characters: int = Field(default=20 * 1024 * 1024, ge=1)
+    base_retriever: Literal["bm25", "semantic", "hybrid"] = "bm25"
+    provider: Literal["fastembed", "ollama", "openai_compatible"] | None = None
+    model: str | None = None
+    representation: Literal["body", "heading_context", "contextual"] = "body"
+    child_splitter: Literal["recursive", "markdown"] = "recursive"
+    reranker_model: str | None = None
+    branch_k: int | None = Field(default=None, ge=1)
+    child_k: int | None = Field(default=None, ge=1)
+    query_k: int | None = Field(default=None, ge=1)
+    rerank_k: int | None = Field(default=None, ge=1)
+    context_budget: int | None = Field(default=None, ge=1)
+    tokenizer_file: Path | None = None
+    lexical_weight: float = Field(default=0.5, gt=0, lt=1)
+    rrf_constant: int = Field(default=60, ge=0)
 
     @model_validator(mode="after")
     def validate_options(self) -> "PortableOptions":
@@ -67,7 +81,7 @@ def _read_config(path: Path) -> dict[str, Any]:
     unknown = set(values) - set(PortableOptions.model_fields)
     if unknown:
         raise ValueError(f"Unknown portable configuration fields: {', '.join(sorted(unknown))}")
-    for key in ("output", "cache_dir"):
+    for key in ("output", "cache_dir", "tokenizer_file"):
         if values.get(key) is not None:
             if not isinstance(values[key], str):
                 raise ValueError(f"Configuration {key} must be a path string")
@@ -107,7 +121,7 @@ def resolve_portable_options(
                     raise ValueError(f"RAGVIDENCE_{field.upper()} must be a JSON array") from exc
             values[field] = raw
     values.update({key: value for key, value in overrides.items() if value is not None})
-    for key in ("output", "cache_dir"):
+    for key in ("output", "cache_dir", "tokenizer_file"):
         if values.get(key) is not None:
             values[key] = Path(values[key]).expanduser()
     return PortableOptions.model_validate(values)

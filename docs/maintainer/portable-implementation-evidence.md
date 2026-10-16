@@ -1,8 +1,9 @@
 # Portable implementation evidence
 
 Date: 2026-10-15. Scope: M1 integrity foundation, M2 portable BM25 and M3 additional
-loaders/configuration in the development source. M1/M2 were committed as `4479a05`
-before starting M3. No package has been published by this work.
+loaders/configuration plus M4's core portable execution/scoring path in development.
+M1/M2 were committed as `4479a05`, M3 as `8f7e87c` (author Medo-ID) before M4.
+No package has been published by this work.
 
 ## Delivered behavior
 
@@ -75,10 +76,44 @@ uv run ragvi bm25 ./manual.txt --query "Reset instructions" --format html --form
 - Existing tutorial, benchmark, import, evaluate, compare, generate and report
   workflows remain on the shared contracts. The tutorial and release fixtures pass.
 
+## M4 portable technique and evidence path
+
+- One registered CLI callback, options resolver, application service and pipeline
+  serve all nine catalog entries. Provider/model overrides, hybrid weights, fusion
+  constant, stage-specific candidate limits and whole-passage context selection are explicit.
+- Reviewed references bind to frozen original source IDs/hash/quoted character spans.
+  Complete interval unions earn one credit per evidence item, independent of chunk
+  IDs, overlap, parent expansion or prefix text. Split denominators and unavailable
+  unanswerable/answer metrics remain explicit.
+- Traces record native branch candidates, timings and scores, nested hybrid/multi-query
+  contributions, child mappings, reranker candidates and final budget selection.
+  Private `search-sources.json` freezes indexed bodies and supplied prefixes.
+- Context budgets count full rendered IDs/headings/separators; exact local tokenizer
+  counters disable padding and truncation and record file/package identities.
+  Model input truncation is independently disclosed as unmeasured, not conflated
+  with returned-context length or proof that all evidence was encoded.
+- Exact external spans validate against originals and earn equivalent native scores.
+  ID-only imports explicitly score registered-unit proxies. Missing timings remain
+  null; all tails are checked before truncation; mixed exact/proxy modes fail.
+- Tests include partial/adjacent/gapped/multisource evidence, duplicate overlap,
+  changed chunk sizes, budget-induced evidence loss, misleading-prefix regression,
+  helpful/noisy query variants, label isolation, source-only execution,
+  catalog/prerequisites and export parity. BM25 ties use frozen input order for
+  known, OOV and empty-token queries. Optional workspace generation measures full
+  system/user message contents; provider framing and billable usage stay unavailable.
+- Real offline BGE small, hybrid and Xenova cross-encoder checks pass on a reviewed
+  paraphrase with actual local tokenization. [Machine-readable evidence](../../verification/portable-m4/model-check.json)
+  records package versions, snapshot revisions and model/tokenizer SHA256 values.
+  An additional fixed fictional corpus (eight sources, twelve questions, eleven
+  answerable) runs lexical, BGE small, MiniLM, hybrid and reranked configurations
+  against identical corpus/reference hashes. Both dense models retrieve the reviewed
+  paraphrase; the full per-question outcomes include failures and ties. The evidence
+  file records all outcomes rather than asserting a universally superior technique.
+
 ## Verification
 
 ```bash
-uv sync --frozen --dev --extra pdf
+uv sync --frozen --dev --all-extras
 .venv/bin/ruff check src tests scripts
 .venv/bin/pytest
 .venv/bin/ragvi verify
@@ -87,8 +122,8 @@ uv build
 git diff --check
 ```
 
-The test suite contains **196 passing tests** with the PDF extra installed (150 at
-the M1/M2 commit boundary, plus 46 M3 checks). It includes
+The test suite contains **241 passing tests** with all extras installed (150 at
+M1/M2, 196 at M3). It includes
 cross-process hash-seed checks for dataset identities and saved evaluations;
 tampered artifacts; missing/duplicate questions; forged evidence/context; invalid
 provider vectors/indexes/caches; input extraction/offsets; question-file exclusion;
@@ -98,15 +133,14 @@ formats; escaped source content; and unchanged source files.
 The built wheel was installed into isolated temporary tool/bin directories and
 invoked as `ragvi` from an unrelated customer folder. Checks cover spaces and Unicode
 in paths, all three exports, source-only execution, HTML/JSON/JSONL/CSV loading,
-explicit configuration, missing optional PDF support, installation verification and
+explicit configuration, reviewed spans, lexical modifier commands, exact external
+imports, missing optional PDF support, installation verification and
 the existing tutorial. CI and release preparation run this same check, and install
-the PDF extra for the real parser tests. These runs
-was on Linux; it is not evidence of Windows/macOS execution.
+all extras for the parser/tokenizer tests. These runs were on Linux;
+they are not evidence of Windows/macOS execution.
 
 ## Remaining roadmap work
 
-- Direct portable entry points and reviewed span-based scoring for other techniques,
-  with a capability catalog and complete stage traces.
 - Multi-technique comparison/suite commands, split/slice aggregation, fair token
   budgets, uncertainty/resource summaries and decision reports.
 - Metadata filters, MMR, automatic rewriting and extractive compression.
@@ -114,6 +148,6 @@ was on Linux; it is not evidence of Windows/macOS execution.
 - Pinned model-revision fingerprints where provider APIs expose them, plus the
   wider model/OS coverage and release gates specified by later milestones.
 
-These remaining features are not claimed by the portable BM25 implementation. PDF/
+These remaining features are not claimed by the portable implementation. PDF/
 HTML extraction does not establish visual/table/column fidelity; input limits are
 not a memory sandbox. Windows/macOS installed execution remains unverified.

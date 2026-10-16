@@ -1,9 +1,10 @@
 # Portable file usage
 
 Available in the development source and wheels built from it; not yet published
-to PyPI. The first portable technique command is BM25 over TXT, Markdown, HTML,
-document JSON/JSONL, CSV and optional text-bearing PDF files/folders. Other portable
-technique commands remain planned.
+to PyPI. Portable BM25, semantic, hybrid, reranking, parent-child, heading/contextual
+indexing, supplied multi-query and existing-system imports share TXT, Markdown,
+HTML, document JSON/JSONL, CSV and optional text-bearing PDF loaders. See
+[techniques and reviewed evidence](portable-techniques.md) for commands and scoring.
 
 ## Run on your own text
 
@@ -35,8 +36,8 @@ JSONL uses one object per line:
 ```
 
 Question IDs must be unique. Portable question records currently accept only
-`question_id` and `question`. Use the existing workspace `evaluate` workflow for
-reviewed evidence labels; raw-file reviewed scoring will arrive separately.
+`question_id` and `question`. Supply `--reviewed FILE` instead for reviewed questions
+and evidence anchored to original text spans; see the linked technique guide.
 
 In a terminal, a command without questions offers question entry. Leave it empty
 to inspect sources only. `--no-input` disables all prompts; redirected input also
@@ -47,7 +48,8 @@ input. Complete flags work without prompts.
 - `retrieval_inspection`: retrieved actual passages for the supplied questions;
   relevance, evidence sufficiency and answer correctness have not been scored.
 
-Both are successful execution states. Invalid inputs, unavailable output paths or
+`reviewed_evaluation` is the scored state when validated reviewed references are
+supplied. All three are successful execution states. Invalid inputs, unavailable output paths or
 execution failures return a nonzero exit status. Low or zero BM25 scores are
 observations, not command failures or probabilities of correctness.
 
@@ -119,6 +121,8 @@ locations. Review those contents before sharing.
 The run directory also contains private working artifacts: `snapshot.json` has
 the loaded source text; `questions.json` records input questions; `run.json` records
 exact returned context and configuration; `status.json` records completion/failure.
+`search-sources.json` freezes search bodies/prefixes; reviewed runs also retain
+`references.json` and `evaluation.json` with span-based scoring.
 Share the selected report files rather than the entire working directory when the
 original corpus should remain private. Reports can be read after cache deletion.
 

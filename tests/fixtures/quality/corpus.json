@@ -1,0 +1,10 @@
+[
+  {"id":"reset","text":"To reset pairing on Orion 4.2, hold the recessed button for eight seconds."},
+  {"id":"power","text":"Orion 4.2 requires USB-C power. Do not use the barrel connector."},
+  {"id":"legacy","text":"Orion 3.1 resets after three seconds. This procedure applies only to version 3.1."},
+  {"id":"warranty","text":"Warranty lasts for two years from purchase and excludes water damage."},
+  {"id":"network","text":"The orange indicator means the device is offline. A green indicator means a network connection is available."},
+  {"id":"backup","text":"Before upgrading firmware, export a configuration backup. Upgrade only after the backup finishes."},
+  {"id":"security","text":"Administrators can rotate access tokens in Settings > Security. Existing tokens are revoked immediately."},
+  {"id":"restriction","text":"Do not reset while firmware installation is running. Wait until the green indicator is steady."}
+]

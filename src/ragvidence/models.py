@@ -97,6 +97,30 @@ class StrategyConfig(StrictModel):
     child_overlap: int = Field(default=50, ge=0)
     query_variants: dict[str, list[str]] = Field(default_factory=dict)
     reranker_model: str | None = Field(default=None, min_length=1)
+    branch_k: int | None = Field(default=None, ge=1)
+    child_k: int | None = Field(default=None, ge=1)
+    query_k: int | None = Field(default=None, ge=1)
+    rerank_k: int | None = Field(default=None, ge=1)
+    context_budget: int | None = Field(default=None, ge=1)
+    tokenizer_file: str | None = None
+    tokenizer_hash: str | None = None
+
+    @model_serializer(mode="wrap")
+    def serialize_config(self, handler):
+        values = handler(self)
+        # Preserve identities of older configurations when new options are unused.
+        for key in (
+            "branch_k",
+            "child_k",
+            "query_k",
+            "rerank_k",
+            "context_budget",
+            "tokenizer_file",
+            "tokenizer_hash",
+        ):
+            if values.get(key) is None:
+                values.pop(key, None)
+        return values
 
     @model_validator(mode="after")
     def validate_pipeline(self) -> "StrategyConfig":
@@ -107,7 +131,16 @@ class StrategyConfig(StrictModel):
         for variants in self.query_variants.values():
             if any(not value.strip() for value in variants):
                 raise ValueError("query variants must contain nonblank text")
+            if len(variants) > 8:
+                raise ValueError("At most eight supplied variants per question are supported")
         return self
+
+
+class StageTrace(StrictModel):
+    name: str
+    elapsed_ms: float | None = Field(default=None, ge=0)
+    hits: list[RetrievalHit] = Field(default_factory=list)
+    details: dict[str, Any] = Field(default_factory=dict)
 
 
 class QueryRun(StrictModel):
@@ -121,6 +154,8 @@ class QueryRun(StrictModel):
     context: list["ContextPassage"] = Field(default_factory=list)
     rendered_context: str | None = None
     context_hash: str | None = None
+    stages: list[StageTrace] = Field(default_factory=list)
+    context_measurement: dict[str, Any] = Field(default_factory=dict)
 
 
 class ContextPassage(StrictModel):

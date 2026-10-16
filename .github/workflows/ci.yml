@@ -19,11 +19,11 @@ jobs:
       - name: Install Python
         run: uv python install 3.12
       - name: Sync locked dependencies
-        run: uv sync --frozen --dev --extra pdf
+        run: uv sync --frozen --dev --all-extras
       - name: Lint
         run: uv run ruff check src tests scripts
       - name: Test
-        run: uv run --extra pdf pytest
+        run: uv run --all-extras pytest
       - name: Verify release fixtures
         run: uv run ragvi verify
       - name: Build distributions

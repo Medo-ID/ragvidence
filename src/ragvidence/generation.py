@@ -6,6 +6,8 @@ import time
 from pathlib import Path
 from typing import Any
 
+from ragvidence.artifacts import content_hash
+from ragvidence.budgets import ContextCounter
 from ragvidence.config import Settings
 from ragvidence.context import passages_for_hits, render_context
 from ragvidence.data import load_dataset
@@ -33,6 +35,7 @@ def generate_answers(workspace: Path, run: ExperimentRun, settings: Settings) ->
     source_by_id = {item.source_unit_id: item for item in sources}
     question_by_id = {item.question_id: item for item in questions}
     answers = []
+    counter = ContextCounter(run.manifest.config.tokenizer_file, run.manifest.config.tokenizer_hash)
     for query in run.queries:
         context = (
             query.rendered_context
@@ -48,6 +51,23 @@ def generate_answers(workspace: Path, run: ExperimentRun, settings: Settings) ->
                 "answer": answer,
                 "source_unit_ids": [hit.source_unit_id for hit in query.hits],
                 "latency_ms": (time.perf_counter() - started) * 1000,
+                "request_measurement": {
+                    **counter.identity,
+                    "scope": "complete_message_contents",
+                    "system_count": counter.count(SYSTEM_PROMPT),
+                    "user_count": counter.count(user),
+                    "count": counter.count(SYSTEM_PROMPT) + counter.count(user),
+                    "messages_hash": content_hash(
+                        [
+                            {"role": "system", "content": SYSTEM_PROMPT},
+                            {"role": "user", "content": user},
+                        ]
+                    ),
+                    "provider_framing_count": None,
+                    "limitation": "Counts include instructions, question and context. "
+                    "Provider framing and billable token usage are unavailable; token counts "
+                    "apply only to the explicitly identified tokenizer.",
+                },
             }
         )
     return {

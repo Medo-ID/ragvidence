@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "corpus_hash": "8d25713ae22be5d22c6d2511d38776b419b004eab3f807fc31fe620d97df4d2e",
+  "evidence": [
+    {
+      "evidence_id": "RESET",
+      "spans": [
+        {
+          "source_id": "doc-891181f767db31c2ed7c",
+          "start": 78,
+          "end": 91,
+          "text": "eight seconds"
+        }
+      ]
+    },
+    {
+      "evidence_id": "POWER",
+      "spans": [
+        {
+          "source_id": "doc-891181f767db31c2ed7c",
+          "start": 341,
+          "end": 346,
+          "text": "USB-C"
+        }
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "question_id": "PORTABLE-RESET",
+      "question": "How long should I hold reset?",
+      "split": "dev",
+      "answerable": true,
+      "required_evidence_ids": [
+        "RESET"
+      ]
+    },
+    {
+      "question_id": "PORTABLE-POWER",
+      "question": "What power connector is required?",
+      "split": "heldout",
+      "answerable": true,
+      "required_evidence_ids": [
+        "POWER"
+      ]
+    }
+  ]
+}

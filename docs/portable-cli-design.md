@@ -1,9 +1,11 @@
 # Portable file and folder CLI design
 
-Status: M1–M3 are implemented in the development source: portable BM25 over TXT,
+Status: M1–M3 and the M4 portable execution/scoring path are implemented in the development source: techniques over TXT,
 Markdown, HTML, document JSON/JSONL, CSV and optional text PDFs, with questions,
 automatic passages, portable configuration and HTML/JSON/Markdown reports. It is
-not yet published to PyPI. Other direct technique commands below remain proposed. See
+not yet published to PyPI. M5 comparison commands remain outstanding; see
+[technique usage](portable-techniques.md). Other proposed commands
+below remain roadmap items. See
 [current usage](portable-file-usage.md) for the implemented command.
 
 This specifies

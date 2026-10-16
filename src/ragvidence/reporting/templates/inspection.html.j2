@@ -29,7 +29,7 @@
     <div class="eyebrow">RAGvidence · Local data diagnostics</div>
     <h1>{{ report.input.name }}</h1>
     <p class="status">{{ report.evaluation_level }}</p>
-    <p>Technique: {{ report.manifest.config.strategy | upper }} · k={{ report.manifest.config.k }}</p>
+    <p>Technique: {{ report.manifest.config.name }} · Base: {{ report.manifest.config.strategy | upper }} · k={{ report.manifest.config.k }}</p>
     <p class="meta">Passage size: {{ report.preparation.chunk_size }} characters · Overlap: {{ report.preparation.chunk_overlap }} characters</p>
     <div class="metrics">
       <span>{{ report.input.file_count }} files · {{ report.input.document_count }} source units</span>
@@ -39,10 +39,16 @@
     </div>
     {% for observation in report.observations %}<p>{{ observation }}</p>{% endfor %}
   </header>
+  {% if report.evaluation %}<section><h2>Reviewed evidence</h2><p>Scope: {{ report.evaluation.scope }} · Method: {{ report.evaluation.method }}</p>
+    {% for split, summary in report.evaluation.summaries.items() %}<p>{{ split }}: {{ summary.sufficient_count }} / {{ summary.answerable_questions }} answerable questions sufficient · Rate: {{ summary.sufficiency_rate if summary.sufficiency_rate is not none else 'N/A' }}</p>{% endfor %}
+    <details><summary>Metric definitions</summary><pre>{{ report.evaluation.definitions | tojson(indent=2) }}</pre></details>
+  </section>{% endif %}
   {% for question in report.questions %}
   <section>
     <h2>{{ question.question }}</h2>
-    <p class="meta">{{ question.question_id }} · {{ "%.2f" | format(question.query_time_ms) }} ms · {{ question.context_characters }} context characters</p>
+    <p class="meta">{{ question.question_id }} · {% if question.query_time_ms is not none %}{{ "%.2f" | format(question.query_time_ms) }} ms{% else %}Timing unavailable{% endif %} · {{ question.context_characters }} context characters</p>
+    {% if question.context_measurement %}<p class="meta">Rendered context: {{ question.context_measurement.count }} {{ question.context_measurement.unit }} · Budget: {{ question.context_measurement.budget if question.context_measurement.budget is not none else 'unlimited' }}</p>{% endif %}
+    {% if question.metrics %}<p><strong>Sufficient evidence: {{ question.metrics.sufficient_evidence if question.metrics.sufficient_evidence is not none else 'N/A' }}</strong> · Evidence coverage: {{ question.metrics.evidence_coverage if question.metrics.evidence_coverage is not none else 'N/A' }}</p><p>Missing evidence: {{ question.metrics.missing_evidence_ids | join(', ') or 'none' }}</p>{% endif %}
     {% for observation in question.observations %}<p>{{ observation }}</p>{% endfor %}
     {% for hit in question.hits %}
     <article class="hit">
@@ -52,11 +58,12 @@
       <pre>{{ hit.text }}</pre>
     </article>
     {% endfor %}
+    {% if question.stages %}<details><summary>Stage evidence: candidates, scores, timing and selection</summary><pre>{{ question.stages | tojson(indent=2) }}</pre></details>{% endif %}
   </section>
   {% endfor %}
   <section>
     <h2>Extracted sources</h2>
-    {% for source in report.input.sources %}<p class="meta"><span class="path">{{ source.source_path }}</span> · {{ source.location_label }} · {{ source.loader }} · {{ source.characters }} characters</p>{% endfor %}
+    {% for source in report.input.sources %}<p class="meta"><span class="path">{{ source.source_path }}</span> · {{ source.location_label }} · {{ source.loader }} · {{ source.characters }} characters<br>ID: <code>{{ source.source_unit_id }}</code><br>Text hash: <code>{{ source.text_hash }}</code></p>{% endfor %}
   </section>
   {% if report.input.skipped %}
   <section>

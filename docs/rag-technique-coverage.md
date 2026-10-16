@@ -15,6 +15,13 @@ than a promise that an alternative will improve that system.
 
 ## Coverage from the resource
 
+Portable entry points now share ordinary-file ingestion and original-span evidence
+scoring. Run `ragvi techniques` or see [Portable techniques](portable-techniques.md).
+`--reviewed` supplies validated references; unreviewed runs remain inspections.
+The T11 model check covers two fingerprinted embedding configurations on one fixed
+reviewed corpus. Broader quality/OS coverage remains release work; command availability
+alone is not a claim of universal quality or complete verification.
+
 | Technique | Development CLI coverage |
 | --- | --- |
 | BM25 lexical retrieval | Implemented. |

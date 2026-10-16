@@ -1,6 +1,7 @@
 """Compute an unscored diagnostic report once for all presentation formats."""
 
 import html
+import json
 from datetime import UTC, datetime
 from typing import Any
 
@@ -29,15 +30,21 @@ def source_location(metadata: dict[str, Any]) -> str:
 
 
 def build_inspection_report(
-    snapshot: CorpusSnapshot, questions: list[SearchQuestion], run: ExperimentRun, *, name: str
+    snapshot: CorpusSnapshot,
+    questions: list[SearchQuestion],
+    run: ExperimentRun,
+    *,
+    name: str,
+    evaluation: dict | None = None,
 ) -> dict[str, Any]:
     by_id = {question.question_id: question for question in questions}
-    passages = {source.source_unit_id: source for source in snapshot.passages}
+    originals = {source.source_unit_id: source for source in snapshot.documents}
+    metrics = {row["question_id"]: row for row in evaluation["questions"]} if evaluation else {}
     results = []
     for query in run.queries:
         hits = []
         for hit, context in zip(query.hits, query.context, strict=True):
-            source = passages[hit.source_unit_id]
+            source = originals[context.origin_source_id]
             hits.append(
                 {
                     **hit.model_dump(mode="json"),
@@ -49,14 +56,20 @@ def build_inspection_report(
                     "loader": source.metadata["loader"],
                     "start": context.start,
                     "end": context.end,
-                    "line_start": source.metadata["line_start"],
-                    "line_end": source.metadata["line_end"],
+                    "origin_source_id": context.origin_source_id,
+                    "line_start": source.body.count("\n", 0, context.start) + 1,
+                    "line_end": source.body.count("\n", 0, context.end - 1) + 1,
                 }
             )
         observations = []
         if not hits:
             observations.append("No passages were returned.")
-        elif run.manifest.config.strategy == "bm25" and not any(hit["score"] > 0 for hit in hits):
+        elif (
+            run.manifest.config.strategy == "bm25"
+            and not run.manifest.config.reranker_model
+            and not run.manifest.config.query_variants
+            and not any(hit["score"] > 0 for hit in hits)
+        ):
             observations.append(
                 "All returned BM25 scores are zero: the query has no positive lexical match."
             )
@@ -69,6 +82,9 @@ def build_inspection_report(
                 "context_characters": query.returned_context_characters,
                 "context_hash": query.context_hash,
                 "observations": observations,
+                "metrics": metrics.get(query.question_id),
+                "context_measurement": query.context_measurement,
+                "stages": [stage.model_dump(mode="json") for stage in query.stages],
             }
         )
     source_only = run.manifest.evaluation_level == "ingestion_only"
@@ -79,6 +95,7 @@ def build_inspection_report(
         "evaluation_level": run.manifest.evaluation_level,
         "preparation": snapshot.preparation.model_dump(mode="json"),
         "manifest": run.manifest.model_dump(mode="json"),
+        "evaluation": evaluation,
         "input": {
             "name": name,
             "corpus_hash": snapshot.corpus_hash,
@@ -110,13 +127,25 @@ def build_inspection_report(
         "observations": (
             ["Retrieval was not executed because no questions were supplied."]
             if source_only
+            else ["Reviewed evidence is scored against the union of exact original-text spans."]
+            if evaluation
             else ["Ranked passages are shown for inspection; relevance has not been scored."]
-        ),
+        )
+        + run.manifest.warnings,
         "limitations": [
-            "No reviewed expected evidence was supplied. Evidence sufficiency, recall and "
-            "answer correctness are not scored.",
+            *(
+                []
+                if evaluation
+                else [
+                    "No reviewed expected evidence was supplied. Evidence sufficiency "
+                    "and recall are not scored."
+                ]
+            ),
+            "Answer correctness, citations, abstention and generation request tokens "
+            "are not evaluated.",
             "Retriever scores describe this ranking; they are not probabilities of correctness.",
-            "Chunk sizes and context measurements count characters, not model tokens.",
+            "Chunk sizes count characters. Rendered context counts characters unless an "
+            "explicit local tokenizer is identified; model request overhead is excluded.",
             "Character and text-line offsets refer to the extracted page/record/section, "
             "not byte offsets in the original file. Extraction does not verify layout fidelity.",
         ],
@@ -125,7 +154,7 @@ def build_inspection_report(
 
 def render_inspection_markdown(report: dict[str, Any]) -> str:
     def escape(value: Any) -> str:
-        return html.escape(str(value))
+        return html.escape("N/A" if value is None else str(value))
 
     info = report["input"]
     lines = [
@@ -144,6 +173,22 @@ def render_inspection_markdown(report: dict[str, Any]) -> str:
         "",
     ]
     lines.extend(f"- {escape(observation)}" for observation in report["observations"])
+    if report["evaluation"]:
+        evaluation = report["evaluation"]
+        lines.extend(
+            [
+                "",
+                "## Reviewed evidence",
+                "",
+                f"Scope: {escape(evaluation['scope'])} · Method: {escape(evaluation['method'])}",
+                "",
+            ]
+        )
+        for split, summary in evaluation["summaries"].items():
+            lines.append(
+                f"- {split}: {summary['sufficient_count']} / {summary['answerable_questions']} "
+                f"answerable questions sufficient · Rate: {escape(summary['sufficiency_rate'])}"
+            )
     for question in report["questions"]:
         lines.extend(
             [
@@ -155,6 +200,26 @@ def render_inspection_markdown(report: dict[str, Any]) -> str:
             ]
         )
         lines.extend(f"- {escape(observation)}" for observation in question["observations"])
+        if question["metrics"]:
+            row = question["metrics"]
+            lines.extend(
+                [
+                    "",
+                    f"Sufficient evidence: {escape(row['sufficient_evidence'])} · "
+                    f"Evidence coverage: {escape(row['evidence_coverage'])}",
+                    f"Missing evidence: {escape(', '.join(row['missing_evidence_ids']))}",
+                ]
+            )
+        measurement = question["context_measurement"]
+        if measurement:
+            budget = measurement["budget"] if measurement["budget"] is not None else "unlimited"
+            lines.extend(
+                [
+                    "",
+                    f"Rendered context: {measurement['count']} {measurement['unit']} · "
+                    f"Budget: {budget}",
+                ]
+            )
         for hit in question["hits"]:
             lines.extend(
                 [
@@ -167,10 +232,20 @@ def render_inspection_markdown(report: dict[str, Any]) -> str:
                     "<pre>" + escape(hit["text"]) + "</pre>",
                 ]
             )
+        if question["stages"]:
+            lines.extend(
+                [
+                    "",
+                    "<details><summary>Stage evidence</summary><pre>"
+                    + escape(json.dumps(question["stages"], ensure_ascii=False, indent=2))
+                    + "</pre></details>",
+                ]
+            )
     lines.extend(["", "## Extracted sources", ""])
     lines.extend(
         f"- {escape(item['source_path'])}: {escape(item['location_label'])} · "
-        f"{escape(item['loader'])} · {item['characters']} characters"
+        f"{escape(item['loader'])} · {item['characters']} characters · "
+        f"ID: {escape(item['source_unit_id'])} · Text hash: {escape(item['text_hash'])}"
         for item in info["sources"]
     )
     if info["skipped"]:

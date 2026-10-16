@@ -64,10 +64,14 @@ uv run ragvi bm25 ./docs --questions ./questions.txt --format html --format json
 It reads TXT, Markdown, HTML, document JSON/JSONL and CSV (text PDFs with the optional
 `pdf` extra), prepares passages automatically, prints retrieved results,
 and writes reports under `ragvi-reports/`. No workspace setup is needed. Without
-questions it produces source diagnostics; without reviewed evidence it does not
-invent retrieval-quality scores. After installing a wheel built from this source,
+questions it produces source diagnostics; `--reviewed` adds validated original-span
+evidence scoring. Semantic, hybrid, reranking, parent-child, contextual and supplied
+multi-query commands share this workflow; `ragvi techniques` lists prerequisites.
+After installing a wheel built from this source,
 invoke `ragvi` directly from any directory. See [Portable file usage](docs/portable-file-usage.md).
 This command is not yet part of the published PyPI release.
+See [Portable techniques and reviewed evidence](docs/portable-techniques.md) for
+technique settings, context budgets and existing-system imports.
 
 The tutorial writes a complete comparison to:
 

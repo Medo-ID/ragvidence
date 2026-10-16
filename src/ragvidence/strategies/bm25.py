@@ -4,6 +4,7 @@ import re
 from collections.abc import Sequence
 
 import bm25s
+import numpy as np
 
 from ragvidence.models import RetrievalHit
 from ragvidence.representation import RetrievalRecord
@@ -33,16 +34,18 @@ class BM25Strategy:
         if self._retriever is None:
             raise RuntimeError("index() must be called before search()")
         limit = min(k, len(self._records))
-        indexes, scores = self._retriever.retrieve([tokenize(query)], k=limit, show_progress=False)
+        tokens = tokenize(query)
+        scores = self._retriever.get_scores(tokens) if tokens else np.zeros(len(self._records))
+        # Score ties use frozen input order rather than backend top-k tie behavior.
+        indexes = np.argsort(-scores, kind="stable")[:limit]
         hits = []
-        pairs = zip(indexes[0], scores[0], strict=True)
-        for rank, (index, score) in enumerate(pairs, start=1):
+        for rank, index in enumerate(indexes, start=1):
             record = self._records[int(index)]
             hits.append(
                 RetrievalHit(
                     source_unit_id=record.source.source_unit_id,
                     rank=rank,
-                    score=float(score),
+                    score=float(scores[int(index)]),
                     evidence_ids=record.source.evidence_ids,
                     preview=record.searchable_text[:240],
                     metadata={"document_id": record.source.document_id},

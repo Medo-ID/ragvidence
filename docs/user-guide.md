@@ -2,6 +2,10 @@
 
 This guide covers supported workflows beyond the bundled tutorial. Commands use an installed `ragvi` tool. Prefix them with `uv run` when using the source archive.
 
+Development builds also support [portable techniques and reviewed original spans](portable-techniques.md)
+directly on files/folders. The workspace lifecycle below remains available for the
+published release and existing reviewed-workspace experiments.
+
 ## The experiment lifecycle
 
 Every useful experiment follows the same sequence:

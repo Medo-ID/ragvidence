@@ -1,14 +1,16 @@
 """Optional local FastEmbed adapter."""
 
+from pathlib import Path
+
 import numpy as np
 
 
 class FastEmbedProvider:
-    def __init__(self, model_name: str) -> None:
+    def __init__(self, model_name: str, *, cache_dir: Path | None = None) -> None:
         try:
             from fastembed import TextEmbedding
         except ImportError as exc:
-            raise RuntimeError("Semantic retrieval requires: uv sync --extra semantic") from exc
+            raise RuntimeError("Local semantic retrieval requires 'ragvidence[semantic]'") from exc
         self.model_name = model_name
         self.cache_identity = {
             "adapter": "fastembed-v1",
@@ -16,7 +18,10 @@ class FastEmbedProvider:
             "document_encoding": "embed",
             "query_encoding": "query_embed",
         }
-        self._model = TextEmbedding(model_name=model_name)
+        self._model = TextEmbedding(
+            model_name=model_name,
+            **({"cache_dir": str(cache_dir)} if cache_dir is not None else {}),
+        )
 
     def embed_documents(self, texts: list[str]) -> np.ndarray:
         return np.asarray(list(self._model.embed(texts)), dtype=np.float32)
