@@ -179,9 +179,10 @@ context was not supplied. Exact and proxy hits cannot mix in one run. All hit ta
 are validated before selection. Missing query/index timings remain unavailable.
 External internal-stage traces and generation-request context are unavailable.
 
-One-command multi-technique comparisons, uncertainty intervals, resumable suites,
-metadata filters, MMR, automatic rewriting and extractive compression remain later
-roadmap work. Current real-model evidence covers a paraphrase smoke fixture and a
+One-command comparisons, paired intervals, controlled grids and resumable suites
+are available through [compare-data](portable-comparisons.md). Metadata filters,
+MMR, automatic rewriting and extractive compression remain later roadmap work.
+Current real-model evidence covers a paraphrase smoke fixture and a
 fixed fictional corpus (eight sources, twelve questions) with two embedding models,
 hybrid and reranking. Results include failures and ties. These bounded fixtures do
 not prove general quality or that an alternative improves a user's RAG.

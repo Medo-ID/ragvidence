@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RAGvidence comparison · {{ report.input_name }}</title>
+<style>
+@font-face{font-family:Geist;src:url(data:font/woff2;base64,{{ fonts.sans }}) format('woff2')}
+*{box-sizing:border-box}body{margin:0;background:#f5f7f5;color:#173638;font:16px/1.6 Geist,system-ui,sans-serif}main{max-width:1150px;margin:auto;padding:32px 20px}
+header,section{background:white;border:1px solid #d5dfda;border-radius:10px;padding:24px;margin-bottom:20px}header{border-top:5px solid #13635b}h1{line-height:1.2}h2{font-size:23px}h3{font-size:18px}.meta{font-size:14px;color:#49645f}table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:10px;border-bottom:1px solid #d5dfda;vertical-align:top}.scroll{overflow:auto}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:14px/1.6 Geist,system-ui,sans-serif;background:#f2f6f3;padding:16px}.bad{color:#963d32}article{border-top:1px solid #d5dfda;margin-top:18px;padding-top:12px}code{overflow-wrap:anywhere}@media print{body{background:white}main{padding:0;max-width:none}details{display:block}section{break-inside:auto}}
+</style></head><body><main>
+<header><p>RAGvidence · Technique comparison</p><h1>{{ report.input_name }}</h1>
+<p>{{ report.state }} · {{ report.evaluation_level }} · Phase: {{ report.phase }}</p>
+<p>Baseline: {{ report.baseline }} · Policy: {{ report.policy }}</p>
+{% for observation in report.observations %}<p>{{ observation }}</p>{% endfor %}
+{% if report.heldout_use %}<p>Heldout evaluation #{{ report.heldout_use.evaluation_number }} under this output root · Previously used: {{ report.heldout_use.reused }}</p>{% endif %}
+</header>
+{% for pair in report.comparisons %}<section><h2>{{ pair.participant }} versus {{ pair.baseline }}</h2><p>{{ pair.interpretation }}</p><p>Scope: {{ pair.scope }}</p>
+{% for split, scopes in pair.splits.items() %}{% for name, facts in scopes.items() %}<h3>{{ split }} / {{ name }}</h3><p>{{ facts.answerable_questions }} answerable questions · Improved {{ facts.changes.improved }} · Regressed {{ facts.changes.regressed }} · Stable pass {{ facts.changes.stable_pass }} · Stable fail {{ facts.changes.stable_fail }}</p>
+<div class="scroll"><table><thead><tr><th>Paired change</th><th>Mean difference</th><th>95% interval</th><th>Declared groups</th></tr></thead><tbody>{% for metric, interval in facts.intervals.items() %}<tr><td>{{ metric }}</td><td>{{ interval.estimate if interval.estimate is not none else 'N/A' }}</td><td>{{ interval.lower if interval.lower is not none else 'N/A' }} to {{ interval.upper if interval.upper is not none else 'N/A' }}<br>{{ interval.note }}</td><td>{{ interval.group_count }}</td></tr>{% endfor %}</tbody></table></div>{% endfor %}{% endfor %}
+{% for question in pair.questions %}<p>{{ question.question_id }}: {{ question.change or 'unscored' }} · Gained: {{ question.gained | join(', ') or 'none' }} · Lost: {{ question.lost | join(', ') or 'none' }} · Missing: {{ question.missing | join(', ') or 'none' }}</p>{% endfor %}</section>{% endfor %}
+{% for entry in report.participants %}<section><h2>{{ entry.name }}</h2><p>Status: {{ entry.state }}</p>
+{% if entry.state != 'complete' %}<p class="bad">{{ entry.error }}</p>{% else %}
+<p class="meta">Strategy: {{ entry.report.manifest.config.strategy }} · k={{ entry.report.manifest.config.k }} · {{ entry.report.input.passage_count }} prepared passages</p>
+<p><strong>Evidence scope: {{ entry.evidence_scope }}</strong></p>
+{% for observation in entry.report.observations %}<p class="meta">{{ observation }}</p>{% endfor %}
+{% if entry.summaries %}<div class="scroll"><table><thead><tr><th>Split / slice</th><th>Sufficient / answerable</th><th>Coverage</th><th>MRR</th><th>Precision</th></tr></thead><tbody>
+{% for split, scopes in entry.summaries.items() %}{% for name, summary in scopes.items() %}<tr><td>{{ split }} / {{ name }}</td><td>{{ summary.sufficient_count }} / {{ summary.answerable_questions }}</td><td>{{ summary.mean_evidence_coverage if summary.mean_evidence_coverage is not none else 'N/A' }}</td><td>{{ summary.mean_reciprocal_rank if summary.mean_reciprocal_rank is not none else 'N/A' }}</td><td>{{ summary.mean_precision_at_k if summary.mean_precision_at_k is not none else 'N/A' }}</td></tr>{% endfor %}{% endfor %}
+</tbody></table></div>{% endif %}
+<p>Mean query time over {{ entry.resources.query_ms.known_count }} known values: {{ '%.2f' | format(entry.resources.query_ms.mean_known) if entry.resources.query_ms.mean_known is not none else 'N/A' }} ms · {{ entry.resources.query_ms.missing_count }} missing</p>
+<p>Mean rendered context: {{ entry.resources.context_units.mean_known if entry.resources.context_units.mean_known is not none else 'N/A' }} {{ entry.resources.context_unit or '' }} · Original text characters: {{ entry.resources.context_characters.mean_known if entry.resources.context_characters.mean_known is not none else 'N/A' }}</p>
+<p>Supplied-usage cost estimate: {{ entry.usage.cost if entry.usage.cost is not none else 'N/A' }} {{ entry.usage.currency or '' }} · Pricing: {{ entry.usage.pricing_identity or 'unavailable' }}</p>
+<details><summary>Configuration, criteria and separate timing trials</summary><pre>{{ {'config':entry.report.manifest.config,'criteria':entry.criteria,'trials':entry.trials,'repeat_rankings_changed':entry.repeat_rankings_changed} | tojson(indent=2) }}</pre></details>
+<details><summary>Ranked contexts and stage evidence ({{ entry.report.questions | length }} questions)</summary>
+{% for question in entry.report.questions %}<article><h3>{{ question.question }}</h3><p class="meta">{{ question.question_id }} · {{ question.context_characters }} returned text characters</p>
+{% if question.metrics %}<p>Sufficient: {{ question.metrics.sufficient_evidence if question.metrics.sufficient_evidence is not none else 'N/A' }} · Missing: {{ question.metrics.missing_evidence_ids | join(', ') or 'none' }}</p>{% endif %}
+{% for hit in question.hits %}<p class="meta">Rank {{ hit.rank }} · {{ hit.source_path }} · {{ hit.location_label }} · Original characters {{ hit.start }}–{{ hit.end }}</p><pre>{{ hit.text }}</pre>{% endfor %}
+<details><summary>Observed stages and scores</summary><pre>{{ question.stages | tojson(indent=2) }}</pre></details></article>{% endfor %}</details>
+{% endif %}</section>{% endfor %}
+<section><h2>Limitations</h2><ul>{% for value in report.limitations %}<li>{{ value }}</li>{% endfor %}</ul><p class="meta">Generated {{ report.generated_at }} · Query-stage invocation upper bound {{ report.query_call_upper_bound }}</p><details><summary>Bundled font license</summary><pre>{{ fonts.license }}</pre></details></section>
+</main></body></html>

@@ -4,6 +4,14 @@ All notable user-facing changes are documented here.
 
 ## Unreleased
 
+- Add `ragvi compare-data INPUT` for one-command technique comparisons over a shared
+  frozen corpus, optional existing-system baseline, and HTML/JSON/Markdown decision reports.
+- Add bounded configuration grids, declared depth/token/trade-off policies, split/slice
+  denominators, paired seeded cluster intervals and per-question evidence gains/losses.
+- Freeze dev shortlists before heldout evaluation, record local heldout reuse, and
+  validate checkpoints, exact context, recomputed scores and report facts before resume.
+- Keep failed attempts visible without overwriting; separate repeat timing trials and
+  observed vector cache states. Preserve unavailable timings/costs and label supplied-usage estimates.
 - Add portable semantic, hybrid, rerank, parent-child, heading-context, contextual,
   supplied multi-query and existing-system import commands with a capability catalog.
 - Score reviewed evidence against complete unions of original text spans; preserve

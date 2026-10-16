@@ -19,3 +19,10 @@ contain full returned passages. Its internal `snapshot.json` contains original
 loaded text; keep internal artifacts separate from the selected shareable report.
 New workspace evaluations also retain a private source/run snapshot for integrity
 validation; report exports omit that internal validation snapshot.
+
+Portable comparisons freeze original inputs, references and selected sidecars in a
+private comparison directory. Completed jobs are validated before resume; no original
+input is reread on resume. Share selected exports, not the entire comparison directory,
+when original corpus text or reviewed labels should remain private. Comparison exports
+include retrieved passages and source locations. Supplied token usage/pricing produces
+labeled estimates; the tool does not fetch billing or pricing from external accounts.

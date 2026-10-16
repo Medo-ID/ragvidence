@@ -2,6 +2,7 @@
 
 from collections import defaultdict
 
+from ragvidence.evaluation.aggregation import summarize
 from ragvidence.models import ContextPassage, ExperimentRun
 from ragvidence.reviewed import EvidenceItem, ReviewedReferences
 
@@ -78,19 +79,10 @@ def score_spans(run: ExperimentRun, references: ReviewedReferences) -> dict:
                 "precision_at_k": relevant / run.manifest.config.k if required else None,
             }
         )
-    summaries = {}
-    for split in ("dev", "heldout"):
-        rows = [row for row in results if row["split"] == split and row["answerable"]]
-        summaries[split] = {
-            "answerable_questions": len(rows),
-            "sufficient_count": sum(row["sufficient_evidence"] for row in rows),
-            "sufficiency_rate": sum(row["sufficient_evidence"] for row in rows) / len(rows)
-            if rows
-            else None,
-            "mean_evidence_coverage": sum(row["evidence_coverage"] for row in rows) / len(rows)
-            if rows
-            else None,
-        }
+    summaries = {
+        split: summarize([row for row in results if row["split"] == split])
+        for split in ("dev", "heldout")
+    }
     return {
         "schema_version": 1,
         "method": "original-span-union-v1",

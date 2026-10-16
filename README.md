@@ -59,6 +59,7 @@ The development source also includes the first portable file/folder command:
 ```bash
 uv run ragvi bm25 ./manual.txt --query "How do I reset the device?"
 uv run ragvi bm25 ./docs --questions ./questions.txt --format html --format json
+uv run ragvi compare-data ./docs --questions ./questions.txt --techniques bm25,parent-child
 ```
 
 It reads TXT, Markdown, HTML, document JSON/JSONL and CSV (text PDFs with the optional
@@ -72,6 +73,8 @@ invoke `ragvi` directly from any directory. See [Portable file usage](docs/porta
 This command is not yet part of the published PyPI release.
 See [Portable techniques and reviewed evidence](docs/portable-techniques.md) for
 technique settings, context budgets and existing-system imports.
+See [Portable comparisons](docs/portable-comparisons.md) for one-command comparisons,
+bounded grids, paired intervals, frozen shortlists and validated resume.
 
 The tutorial writes a complete comparison to:
 

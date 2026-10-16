@@ -6,7 +6,7 @@ import hashlib
 import json
 import os
 import tempfile
-from pathlib import Path
+from pathlib import Path, PurePath
 from typing import Any
 
 from pydantic import BaseModel
@@ -15,6 +15,8 @@ HASH_ALGORITHM = "canonical-json-v1"
 
 
 def _canonical(value: Any) -> Any:
+    if isinstance(value, PurePath):
+        return str(value)
     if isinstance(value, BaseModel):
         return _canonical(value.model_dump(mode="python"))
     if isinstance(value, dict):

@@ -46,6 +46,7 @@ def import_portable(
     *,
     dataset_hash: str,
     references_hash: str | None,
+    known_question_ids: set[str] | None = None,
 ) -> tuple[ExperimentRun, list[SourceUnit], bool]:
     if path.stat().st_size > 50 * 1024 * 1024:
         raise ValueError("Imported results exceed 50 MiB")
@@ -61,7 +62,12 @@ def import_portable(
         if line.strip()
     ]
     ids = [query.question_id for query in parsed]
-    if len(ids) != len(set(ids)) or set(ids) != {question.question_id for question in questions}:
+    selected_ids = {question.question_id for question in questions}
+    if (
+        len(ids) != len(set(ids))
+        or not selected_ids <= set(ids)
+        or set(ids) - (known_question_ids or selected_ids)
+    ):
         raise ValueError("Imported results must contain every supplied question exactly once")
     modes, queries = set(), []
     counter = ContextCounter(config.tokenizer_file, config.tokenizer_hash)
@@ -156,4 +162,11 @@ def import_portable(
         input_preparation=snapshot.preparation,
         warnings=warnings,
     )
-    return ExperimentRun(manifest=manifest, queries=queries), list(sources.values()), proxy
+    return (
+        ExperimentRun(
+            manifest=manifest,
+            queries=[query for query in queries if query.question_id in selected_ids],
+        ),
+        list(sources.values()),
+        proxy,
+    )

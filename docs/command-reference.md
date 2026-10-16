@@ -19,6 +19,7 @@ Use `ragvi COMMAND --help` for the authoritative options installed with your ver
 | `ragvi heading-context INPUT`, `ragvi contextual INPUT` | Index authentic headings or supplied reviewed prefixes. |
 | `ragvi multi-query INPUT` | Fuse original questions and supplied variants. |
 | `ragvi import-data INPUT` | Verify external original-span results or explicitly limited ID-only proxies. |
+| `ragvi compare-data INPUT` | Compare techniques on one frozen corpus with optional existing-system baseline, reviewed spans, grids and decision reports. |
 | `ragvi benchmark WORKSPACE` | Run body and heading-context retrieval configurations. |
 | `ragvi experiment WORKSPACE CONFIG_FILE` | Run a JSON-configured retrieval pipeline with optional hybrid search, children, query variants and reranking. |
 | `ragvi inspect RUN --question ID` | Inspect ranked evidence for one question. |
@@ -45,6 +46,8 @@ automatic HTML output, JSON/Markdown selection and the distinction between
 source diagnostics, unscored retrieval inspection and reviewed evaluation.
 See [Portable techniques](portable-techniques.md) for `--reviewed`, stage limits,
 source-prefix/query-variant schemas, tokenizer budgets and exact context imports.
+See [Portable comparisons](portable-comparisons.md) for `--techniques`, `--suite`,
+`--phase`, `--shortlist`, `--resume`, intervals, criteria and supplied pricing.
 
 `benchmark --strategies` accepts `bm25`, `semantic`, and `hybrid`, separated by commas.
 See [RAG technique coverage](rag-technique-coverage.md) for experiment settings,

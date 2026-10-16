@@ -3,7 +3,9 @@
 Date: 2026-10-15. Status: M1–M3 implemented in development. The integrity foundation,
 portable BM25, additional file loaders and portable configuration are available.
 M4's portable techniques, span scoring, budgets and external imports are implemented
-and tested, including two fingerprinted embedding models on fixed reviewed data. Later
+and tested, including two fingerprinted embedding models on fixed reviewed data.
+M5 now provides comparisons, bounded grids, paired intervals, frozen shortlists and
+validated resume in development. Later
 milestones remain planned. No new release has been published. See
 [implementation evidence](portable-implementation-evidence.md) for delivered scope.
 
@@ -302,6 +304,12 @@ credit prevention; exact context parity; budget behavior and source mapping. The
 same reviewed evidence is scored identically for equivalent native/imported context.
 
 ### M5 — One-command comparison and decision reports
+
+Implemented in development. See [current usage](../portable-comparisons.md) and
+[recorded model suite evidence](../../verification/portable-m5/model-check.json).
+Limits remain explicit: local heldout ledgers, user-supplied usage/pricing,
+unknown model-cache warmth, no nDCG without graded gains, and Linux-only installed
+execution evidence. No universal quality winner or release publication is claimed.
 
 Scope:
 

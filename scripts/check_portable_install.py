@@ -171,6 +171,52 @@ def check_install(wheel: Path, directory: Path) -> None:
         evidence = json.loads(next(destination.glob("*/report.json")).read_text())
         assert evidence["questions"][0]["metrics"]["sufficient_evidence"] is True
         assert evidence["questions"][0]["stages"]
+    comparison_root = client / "comparisons"
+    comparison_output = run(
+        [
+            executable,
+            "compare-data",
+            str(source),
+            "--reviewed",
+            str(references),
+            "--results",
+            str(imported),
+            "--techniques",
+            "bm25,parent-child",
+            "--format",
+            "json",
+            "--format",
+            "html",
+            "--format",
+            "markdown",
+            "--output",
+            str(comparison_root),
+            "--no-input",
+        ],
+        cwd=client,
+        env=env,
+    )
+    comparison_path = next(comparison_root.glob("*/exports/*/report.json"))
+    comparison = json.loads(comparison_path.read_text())
+    assert comparison["state"] == "complete" and comparison["baseline"] == "existing"
+    assert len(comparison["participants"]) == 3
+    assert comparison["participants"][0]["resources"]["query_ms"]["mean_known"] is None
+    assert "HTML report:" in comparison_output
+    comparison_directory = comparison_path.parents[2]
+    run(
+        [
+            executable,
+            "compare-data",
+            "unused-frozen-input",
+            "--resume",
+            str(comparison_directory),
+            "--format",
+            "json",
+            "--no-input",
+        ],
+        cwd=client,
+        env=env,
+    )
     # Exercise all dependency-free structured loaders from the installed wheel.
     mixed = client / "mixed data"
     mixed.mkdir()
@@ -220,7 +266,7 @@ def check_install(wheel: Path, directory: Path) -> None:
     print(
         "PASS: installed command, unrelated directory, Unicode/space paths, all exports, "
         "source-only mode, HTML/JSON/JSONL/CSV, explicit configuration, missing PDF extra, "
-        "reviewed spans, portable lexical modifiers, exact-context imports, "
+        "reviewed spans, portable lexical modifiers, exact-context imports, comparisons/resume, "
         "unchanged input, verification and legacy tutorial"
     )
 

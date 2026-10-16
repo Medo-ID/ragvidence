@@ -218,6 +218,99 @@ def check(cache: Path, output: Path) -> None:
             print(f"PASS: reviewed corpus execution for {label}", flush=True)
         assert len({item["references_hash"] for item in quality_outcomes}) == 1
         assert len({item["corpus_hash"] for item in quality_outcomes}) == 1
+        suite_file = root / "comparison-suite.json"
+        suite_file.write_text(
+            json.dumps(
+                {
+                    "bootstrap_samples": 200,
+                    "question_groups": {
+                        "RESET-DIRECT": "reset",
+                        "RESET-PARAPHRASE": "reset",
+                        "RESET-SAFE": "reset",
+                    },
+                    "warm_repeats": 1,
+                    "variants": [
+                        {"name": "bm25", "technique": "bm25"},
+                        {
+                            "name": "bge",
+                            "technique": "semantic",
+                            "options": {"model": "BAAI/bge-small-en-v1.5"},
+                        },
+                        {
+                            "name": "minilm",
+                            "technique": "semantic",
+                            "options": {"model": "sentence-transformers/all-MiniLM-L6-v2"},
+                        },
+                        {"name": "hybrid", "technique": "hybrid"},
+                    ],
+                }
+            )
+        )
+        destination = root / "comparison"
+        result = CliRunner().invoke(
+            app,
+            [
+                "compare-data",
+                str(corpus),
+                "--reviewed",
+                str(labels),
+                "--suite",
+                str(suite_file),
+                "--cache-dir",
+                str(cache),
+                "--output",
+                str(destination),
+                "--format",
+                "json",
+                "--no-input",
+            ],
+        )
+        if result.exit_code:
+            raise RuntimeError(result.output) from result.exception
+        comparison_path = next(destination.glob("*/exports/*/report.json"))
+        comparison = json.loads(comparison_path.read_text())
+        assert comparison["state"] == "complete" and len(comparison["participants"]) == 4
+        assert all(
+            item["summaries"]["dev"]["all"]["answerable_questions"] == 6
+            for item in comparison["participants"]
+        )
+        assert all(len(item["trials"]) == 2 for item in comparison["participants"])
+        comparison_root = comparison_path.parents[2]
+        resumed = CliRunner().invoke(
+            app,
+            [
+                "compare-data",
+                "unused-frozen-input",
+                "--resume",
+                str(comparison_root),
+                "--cache-dir",
+                str(cache),
+                "--format",
+                "json",
+                "--no-input",
+            ],
+        )
+        if resumed.exit_code:
+            raise RuntimeError(resumed.output) from resumed.exception
+        print(
+            "PASS: real four-configuration comparison, repeated trials and validated resume",
+            flush=True,
+        )
+        suite_evidence = {
+            "policy": comparison["policy"],
+            "phase": comparison["phase"],
+            "participants": [
+                {
+                    "name": item["name"],
+                    "summaries": item["summaries"],
+                    "trials": item["trials"],
+                    "resources": item["resources"],
+                }
+                for item in comparison["participants"]
+            ],
+            "paired_comparisons": comparison["comparisons"],
+            "resume_passed": True,
+        }
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(
         json.dumps(
@@ -231,6 +324,7 @@ def check(cache: Path, output: Path) -> None:
                 "model_file_sha256": fingerprints,
                 "outcomes": outcomes,
                 "reviewed_quality_corpus": quality_outcomes,
+                "comparison_suite": suite_evidence,
             },
             indent=2,
         )

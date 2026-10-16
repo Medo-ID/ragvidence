@@ -5,6 +5,8 @@ to PyPI. Portable BM25, semantic, hybrid, reranking, parent-child, heading/conte
 indexing, supplied multi-query and existing-system imports share TXT, Markdown,
 HTML, document JSON/JSONL, CSV and optional text-bearing PDF loaders. See
 [techniques and reviewed evidence](portable-techniques.md) for commands and scoring.
+Use [portable comparisons](portable-comparisons.md) to run selected alternatives
+against the same frozen inputs and export one decision report.
 
 ## Run on your own text
 

@@ -1,8 +1,8 @@
 # Portable implementation evidence
 
-Date: 2026-10-15. Scope: M1 integrity foundation, M2 portable BM25 and M3 additional
-loaders/configuration plus M4's core portable execution/scoring path in development.
-M1/M2 were committed as `4479a05`, M3 as `8f7e87c` (author Medo-ID) before M4.
+Date: 2026-10-16. Scope: M1 integrity foundation, M2 portable BM25 and M3 additional
+loaders/configuration plus M4 technique evaluation and M5 comparisons in development.
+M1/M2 were committed as `4479a05`, M3 as `8f7e87c`, M4 as `ff7f06b` (author Medo-ID).
 No package has been published by this work.
 
 ## Delivered behavior
@@ -110,7 +110,36 @@ uv run ragvi bm25 ./manual.txt --query "Reset instructions" --format html --form
   paraphrase; the full per-question outcomes include failures and ties. The evidence
   file records all outcomes rather than asserting a universally superior technique.
 
-## Verification
+## M5 comparison and decision path
+
+- `compare-data` freezes source extraction/questions once. Bounded variants/grids
+  rematerialize chunks from originals and call the same snapshot execution service
+  as single commands. Existing-system exact-span/ID-proxy baselines participate.
+- Declared fixed-k, fixed-token or descriptive policies are checked before model
+  calls. Group/slice definitions and supplied usage/pricing have strict schemas.
+- Summary facts include sufficiency/coverage/MRR/precision denominators, paired
+  evidence gains/losses, split/slice results, observed resources and criterion matches.
+  Proxies cannot satisfy actual-context quality thresholds. No automatic winner is declared.
+- Seeded paired cluster intervals preserve related question groups. Small/empty
+  groups, exploratory grids and repeated timing trials have explicit limits.
+- Dev comparisons can freeze user-selected successful shortlists. Heldout execution
+  validates their corpus/reference/configuration/sidecar bindings and records local
+  reuse, across shortlists for the same frozen evaluation data. Concurrent ledger
+  writes reserve unique immutable counters; the ledger is not global/tamper-proof.
+- Resume verifies input/checkpoint digests, configuration, original text context,
+  recomputed evidence metrics and all derived report facts. It uses frozen inputs,
+  retains failures, retries incomplete jobs in new attempts and creates new exports.
+- Repeated trials retain separate measurements and observed cold/warm vector states.
+  Model/OS cache warmth remains unknown; repeated rankings are checked without
+  inflating paired question counts. Runtime package identities accompany native traces.
+- JSON/HTML/Markdown consume the same comparison facts. HTML puts changes first,
+  keeps ranked context/stages expandable, escapes source text and embeds its font.
+- [M5 real-model evidence](../../verification/portable-m5/model-check.json) records a
+  four-configuration comparison using BGE/MiniLM, repeated trials and validated
+  resume, plus the fixed reviewed quality corpus. Models are fingerprinted; this
+  bounded fictional fixture does not prove general production quality.
+
+## Current verification
 
 ```bash
 uv sync --frozen --dev --all-extras
@@ -122,8 +151,8 @@ uv build
 git diff --check
 ```
 
-The test suite contains **241 passing tests** with all extras installed (150 at
-M1/M2, 196 at M3). It includes
+The test suite contains **274 passing tests** with all extras installed (150 at
+M1/M2, 196 at M3, 241 at M4). It includes
 cross-process hash-seed checks for dataset identities and saved evaluations;
 tampered artifacts; missing/duplicate questions; forged evidence/context; invalid
 provider vectors/indexes/caches; input extraction/offsets; question-file exclusion;
@@ -134,15 +163,14 @@ The built wheel was installed into isolated temporary tool/bin directories and
 invoked as `ragvi` from an unrelated customer folder. Checks cover spaces and Unicode
 in paths, all three exports, source-only execution, HTML/JSON/JSONL/CSV loading,
 explicit configuration, reviewed spans, lexical modifier commands, exact external
-imports, missing optional PDF support, installation verification and
-the existing tutorial. CI and release preparation run this same check, and install
+imports, missing optional PDF support, installation verification,
+one-command comparison/resume and the existing tutorial. CI and release preparation
+run this same check, and install
 all extras for the parser/tokenizer tests. These runs were on Linux;
 they are not evidence of Windows/macOS execution.
 
 ## Remaining roadmap work
 
-- Multi-technique comparison/suite commands, split/slice aggregation, fair token
-  budgets, uncertainty/resource summaries and decision reports.
 - Metadata filters, MMR, automatic rewriting and extractive compression.
 - Optional answer/citation/abstention evaluation and calibrated model judges.
 - Pinned model-revision fingerprints where provider APIs expose them, plus the

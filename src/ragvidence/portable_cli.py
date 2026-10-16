@@ -14,6 +14,7 @@ from ragvidence.portable import normalize_formats, run_portable
 from ragvidence.portable_config import resolve_portable_options
 from ragvidence.portable_inputs import load_variants
 from ragvidence.questions import load_questions
+from ragvidence.suites.cli import print_comparison, run_comparison_cli
 
 
 def input_is_terminal() -> bool:
@@ -119,6 +120,33 @@ def register_portable_commands(app: typer.Typer, console: Console) -> None:
             int | None, typer.Option(min=1, help="Maximum passage body characters")
         ] = None,
         chunk_overlap: Annotated[int | None, typer.Option(min=0)] = None,
+        techniques: Annotated[
+            str | None, typer.Option(help="Comparison techniques, comma separated")
+        ] = None,
+        suite_file: Annotated[
+            Path | None, typer.Option("--suite", help="Advanced comparison suite JSON")
+        ] = None,
+        baseline: Annotated[
+            str | None, typer.Option(help="Comparison baseline configuration name")
+        ] = None,
+        policy: Annotated[
+            str | None, typer.Option(help="fixed_k, fixed_tokens or descriptive comparison")
+        ] = None,
+        phase: Annotated[
+            str, typer.Option(help="dev, heldout or all; heldout needs a frozen shortlist")
+        ] = "dev",
+        shortlist: Annotated[
+            Path | None, typer.Option(help="Frozen dev shortlist for heldout evaluation")
+        ] = None,
+        shortlist_names: Annotated[
+            str | None, typer.Option(help="Dev configurations to freeze, comma separated")
+        ] = None,
+        resume: Annotated[
+            Path | None, typer.Option(help="Resume a frozen comparison directory")
+        ] = None,
+        warm_repeats: Annotated[int | None, typer.Option(min=0, max=3)] = None,
+        bootstrap_samples: Annotated[int | None, typer.Option(min=100, max=10000)] = None,
+        bootstrap_seed: Annotated[int | None, typer.Option(min=0)] = None,
         no_input: Annotated[
             bool, typer.Option("--no-input", help="Never prompt for input")
         ] = False,
@@ -173,7 +201,14 @@ def register_portable_commands(app: typer.Typer, console: Console) -> None:
                     "--reviewed supplies questions; do not combine with --query/--questions"
                 )
             search_questions = load_questions(query or [], questions)
-            if not reviewed and not search_questions and not no_input and input_is_terminal():
+            if (
+                not reviewed
+                and not shortlist
+                and not resume
+                and not search_questions
+                and not no_input
+                and input_is_terminal()
+            ):
                 entered = typer.prompt(
                     "Question (leave empty for source diagnostics)", default="", show_default=False
                 )
@@ -184,89 +219,223 @@ def register_portable_commands(app: typer.Typer, console: Console) -> None:
                 formats = normalize_formats([value.strip() for value in selected.split(",")])
             if open_report and "html" not in formats:
                 raise ValueError("--open requires an HTML report; add --format html")
-            config = preset(ctx.command.name, options, variants=load_variants(variants))
-            settings = Settings(_env_file=env_file)
-            if (search_questions or reviewed) and config.strategy in {"semantic", "hybrid"}:
-                selected_provider = config.provider or settings.embedding_provider
-                if selected_provider != "fastembed":
-                    console.print(
-                        f"DISCLOSURE: {selected_provider} receives source text and search queries.",
-                        markup=False,
-                    )
-                else:
-                    console.print("Local embeddings may download the selected model on first use.")
-            if (search_questions or reviewed) and config.reranker_model:
-                console.print("Local reranking may download the selected model on first use.")
-            result = run_portable(
-                input_path,
-                search_questions,
-                config,
-                output_root=options.output,
-                formats=formats,
-                question_file=questions,
-                chunk_size=options.chunk_size,
-                chunk_overlap=options.chunk_overlap,
-                cache_dir=options.cache_dir,
-                ingestion_options=options.model_dump(
-                    include={
-                        "text_field",
-                        "include_patterns",
-                        "exclude_patterns",
-                        "max_files",
-                        "max_file_bytes",
-                        "max_total_bytes",
-                        "max_records",
-                        "max_extracted_characters",
+            if ctx.command.name == "compare-data":
+                if shortlist:
+                    frozen_parameters = {
+                        "techniques",
+                        "suite_file",
+                        "baseline",
+                        "policy",
+                        "warm_repeats",
+                        "bootstrap_seed",
+                        "bootstrap_samples",
+                        "model",
+                        "provider",
+                        "reranker_model",
+                        "representation",
+                        "child_splitter",
+                        "branch_k",
+                        "child_k",
+                        "query_k",
+                        "rerank_k",
+                        "context_budget",
+                        "tokenizer_file",
+                        "lexical_weight",
+                        "rrf_constant",
+                        "chunk_size",
+                        "chunk_overlap",
+                        "base_retriever",
+                        "variants",
+                        "prefixes",
+                        "results",
                     }
-                ),
-                excluded_inputs=[
-                    path
-                    for path in (config_file, env_file, variants, options.tokenizer_file)
-                    if path is not None
-                ],
-                settings=settings,
-                reviewed_file=reviewed,
-                prefixes_file=prefixes,
-                results_file=results,
-            )
+                    if any(
+                        ctx.get_parameter_source(name)
+                        and ctx.get_parameter_source(name).name == "COMMANDLINE"
+                        for name in frozen_parameters
+                    ):
+                        raise ValueError(
+                            "Shortlist freezes configurations; omit retrieval/comparison overrides"
+                        )
+                if resume:
+                    allowed = {
+                        "input_path",
+                        "resume",
+                        "format",
+                        "cache_dir",
+                        "env_file",
+                        "no_input",
+                        "open_report",
+                    }
+                    provided = {
+                        name
+                        for name in ctx.params
+                        if ctx.get_parameter_source(name)
+                        and ctx.get_parameter_source(name).name == "COMMANDLINE"
+                    }
+                    if provided - allowed:
+                        raise ValueError(
+                            "Resume uses frozen options; omit configuration/question overrides"
+                        )
+                if resume and (query or questions):
+                    raise ValueError("Resume uses frozen questions; omit --query/--questions")
+                result = run_comparison_cli(
+                    input_path,
+                    search_questions,
+                    options,
+                    Settings(_env_file=env_file),
+                    techniques=techniques,
+                    suite_file=suite_file,
+                    baseline=baseline,
+                    policy=policy,
+                    phase=phase,
+                    shortlist=shortlist,
+                    shortlist_names=shortlist_names,
+                    resume=resume,
+                    warm_repeats=warm_repeats,
+                    bootstrap_samples=bootstrap_samples,
+                    bootstrap_seed=bootstrap_seed,
+                    reviewed=reviewed,
+                    variants=variants,
+                    prefixes=prefixes,
+                    results=results,
+                    excluded=[
+                        path
+                        for path in (
+                            config_file,
+                            env_file,
+                            questions,
+                            variants,
+                            prefixes,
+                            results,
+                            options.tokenizer_file,
+                        )
+                        if path is not None
+                    ],
+                    on_event=lambda event: console.print(event["message"], markup=False),
+                )
+            else:
+                if (
+                    ctx.get_parameter_source("phase")
+                    and ctx.get_parameter_source("phase").name == "COMMANDLINE"
+                ):
+                    raise ValueError("--phase requires compare-data")
+                if any(
+                    value is not None
+                    for value in (
+                        techniques,
+                        suite_file,
+                        baseline,
+                        policy,
+                        shortlist,
+                        shortlist_names,
+                        resume,
+                        warm_repeats,
+                        bootstrap_samples,
+                        bootstrap_seed,
+                    )
+                ):
+                    raise ValueError("Comparison options require compare-data")
+                config = preset(ctx.command.name, options, variants=load_variants(variants))
+                settings = Settings(_env_file=env_file)
+                if (search_questions or reviewed) and config.strategy in {"semantic", "hybrid"}:
+                    selected_provider = config.provider or settings.embedding_provider
+                    if selected_provider != "fastembed":
+                        console.print(
+                            f"DISCLOSURE: {selected_provider} receives source text "
+                            "and search queries.",
+                            markup=False,
+                        )
+                    else:
+                        console.print(
+                            "Local embeddings may download the selected model on first use."
+                        )
+                if (search_questions or reviewed) and config.reranker_model:
+                    console.print("Local reranking may download the selected model on first use.")
+                result = run_portable(
+                    input_path,
+                    search_questions,
+                    config,
+                    output_root=options.output,
+                    formats=formats,
+                    question_file=questions,
+                    chunk_size=options.chunk_size,
+                    chunk_overlap=options.chunk_overlap,
+                    cache_dir=options.cache_dir,
+                    ingestion_options=options.model_dump(
+                        include={
+                            "text_field",
+                            "include_patterns",
+                            "exclude_patterns",
+                            "max_files",
+                            "max_file_bytes",
+                            "max_total_bytes",
+                            "max_records",
+                            "max_extracted_characters",
+                        }
+                    ),
+                    excluded_inputs=[
+                        path
+                        for path in (config_file, env_file, variants, options.tokenizer_file)
+                        if path is not None
+                    ],
+                    settings=settings,
+                    reviewed_file=reviewed,
+                    prefixes_file=prefixes,
+                    results_file=results,
+                )
         except (OSError, ValueError, RuntimeError) as exc:
             console.print(f"FAIL {exc}", markup=False)
             raise typer.Exit(1) from exc
         report = result.report
-        info = report["input"]
-        console.print(f"COMPLETE · {report['evaluation_level']}", markup=False)
-        console.print(
-            f"{info['document_count']} sources · {info['passage_count']} passages · "
-            f"{len(report['questions'])} questions · {info['skipped_count']} skipped · "
-            f"{info['failed_count']} failed · {info['warning_count']} warnings",
-            markup=False,
-        )
-        for observation in report["observations"]:
-            console.print(observation, markup=False)
-        for notice in info["skipped"]:
+        if report.get("kind") == "comparison":
+            print_comparison(console, report)
             console.print(
-                f"{notice['kind'].upper()} {notice['path']}: {notice['reason']}", markup=False
+                f"Comparison artifacts: {result.directory.resolve()}", markup=False, soft_wrap=True
             )
-        for question in report["questions"]:
-            console.print(f"\n{question['question']}", markup=False)
-            if question["metrics"]:
-                row = question["metrics"]
-                sufficient = (
-                    "N/A" if row["sufficient_evidence"] is None else row["sufficient_evidence"]
-                )
-                coverage = "N/A" if row["evidence_coverage"] is None else row["evidence_coverage"]
+            if (result.directory / "shortlist.json").exists():
                 console.print(
-                    f"Sufficient evidence: {sufficient} · "
-                    f"Coverage: {coverage} · "
-                    f"Missing: {', '.join(row['missing_evidence_ids']) or 'none'}",
+                    f"Frozen shortlist: {(result.directory / 'shortlist.json').resolve()}",
                     markup=False,
+                    soft_wrap=True,
                 )
-            for hit in question["hits"]:
+        else:
+            info = report["input"]
+            console.print(f"COMPLETE · {report['evaluation_level']}", markup=False)
+            console.print(
+                f"{info['document_count']} sources · {info['passage_count']} passages · "
+                f"{len(report['questions'])} questions · {info['skipped_count']} skipped · "
+                f"{info['failed_count']} failed · {info['warning_count']} warnings",
+                markup=False,
+            )
+            for observation in report["observations"]:
+                console.print(observation, markup=False)
+            for notice in info["skipped"]:
                 console.print(
-                    f"  #{hit['rank']} {hit['source_path']} · {hit['score']:.4f}\n"
-                    f"  {hit['text'][:240]}",
-                    markup=False,
+                    f"{notice['kind'].upper()} {notice['path']}: {notice['reason']}", markup=False
                 )
+            for question in report["questions"]:
+                console.print(f"\n{question['question']}", markup=False)
+                if question["metrics"]:
+                    row = question["metrics"]
+                    sufficient = (
+                        "N/A" if row["sufficient_evidence"] is None else row["sufficient_evidence"]
+                    )
+                    coverage = (
+                        "N/A" if row["evidence_coverage"] is None else row["evidence_coverage"]
+                    )
+                    console.print(
+                        f"Sufficient evidence: {sufficient} · "
+                        f"Coverage: {coverage} · "
+                        f"Missing: {', '.join(row['missing_evidence_ids']) or 'none'}",
+                        markup=False,
+                    )
+                for hit in question["hits"]:
+                    console.print(
+                        f"  #{hit['rank']} {hit['source_path']} · {hit['score']:.4f}\n"
+                        f"  {hit['text'][:240]}",
+                        markup=False,
+                    )
         for format_name, path in result.exports.items():
             console.print(
                 f"{format_name.upper()} report: {path.resolve()}", markup=False, soft_wrap=True
@@ -278,9 +447,14 @@ def register_portable_commands(app: typer.Typer, console: Console) -> None:
                     console.print("Browser unavailable; open the saved HTML report manually.")
             except (OSError, webbrowser.Error):
                 console.print("Browser unavailable; open the saved HTML report manually.")
+        if report.get("kind") == "comparison" and report["state"] != "complete":
+            raise typer.Exit(1)
 
     for capability in CAPABILITIES:
         app.command(capability.name, help=capability.description)(inspect)
+    app.command(
+        "compare-data", help="Compare techniques on one frozen corpus and export decision evidence"
+    )(inspect)
 
     @app.command("techniques")
     def techniques(format: Annotated[str, typer.Option(help="terminal or json")] = "terminal"):

@@ -1,5 +1,7 @@
 """Resolve a retrieval configuration and build its provider-backed stages."""
 
+from functools import lru_cache
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
 from ragvidence.budgets import tokenizer_hash
@@ -84,3 +86,25 @@ def build_strategy(
             fixed_depth=config.child_k is not None,
         )
     return strategy
+
+
+def vector_cache_state(strategy) -> str:
+    """Describe only observed vector reuse; model/OS cache warmth is unknown."""
+    if isinstance(strategy, SemanticStrategy):
+        return "warm_vectors" if strategy.cache_hit else "cold_vectors"
+    for attribute in ("semantic", "child_strategy"):
+        child = getattr(strategy, attribute, None)
+        if child is not None:
+            return vector_cache_state(child)
+    return "not_applicable"
+
+
+@lru_cache(maxsize=1)
+def runtime_versions() -> dict:
+    versions = {}
+    for name in ("bm25s", "numpy", "fastembed", "onnxruntime", "tokenizers"):
+        try:
+            versions[name] = version(name)
+        except PackageNotFoundError:
+            continue
+    return versions

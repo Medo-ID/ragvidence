@@ -22,7 +22,7 @@ from ragvidence.portable_inputs import prepare_sources
 from ragvidence.portable_validation import validate_portable_run
 from ragvidence.reporting.inspection import build_inspection_report
 from ragvidence.reporting.render import render_report
-from ragvidence.reviewed import load_reviewed
+from ragvidence.reviewed import ReviewedReferences, load_reviewed
 from ragvidence.runner import execute_retrieval, write_run
 
 EXPORT_EXTENSIONS = {"html": "html", "json": "json", "markdown": "md"}
@@ -52,7 +52,7 @@ def default_cache_dir() -> Path:
     return root / "ragvidence"
 
 
-def _create_output_directory(root: Path, input_name: str) -> Path:
+def create_output_directory(root: Path, input_name: str) -> Path:
     root.mkdir(parents=True, exist_ok=True)
     safe_name = re.sub(r"[^A-Za-z0-9_-]+", "-", input_name).strip("-")[:60] or "data"
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%S")
@@ -101,18 +101,52 @@ def run_portable(
             SearchQuestion(question_id=q.question_id, question=q.question)
             for q in references.questions
         ]
+    return execute_snapshot(
+        snapshot,
+        questions,
+        config,
+        output_root=output_root,
+        name=source.resolve().name,
+        formats=selected_formats,
+        cache_dir=cache_dir,
+        settings=settings,
+        references=references,
+        prefixes_file=prefixes_file,
+        results_file=results_file,
+    )
+
+
+def execute_snapshot(
+    snapshot,
+    questions: list[SearchQuestion],
+    config: StrategyConfig,
+    *,
+    output_root: Path,
+    name: str,
+    formats: list[str] | None = None,
+    cache_dir: Path | None = None,
+    settings: Settings | None = None,
+    references: ReviewedReferences | None = None,
+    prefixes_file: Path | None = None,
+    results_file: Path | None = None,
+    directory: Path | None = None,
+    store_inputs: bool = True,
+    known_question_ids: set[str] | None = None,
+) -> PortableResult:
+    """Run a technique on prepared data; shared by single runs and comparisons."""
+    selected_formats = normalize_formats(formats)
     sources = prepare_sources(snapshot, config, prefixes_file)
     if config.strategy == "imported" and (results_file is None or not questions):
         raise ValueError("import-data requires --results and questions or --reviewed")
     if config.strategy != "imported" and results_file:
         raise ValueError("--results is only supported by import-data")
-    name = source.resolve().name
-    directory = _create_output_directory(output_root, source.resolve().stem)
+    directory = directory or create_output_directory(output_root, Path(name).stem)
     try:
-        write_json(directory / "snapshot.json", snapshot)
-        write_json(directory / "questions.json", questions)
-        if references:
-            write_json(directory / "references.json", references)
+        if store_inputs:
+            write_json(directory / "snapshot.json", snapshot)
+            write_json(directory / "questions.json", questions)
+            if references:
+                write_json(directory / "references.json", references)
         # The portable path deliberately ignores any .env in the data directory.
         settings = settings or Settings(_env_file=None)
         identity = content_hash({"sources": snapshot.passages, "questions": questions})
@@ -132,6 +166,7 @@ def run_portable(
                 config,
                 dataset_hash=identity,
                 references_hash=references.identity if references else None,
+                known_question_ids=known_question_ids,
             )
         else:
             run = execute_retrieval(

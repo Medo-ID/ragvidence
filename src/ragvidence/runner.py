@@ -25,7 +25,7 @@ from ragvidence.models import (
     StageTrace,
     StrategyConfig,
 )
-from ragvidence.pipeline import build_strategy, resolve_config
+from ragvidence.pipeline import build_strategy, resolve_config, runtime_versions, vector_cache_state
 from ragvidence.provenance import (
     configuration_identity,
     corpus_identity,
@@ -116,7 +116,13 @@ def execute_retrieval(
                     name="retrieval",
                     hits=ranking,
                     elapsed_ms=(time.perf_counter() - stage_started) * 1000,
-                    details={"query": query, "limit": depth},
+                    details={
+                        "query": query,
+                        "limit": depth,
+                        "index_cache": vector_cache_state(strategy),
+                        "model_cache": "unknown",
+                        "runtime_versions": runtime_versions(),
+                    },
                 )
             )
         stage_started = time.perf_counter()
