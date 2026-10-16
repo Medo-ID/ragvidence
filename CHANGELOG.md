@@ -4,6 +4,12 @@ All notable user-facing changes are documented here.
 
 ## Unreleased
 
+- Add typed metadata scopes before ranking, deterministic cosine MMR selection,
+  automatic question-only rewriting/multi-query fusion, and exact-span compression.
+- Compose the new stages with hybrid retrieval, parents, reranking and context
+  budgets; preserve original span evidence, ranking provenance and safe failure traces.
+- Bound transformation requests/output, record exact prompts and model/endpoint
+  identities, and validate frozen transformations on comparison resume.
 - Add `ragvi compare-data INPUT` for one-command technique comparisons over a shared
   frozen corpus, optional existing-system baseline, and HTML/JSON/Markdown decision reports.
 - Add bounded configuration grids, declared depth/token/trade-off policies, split/slice

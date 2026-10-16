@@ -5,7 +5,7 @@ from math import prod
 from pathlib import Path
 from typing import Any, Literal
 
-from pydantic import Field, model_validator
+from pydantic import Field, model_serializer, model_validator
 
 from ragvidence.capabilities import CAPABILITIES
 from ragvidence.models import StrategyConfig, StrictModel
@@ -19,6 +19,14 @@ class Variant(StrictModel):
     prefixes_file: Path | None = None
     results_file: Path | None = None
     usage_file: Path | None = None
+    filters_file: Path | None = None
+
+    @model_serializer(mode="wrap")
+    def serialize_variant(self, handler):
+        values = handler(self)
+        if values.get("filters_file") is None:
+            values.pop("filters_file", None)
+        return values
 
     @model_validator(mode="after")
     def known_technique(self):

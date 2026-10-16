@@ -67,7 +67,22 @@ def run_comparison_cli(
             Variant(
                 name=name,
                 technique=name,
-                options={"reranker_model": options.reranker_model if name == "rerank" else None},
+                options={
+                    "reranker_model": options.reranker_model if name == "rerank" else None,
+                    "filters": options.filters.model_dump()
+                    if name == "metadata-filter" and options.filters
+                    else None,
+                    "mmr": options.mmr.model_dump() if name == "mmr" and options.mmr else None,
+                    "rewrite": {
+                        **options.rewrite.model_dump(),
+                        "count": 1 if name == "rewrite" else options.rewrite.count,
+                    }
+                    if name in {"rewrite", "auto-multi-query"} and options.rewrite
+                    else None,
+                    "compression": options.compression.model_dump()
+                    if name == "compress" and options.compression
+                    else None,
+                },
                 variants_file=variants if name == "multi-query" else None,
                 prefixes_file=prefixes if name == "contextual" else None,
             )
@@ -82,7 +97,13 @@ def run_comparison_cli(
                 name="existing",
                 technique="import-data",
                 results_file=results,
-                options={"reranker_model": None},
+                options={
+                    "reranker_model": None,
+                    "filters": None,
+                    "mmr": None,
+                    "rewrite": None,
+                    "compression": None,
+                },
             ),
         )
     overrides = {

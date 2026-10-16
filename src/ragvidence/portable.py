@@ -24,6 +24,7 @@ from ragvidence.reporting.inspection import build_inspection_report
 from ragvidence.reporting.render import render_report
 from ragvidence.reviewed import ReviewedReferences, load_reviewed
 from ragvidence.runner import execute_retrieval, write_run
+from ragvidence.transformations import TransformationError
 
 EXPORT_EXTENSIONS = {"html": "html", "json": "json", "markdown": "md"}
 
@@ -201,6 +202,11 @@ def execute_snapshot(
             {"state": "complete", "run_id": run.manifest.run_id, "evaluation_level": level},
         )
     except Exception as exc:
+        if isinstance(exc, TransformationError):
+            with suppress(OSError):
+                write_json(
+                    directory / "failure.json", {"question_id": exc.question_id, "stage": exc.stage}
+                )
         with suppress(OSError):
             write_json(directory / "status.json", {"state": "failed", "error": str(exc)})
         raise RuntimeError(f"Run failed; artifacts in {directory}: {exc}") from exc

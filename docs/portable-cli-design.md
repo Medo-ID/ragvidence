@@ -42,8 +42,9 @@ Show resolved settings and prerequisites, and fail preflight on missing required
 inputs. A technique name alone must not silently substitute another technique.
 Standalone passage retrieval, recursive/Markdown splitting, overlap and heading
 enrichment are shared configuration options and are listed in the capability catalog.
-Metadata filtering, MMR, automatic rewriting and extraction join the same catalog
-only when their roadmap contracts pass.
+Metadata filtering, MMR, automatic rewriting and exact-span extraction now share
+the catalog and pipeline. Their settings, provenance, limits and composed order are
+documented in [advanced techniques](portable-advanced-techniques.md).
 
 | Common option | Contract |
 | --- | --- |
@@ -179,9 +180,10 @@ treated as human-reviewed gold. The first useful report requires no hosted model
 Deliver M1 integrity/shared contracts, then the M2 TXT/Markdown, BM25, questions
 and report workflow. M3 extends loaders and portable configuration; M4 exposes
 existing techniques and reviewed evidence/current-system imports; M5 adds raw-data
-comparisons and decision reports. M6 extends techniques; M7 answer evaluation stays
-optional. M8 release/portability checks apply throughout, beginning with M2's first
-installed-command smoke test. Preserve advanced workspace APIs through shared services.
+comparisons and decision reports. M6's additional techniques are implemented in
+development. M7 answer evaluation is deferred. Routine installed-command checks
+continue per milestone; consolidated M8 release verification awaits a scope discussion.
+Preserve advanced workspace APIs through shared services.
 
 The first complete release target is M1–M5. Hosted generation, model judges and
 future technique families are not prerequisites for the core portable investigation.
@@ -204,6 +206,7 @@ Required checks:
    and an optional imported baseline. Neither requires user-written Python or a
    hand-assembled workspace.
 
-The development `bm25` command implements the first raw-file workflow. Existing
-benchmark/experiment commands continue to accept labeled workspaces. Broader raw-file
-techniques, loaders, reviewed raw-file scoring and comparisons require later milestones.
+The development build implements M1–M6's raw-file techniques, loaders, reviewed
+original-span scoring and comparisons. Existing benchmark/experiment commands
+continue to accept labeled workspaces. Legacy unit labels cannot score extraction;
+use portable original-span references for compression.

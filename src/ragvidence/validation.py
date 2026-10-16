@@ -26,6 +26,10 @@ def validate_run(
     validate_dataset(sources, questions)
     if run.manifest.evaluation_level != "reviewed_evaluation":
         raise DatasetError("Scored evaluation requires reviewed questions and evidence")
+    if run.manifest.config.compression:
+        raise DatasetError(
+            "Unit evidence labels cannot verify compression; use portable original-span evaluation"
+        )
     if run.manifest.hash_algorithm == "canonical-json-v1":
         expected = hashlib.sha256(canonical_dataset_bytes(sources, questions)).hexdigest()
     else:
@@ -66,6 +70,8 @@ def validate_run(
             raise DatasetError(f"{query.question_id}: hits exceed retrieval depth k")
         seen = set()
         for rank, hit in enumerate(query.hits, start=1):
+            if hit.context_spans is not None:
+                raise DatasetError("Unit evidence labels cannot score extracted spans")
             if hit.rank != rank:
                 raise DatasetError(f"{query.question_id}: ranks must be contiguous from 1")
             if hit.source_unit_id in seen:

@@ -30,8 +30,9 @@ header,section{background:white;border:1px solid #d5dfda;border-radius:10px;padd
 <details><summary>Configuration, criteria and separate timing trials</summary><pre>{{ {'config':entry.report.manifest.config,'criteria':entry.criteria,'trials':entry.trials,'repeat_rankings_changed':entry.repeat_rankings_changed} | tojson(indent=2) }}</pre></details>
 <details><summary>Ranked contexts and stage evidence ({{ entry.report.questions | length }} questions)</summary>
 {% for question in entry.report.questions %}<article><h3>{{ question.question }}</h3><p class="meta">{{ question.question_id }} · {{ question.context_characters }} returned text characters</p>
+{% for observation in question.observations %}<p>{{ observation }}</p>{% endfor %}
 {% if question.metrics %}<p>Sufficient: {{ question.metrics.sufficient_evidence if question.metrics.sufficient_evidence is not none else 'N/A' }} · Missing: {{ question.metrics.missing_evidence_ids | join(', ') or 'none' }}</p>{% endif %}
-{% for hit in question.hits %}<p class="meta">Rank {{ hit.rank }} · {{ hit.source_path }} · {{ hit.location_label }} · Original characters {{ hit.start }}–{{ hit.end }}</p><pre>{{ hit.text }}</pre>{% endfor %}
+{% for hit in question.hits %}<p class="meta">Rank {{ hit.rank }}{% if hit.get('context_spans') %} · Extract {{ hit.context_part }}{% endif %} · {{ hit.source_path }} · {{ hit.location_label }} · Original characters {{ hit.start }}–{{ hit.end }}</p><pre>{{ hit.text }}</pre>{% endfor %}
 <details><summary>Observed stages and scores</summary><pre>{{ question.stages | tojson(indent=2) }}</pre></details></article>{% endfor %}</details>
 {% endif %}</section>{% endfor %}
 <section><h2>Limitations</h2><ul>{% for value in report.limitations %}<li>{{ value }}</li>{% endfor %}</ul><p class="meta">Generated {{ report.generated_at }} · Query-stage invocation upper bound {{ report.query_call_upper_bound }}</p><details><summary>Bundled font license</summary><pre>{{ fonts.license }}</pre></details></section>

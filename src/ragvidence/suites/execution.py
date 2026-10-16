@@ -84,7 +84,7 @@ def compare_data(
     for job in plan.jobs:
         if on_event:
             config = job.config
-            if questions and config.strategy in {"semantic", "hybrid"}:
+            if questions and (config.strategy in {"semantic", "hybrid"} or config.mmr):
                 on_event(
                     {
                         "message": f"DISCLOSURE: {config.provider} receives source text/queries."
@@ -94,6 +94,20 @@ def compare_data(
                 )
             if questions and config.reranker_model:
                 on_event({"message": "Local reranking model may download on first use."})
+            if questions and config.rewrite:
+                on_event(
+                    {
+                        "message": f"DISCLOSURE: {config.rewrite.provider} receives questions "
+                        "for query rewriting."
+                    }
+                )
+            if questions and config.compression and config.compression.mode == "model":
+                on_event(
+                    {
+                        "message": f"DISCLOSURE: {config.compression.provider} receives "
+                        "questions/candidate sources for span selection."
+                    }
+                )
             on_event({"message": f"Comparing {job.name}"})
         prepared = rechunk(snapshot, job.chunk_size, job.chunk_overlap)
         trials = []

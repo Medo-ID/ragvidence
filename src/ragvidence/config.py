@@ -14,3 +14,5 @@ class Settings(BaseSettings):
     generation_model: str | None = None
     generation_base_url: str | None = None
     generation_api_key: SecretStr | None = None
+    transform_base_url: str | None = None
+    transform_api_key: SecretStr | None = None

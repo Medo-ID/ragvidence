@@ -1,0 +1,6 @@
+{
+  "all": [
+    {"field": "record_metadata.product", "op": "eq", "value": "A"},
+    {"field": "record_metadata.version", "op": "eq", "value": 2}
+  ]
+}

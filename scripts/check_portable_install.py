@@ -81,6 +81,11 @@ def check_install(wheel: Path, directory: Path) -> None:
         "hybrid",
         "parent-child",
         "import-data",
+        "metadata-filter",
+        "mmr",
+        "rewrite",
+        "auto-multi-query",
+        "compress",
     }
     original = report["input"]["sources"][0]
     references = client / "reviewed.json"
@@ -143,12 +148,16 @@ def check_install(wheel: Path, directory: Path) -> None:
             }
         )
     )
+    filters = client / "filters.json"
+    filters.write_text('{"all":[{"field":"format","op":"eq","value":".md"}]}')
     for technique, extra in [
         ("parent-child", []),
         ("heading-context", []),
         ("multi-query", ["--variants", str(variants)]),
         ("contextual", ["--prefixes", str(prefixes)]),
         ("import-data", ["--results", str(imported)]),
+        ("metadata-filter", ["--filters", str(filters)]),
+        ("compress", []),
     ]:
         destination = client / technique
         run(
@@ -182,7 +191,9 @@ def check_install(wheel: Path, directory: Path) -> None:
             "--results",
             str(imported),
             "--techniques",
-            "bm25,parent-child",
+            "bm25,parent-child,metadata-filter,compress",
+            "--filters",
+            str(filters),
             "--format",
             "json",
             "--format",
@@ -199,7 +210,7 @@ def check_install(wheel: Path, directory: Path) -> None:
     comparison_path = next(comparison_root.glob("*/exports/*/report.json"))
     comparison = json.loads(comparison_path.read_text())
     assert comparison["state"] == "complete" and comparison["baseline"] == "existing"
-    assert len(comparison["participants"]) == 3
+    assert len(comparison["participants"]) == 5
     assert comparison["participants"][0]["resources"]["query_ms"]["mean_known"] is None
     assert "HTML report:" in comparison_output
     comparison_directory = comparison_path.parents[2]

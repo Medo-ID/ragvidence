@@ -52,7 +52,7 @@
     {% for observation in question.observations %}<p>{{ observation }}</p>{% endfor %}
     {% for hit in question.hits %}
     <article class="hit">
-      <h3>#{{ hit.rank }} · <span class="path">{{ hit.source_path }}</span></h3>
+      <h3>#{{ hit.rank }} · <span class="path">{{ hit.source_path }}</span>{% if hit.get('context_spans') %} · Extract {{ hit.context_part }}{% endif %}</h3>
       <p class="meta">Score: {{ "%.6f" | format(hit.score) }} · {{ hit.location_label }} · Extracted lines {{ hit.line_start }}–{{ hit.line_end }} · Characters {{ hit.start }}–{{ hit.end }}</p>
       {% if hit.heading_path %}<p>{{ hit.heading_path | join(" › ") }}</p>{% endif %}
       <pre>{{ hit.text }}</pre>

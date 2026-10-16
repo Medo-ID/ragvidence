@@ -43,7 +43,9 @@ def build_inspection_report(
     results = []
     for query in run.queries:
         hits = []
-        for hit, context in zip(query.hits, query.context, strict=True):
+        hits_by_id = {hit.source_unit_id: hit for hit in query.hits}
+        for context in query.context:
+            hit = hits_by_id[context.source_unit_id]
             source = originals[context.origin_source_id]
             hits.append(
                 {
@@ -59,15 +61,35 @@ def build_inspection_report(
                     "origin_source_id": context.origin_source_id,
                     "line_start": source.body.count("\n", 0, context.start) + 1,
                     "line_end": source.body.count("\n", 0, context.end - 1) + 1,
+                    **(
+                        {
+                            "context_part": 1
+                            + sum(item["source_unit_id"] == hit.source_unit_id for item in hits)
+                        }
+                        if hit.context_spans
+                        else {}
+                    ),
                 }
             )
         observations = []
+        for stage in query.stages:
+            if stage.details.get("state") == "fallback_original":
+                observations.append(
+                    f"{stage.name}: transformation failed; "
+                    "the configured original-input fallback was used."
+                )
+            if stage.name == "metadata_filter" and not stage.details.get("eligible_count"):
+                observations.append(
+                    "Metadata predicates excluded every source; no ranking was performed."
+                )
         if not hits:
             observations.append("No passages were returned.")
         elif (
             run.manifest.config.strategy == "bm25"
             and not run.manifest.config.reranker_model
             and not run.manifest.config.query_variants
+            and not run.manifest.config.mmr
+            and not run.manifest.config.rewrite
             and not any(hit["score"] > 0 for hit in hits)
         ):
             observations.append(

@@ -32,27 +32,35 @@ alone is not a claim of universal quality or complete verification.
 | Overlapping chunks | Implemented for child retrieval; overlap counts characters and stays inside a Markdown section. |
 | Parent-child retrieval | Implemented: search children, deduplicate and return original parent source units. |
 | Cross-encoder reranking | Implemented through optional local FastEmbed models. |
-| Multi-query retrieval | Implemented using supplied query variants, original-query inclusion, deduplication, and RRF. Automatic LLM generation of variants is missing. |
+| Multi-query retrieval | Implemented with supplied or bounded question-only model variants, explicit original-question policy, deduplication and RRF. |
+| Metadata filtering | Implemented: typed equality/membership/range predicates applied before ranking and parent expansion, with global/question scopes. |
+| MMR | Implemented: deterministic cosine relevance/diversity selection with candidate bounds, explicit embedding identity and preserved prior scores. |
+| Query rewriting | Implemented: bounded question-only generation, retained prompt/model/query outputs, fail or explicit original-question fallback. |
 | Contextual retrieval | Partial: supplied, reviewed `metadata.context_prefix` is indexed before the body by BM25 and/or semantic search. Existing heading enrichment remains available. Automatic LLM prefix generation is missing. |
-| Contextual compression | Missing: filtering/extraction that changes the final returned context needs evidence labels for the extracted passages. Reranking alone does not provide extraction. |
+| Contextual compression | Implemented: deterministic sentence selection or optional model-selected exact spans, original-offset validation, budgets and rescoring after removal. Abstractive summaries remain deferred. |
 | Semantic chunking | Missing: embedding-based sentence boundary selection. |
 | Code-aware splitting | Missing: language-aware syntax boundaries. |
 | Late chunking | Missing: requires token-level embeddings and pooling interfaces. |
-| Agentic/self-correcting RAG | Missing: relevance grading, bounded rewriting/retry, routing and abstention. |
+| Agentic/self-correcting RAG | Missing: relevance grading, iterative retrieval/retry, routing and abstention. Single-step rewriting alone does not implement an agent. |
 | Query decomposition / multi-hop retrieval | Missing: fixed supplied query variants do not implement dependent retrieval steps. |
 | GraphRAG / vector + graph retrieval | Missing: entity extraction, graph storage, source mappings, local/global graph search. |
 | Multimodal RAG / ColPali | Missing: page/image ingestion, multivector representations, compatible late-interaction scoring and visual evidence evaluation. |
 | Direct long-context comparison | Missing: a full-corpus generation baseline against retrieved context. |
 | Approximate vector search / HNSW tuning | Missing: current dense search is exact and in memory; external ranked results can be imported. |
 | Semantic answer caching | Missing. The existing embedding cache reuses indexing computation only. |
-| Model-aware token budgets | Missing: runs record returned body character counts, not token counts or provider usage/cost. |
+| Model-aware token budgets | Implemented for rendered context using an explicit identified local tokenizer. Provider framing/truncation and billable usage remain unknown; supplied usage/pricing produces labeled estimates. |
 | Retrieval evaluation | Implemented: evidence sufficiency, coverage, rank metrics and regression comparison. |
 | Answer correctness / citation / abstention evaluation | Missing: answer generation is for inspection. |
 
-PDF loaders, OCR, production APIs, authorization, hosted tracing, Redis, Docker,
-and infrastructure tuning are also discussed in the resource. They are not native
-capabilities added by this change. Existing retriever imports can evaluate ranked
-text source results from an external stack, provided IDs map to the workspace.
+Text PDFs are supported with the optional `pdf` extra. OCR, production APIs,
+authorization, hosted tracing, Redis, Docker and infrastructure tuning are not native
+capabilities. Existing retriever imports can evaluate exact text spans or explicitly
+limited registered-unit proxies from an external stack.
+
+See [M6 technique settings](portable-advanced-techniques.md) for runnable portable
+commands, nested suite configuration, bounded providers, provenance and known limits.
+Answer/citation evaluation remains deferred; consolidated release verification has
+not started. Neither is implied by retrieval technique coverage.
 
 ## Running an experiment
 
@@ -96,10 +104,11 @@ Hybrid RRF sums `weight / (rrf_constant + rank)` for each source present in each
 ranking. Ranks start at 1. Raw BM25 and cosine scores are not added. Each source
 contributes at most once per list. Ties preserve first-seen order.
 
-The pipeline order is: build representations → optionally split searchable
-children → index → retrieve per query and fuse lexical/dense lists → return
-deduplicated parents → fuse supplied query variants → optionally rerank candidates
-against the original question → return at most `k` source units.
+The pipeline order is: scope original metadata → build/index representations and
+optional searchable children → optionally rewrite the question → retrieve per query
+and fuse lexical/dense lists → return deduplicated parents → fuse query variants →
+optionally rerank against the original question → optional cosine MMR → optional
+exact-span compression → final depth/context-budget selection.
 
 When several children match one parent, its best-ranked child supplies the parent
 rank. Child candidate limits can return fewer than `k` unique parents. Increase
@@ -156,9 +165,10 @@ the CLI prints the disclosure before the run.
 The labeled source unit is the parent. Child matches carry no inherited evidence
 labels internally; the returned full parent supplies its reviewed evidence.
 Metrics describe the entire returned parent context. They do not prove that the
-matched child contains every required fact. Independent chunk-only evaluation
-and compressed-context evaluation need finer reviewed evidence mappings and are
-not provided here.
+matched child contains every required fact. Portable original-span references
+support independent chunks and compressed context. Legacy workspace unit labels
+cannot verify which facts survive extraction, so that scoring path rejects
+compression and directs users to portable original-span evaluation.
 
 Compare the same dataset and `k`, changing one setting at a time. Parent expansion
 can return more text at the same `k`; inspect `returned_context_characters` per

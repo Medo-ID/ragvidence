@@ -1,8 +1,10 @@
 # Portable implementation evidence
 
 Date: 2026-10-16. Scope: M1 integrity foundation, M2 portable BM25 and M3 additional
-loaders/configuration plus M4 technique evaluation and M5 comparisons in development.
+loaders/configuration plus M4 technique evaluation, M5 comparisons and M6 additional
+techniques in development.
 M1/M2 were committed as `4479a05`, M3 as `8f7e87c`, M4 as `ff7f06b` (author Medo-ID).
+M5 was committed as `173ffc5` (author Medo-ID). M6 implementation evidence follows below.
 No package has been published by this work.
 
 ## Delivered behavior
@@ -139,6 +141,47 @@ uv run ragvi bm25 ./manual.txt --query "Reset instructions" --format html --form
   resume, plus the fixed reviewed quality corpus. Models are fingerprinted; this
   bounded fictional fixture does not prove general production quality.
 
+## M6 additional retrieval techniques
+
+- Typed global/question metadata predicates run before ranking, hybrid branches,
+  query variants and child expansion. Missing/type-mismatched fields are excluded;
+  empty scopes remain explicit. Resolved predicates are frozen in configurations.
+- Cosine MMR uses an explicit embedding adapter/model, bounded candidate pool,
+  deterministic ties, incremental redundancy computation, original question and
+  preserved input scores/relevance/diversity objectives. It composes after reranking.
+- Automatic rewriting/multi-query accepts only the question and configured limit.
+  It bounds calls, prompts, query count/length, requested output tokens and timeout;
+  strict responses, original-query policy, deduplication, shared RRF and failures
+  are recorded. No answers or gold references reach the rewriting provider.
+- Deterministic sentence extraction and optional model span selection retain exact
+  source-relative offsets. Multiple extracts retain one hit rank; final budgets
+  count every rendered extract. Scores use only the surviving original span union,
+  and removed qualifications lose evidence credit. Legacy unit scoring rejects
+  compression and directs users to portable original-span references.
+- Model failures either fail without scoring, retaining private `failure.json`, or
+  use an explicit visible original-input fallback. There are no automatic retries.
+  Successful prompts/model identities/raw output and selected offsets remain in
+  traces. Frozen resume revalidates scopes, transformed queries, compression output,
+  MMR objective consistency, exact context, metrics and report facts without model calls.
+- Shared candidate retrieval/fusion/reranking, pure selection/predicate/span functions,
+  model adapters and CLI option translation keep stages separate from orchestration.
+  Existing unused configuration serialization and old suite identities are preserved.
+- [Real adapter evidence](../../verification/portable-m6/model-check.json) adds MMR
+  after a real cross-encoder with exact tokenizer budgets, reviewed MMR/compression
+  runs and a six-configuration repeated comparison with validated resume. Two
+  embedding models and the reranker are fingerprinted. Outcomes include failures/ties.
+- [Local Qwen evidence](../../verification/portable-m6/transform-check.json) records
+  two successful provider/contract checks against the same before/after Ollama digest
+  for `qwen3:8b`. Rewriting retained both required items on this one fictional case;
+  valid model compression missed both. This is compatible execution, not a quality
+  pass or general benchmark. The original 60-second initial timeout remains in
+  [the first attempt](../../verification/portable-m6/transform-check-cold.json);
+  the digest-pinned retry used explicit 120-second request limits and passed.
+- The runnable [M6 example suite](../examples/portable-m6-suite.json) compares lexical,
+  version-scoped, diverse and extracted contexts on one dev case plus a separate
+  heldout case. Scoped retrieval passes; extraction removes the condition. The
+  demonstration's small denominator does not support a general recommendation.
+
 ## Current verification
 
 ```bash
@@ -151,30 +194,37 @@ uv build
 git diff --check
 ```
 
-The test suite contains **274 passing tests** with all extras installed (150 at
-M1/M2, 196 at M3, 241 at M4). It includes
+The test suite contains **358 passing tests** with all extras installed (150 at
+M1/M2, 196 at M3, 241 at M4, 274 at M5). The current run is retained in
+[the M6 check record](../../verification/portable-m6/checks.json). It includes
 cross-process hash-seed checks for dataset identities and saved evaluations;
 tampered artifacts; missing/duplicate questions; forged evidence/context; invalid
 provider vectors/indexes/caches; input extraction/offsets; question-file exclusion;
 explicit failed-run artifacts; source-only behavior; prompt/flag modes; all output
-formats; escaped source content; and unchanged source files.
+formats; escaped source content; unchanged source files; typed filter truth tables;
+independent MMR oracles and helpful/regression cases; rewrite intent drift/output
+bounds; exact multi-span compression, qualification loss and budget recovery;
+combined stages; frozen heldout filters; and tampered transformation/MMR provenance.
 
 The built wheel was installed into isolated temporary tool/bin directories and
 invoked as `ragvi` from an unrelated customer folder. Checks cover spaces and Unicode
 in paths, all three exports, source-only execution, HTML/JSON/JSONL/CSV loading,
 explicit configuration, reviewed spans, lexical modifier commands, exact external
 imports, missing optional PDF support, installation verification,
-one-command comparison/resume and the existing tutorial. CI and release preparation
+one-command comparison/resume, dependency-free M6 filters/extraction and the existing tutorial.
+CI and release preparation
 run this same check, and install
 all extras for the parser/tokenizer tests. These runs were on Linux;
 they are not evidence of Windows/macOS execution.
 
 ## Remaining roadmap work
 
-- Metadata filters, MMR, automatic rewriting and extractive compression.
-- Optional answer/citation/abstention evaluation and calibrated model judges.
+- M7 optional answer/citation/abstention evaluation and calibrated model judges are
+  deferred at the user's request; no M7 capability was added in this milestone.
 - Pinned model-revision fingerprints where provider APIs expose them, plus the
   wider model/OS coverage and release gates specified by later milestones.
+- Stop before M8: consolidated release verification and publication require a
+  scope discussion. Routine milestone checks above do not mark that gate complete.
 
 These remaining features are not claimed by the portable implementation. PDF/
 HTML extraction does not establish visual/table/column fidelity; input limits are

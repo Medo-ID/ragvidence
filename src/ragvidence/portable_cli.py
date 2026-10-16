@@ -13,6 +13,7 @@ from ragvidence.config import Settings
 from ragvidence.portable import normalize_formats, run_portable
 from ragvidence.portable_config import resolve_portable_options
 from ragvidence.portable_inputs import load_variants
+from ragvidence.portable_stages import apply_stage_flags
 from ragvidence.questions import load_questions
 from ragvidence.suites.cli import print_comparison, run_comparison_cli
 
@@ -85,6 +86,37 @@ def register_portable_commands(app: typer.Typer, console: Console) -> None:
         tokenizer_file: Annotated[
             Path | None,
             typer.Option(help="Local Hugging Face tokenizer.json for exact context counting"),
+        ] = None,
+        filters: Annotated[Path | None, typer.Option(help="Typed metadata predicates JSON")] = None,
+        mmr_lambda: Annotated[
+            float | None, typer.Option(min=0, max=1, help="MMR relevance/diversity weight")
+        ] = None,
+        mmr_candidates: Annotated[int | None, typer.Option(min=1, max=1000)] = None,
+        rewrite_model: Annotated[str | None, typer.Option(help="Question rewriting model")] = None,
+        rewrite_provider: Annotated[
+            str | None, typer.Option(help="ollama or openai_compatible")
+        ] = None,
+        rewrite_count: Annotated[int | None, typer.Option(min=1, max=8)] = None,
+        rewrite_original: Annotated[
+            bool | None,
+            typer.Option(
+                "--rewrite-original/--rewrite-only",
+                help="Include original question in retrieval fusion",
+            ),
+        ] = None,
+        rewrite_failure: Annotated[
+            str | None, typer.Option(help="fail or original (explicit fallback)")
+        ] = None,
+        compressor: Annotated[str | None, typer.Option(help="sentences or model")] = None,
+        compression_max_spans: Annotated[int | None, typer.Option(min=1, max=16)] = None,
+        compression_model: Annotated[
+            str | None, typer.Option(help="Optional exact-span selection model")
+        ] = None,
+        compression_provider: Annotated[
+            str | None, typer.Option(help="ollama or openai_compatible")
+        ] = None,
+        compression_failure: Annotated[
+            str | None, typer.Option(help="fail or original (explicit fallback)")
         ] = None,
         format: Annotated[
             list[str] | None, typer.Option("--format", help="html, json or markdown")
@@ -193,6 +225,22 @@ def register_portable_commands(app: typer.Typer, console: Console) -> None:
                 config_file=config_file,
                 env_file=env_file,
             )
+            stage_flags = {
+                "filters": filters,
+                "mmr_lambda": mmr_lambda,
+                "mmr_candidates": mmr_candidates,
+                "rewrite_model": rewrite_model,
+                "rewrite_provider": rewrite_provider,
+                "rewrite_count": rewrite_count,
+                "rewrite_original": rewrite_original,
+                "rewrite_failure": rewrite_failure,
+                "compressor": compressor,
+                "compression_max_spans": compression_max_spans,
+                "compression_model": compression_model,
+                "compression_provider": compression_provider,
+                "compression_failure": compression_failure,
+            }
+            options = apply_stage_flags(options, ctx.command.name, stage_flags)
             formats = normalize_formats(options.formats)
             if interactive and (no_input or not input_is_terminal()):
                 raise ValueError("--interactive requires terminal input and cannot use --no-input")
@@ -222,6 +270,7 @@ def register_portable_commands(app: typer.Typer, console: Console) -> None:
             if ctx.command.name == "compare-data":
                 if shortlist:
                     frozen_parameters = {
+                        *stage_flags,
                         "techniques",
                         "suite_file",
                         "baseline",
@@ -308,6 +357,7 @@ def register_portable_commands(app: typer.Typer, console: Console) -> None:
                             variants,
                             prefixes,
                             results,
+                            filters,
                             options.tokenizer_file,
                         )
                         if path is not None
@@ -338,7 +388,9 @@ def register_portable_commands(app: typer.Typer, console: Console) -> None:
                     raise ValueError("Comparison options require compare-data")
                 config = preset(ctx.command.name, options, variants=load_variants(variants))
                 settings = Settings(_env_file=env_file)
-                if (search_questions or reviewed) and config.strategy in {"semantic", "hybrid"}:
+                if (search_questions or reviewed) and (
+                    config.strategy in {"semantic", "hybrid"} or config.mmr
+                ):
                     selected_provider = config.provider or settings.embedding_provider
                     if selected_provider != "fastembed":
                         console.print(
@@ -352,6 +404,22 @@ def register_portable_commands(app: typer.Typer, console: Console) -> None:
                         )
                 if (search_questions or reviewed) and config.reranker_model:
                     console.print("Local reranking may download the selected model on first use.")
+                if (search_questions or reviewed) and config.rewrite:
+                    console.print(
+                        f"DISCLOSURE: {config.rewrite.provider} receives questions "
+                        "for query rewriting.",
+                        markup=False,
+                    )
+                if (
+                    (search_questions or reviewed)
+                    and config.compression
+                    and config.compression.mode == "model"
+                ):
+                    console.print(
+                        f"DISCLOSURE: {config.compression.provider} receives questions "
+                        "and candidate source text for span selection.",
+                        markup=False,
+                    )
                 result = run_portable(
                     input_path,
                     search_questions,
@@ -376,7 +444,13 @@ def register_portable_commands(app: typer.Typer, console: Console) -> None:
                     ),
                     excluded_inputs=[
                         path
-                        for path in (config_file, env_file, variants, options.tokenizer_file)
+                        for path in (
+                            config_file,
+                            env_file,
+                            variants,
+                            filters,
+                            options.tokenizer_file,
+                        )
                         if path is not None
                     ],
                     settings=settings,

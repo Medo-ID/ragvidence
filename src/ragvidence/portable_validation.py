@@ -8,6 +8,7 @@ from ragvidence.context import context_fields, render_context
 from ragvidence.ingestion.models import CorpusSnapshot
 from ragvidence.models import ExperimentRun, SearchQuestion, SourceUnit
 from ragvidence.provenance import configuration_identity, question_identity, representation_identity
+from ragvidence.stage_validation import validate_stage_scope
 
 
 def validate_portable_run(
@@ -43,24 +44,38 @@ def validate_portable_run(
         {source.source_unit_id: source for source in sources} if sources is not None else None
     )
     counter = ContextCounter(manifest.config.tokenizer_file, manifest.config.tokenizer_hash)
+    questions_by_id = {q.question_id: q for q in questions}
     for query in run.queries:
         if source_by_id is not None:
+            validate_stage_scope(
+                query, questions_by_id[query.question_id], manifest.config, sources
+            )
             if any(hit.source_unit_id not in source_by_id for hit in query.hits):
                 raise ValueError("Portable hit references an unknown source")
             for key, value in context_fields(query.hits, source_by_id).items():
                 if getattr(query, key) != value:
                     raise ValueError(f"Portable {key} does not match declared retrieval sources")
-        if len(query.hits) != len(query.context) or len(query.hits) > manifest.config.k:
+        expected_context_ids = [
+            hit.source_unit_id
+            for hit in query.hits
+            for _ in (hit.context_spans if hit.context_spans is not None else [None])
+        ]
+        if [p.source_unit_id for p in query.context] != expected_context_ids or len(
+            query.hits
+        ) > manifest.config.k:
             raise ValueError("Portable hit/context count does not match retrieval depth")
         seen = set()
-        for rank, (hit, context) in enumerate(zip(query.hits, query.context, strict=True), 1):
-            if (
-                hit.rank != rank
-                or hit.source_unit_id != context.source_unit_id
-                or hit.source_unit_id in seen
-            ):
+        for rank, hit in enumerate(query.hits, 1):
+            if hit.rank != rank or hit.source_unit_id in seen:
                 raise ValueError("Portable ranks, context IDs or duplicates are invalid")
             seen.add(hit.source_unit_id)
+            if hit.context_spans is not None and (
+                not manifest.config.compression or not hit.context_spans
+            ):
+                raise ValueError("Native context spans require configured nonempty compression")
+            if hit.evidence_ids:
+                raise ValueError("Portable evidence credit must come from reviewed span unions")
+        for context in query.context:
             source = originals.get(context.origin_source_id)
             if (
                 source is None
@@ -68,8 +83,6 @@ def validate_portable_run(
                 or source.document_id != context.document_id
             ):
                 raise ValueError("Portable context does not match original source spans")
-            if hit.evidence_ids:
-                raise ValueError("Portable evidence credit must come from reviewed span unions")
         rendered = render_context(query.context)
         if query.rendered_context != rendered or query.context_hash != content_hash(rendered):
             raise ValueError("Portable rendered context/hash does not match returned text")

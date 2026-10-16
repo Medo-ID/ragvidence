@@ -2,7 +2,7 @@
 
 from dataclasses import asdict, dataclass
 
-from ragvidence.models import StrategyConfig
+from ragvidence.models import CompressionConfig, MMRConfig, StrategyConfig
 
 
 @dataclass(frozen=True)
@@ -28,6 +28,27 @@ CAPABILITIES = [
     Capability("contextual", "Index reviewed source prefixes with body text", "--prefixes FILE"),
     Capability("multi-query", "Fuse original query and supplied variants", "--variants FILE"),
     Capability("import-data", "Inspect external ID or exact-span results", "--results FILE"),
+    Capability(
+        "metadata-filter", "Apply typed metadata predicates before ranking", "--filters FILE"
+    ),
+    Capability(
+        "mmr", "Select relevant and diverse candidates using cosine MMR", "Embedding provider"
+    ),
+    Capability(
+        "rewrite",
+        "Search model-rewritten queries; evaluate original intent",
+        "--rewrite-model; transformation provider",
+    ),
+    Capability(
+        "auto-multi-query",
+        "Generate bounded query variants and fuse their rankings",
+        "--rewrite-model; transformation provider",
+    ),
+    Capability(
+        "compress",
+        "Return exact question-relevant source spans",
+        "None for deterministic sentence selection",
+    ),
 ]
 
 
@@ -50,6 +71,10 @@ def preset(name: str, options, *, variants: dict[str, list[str]]) -> StrategyCon
             "reranker_model",
             "lexical_weight",
             "rrf_constant",
+            "filters",
+            "mmr",
+            "rewrite",
+            "compression",
         }
     )
     values.update(
@@ -71,9 +96,24 @@ def preset(name: str, options, *, variants: dict[str, list[str]]) -> StrategyCon
         raise ValueError("rerank requires --reranker-model MODEL")
     if name == "multi-query" and not variants:
         raise ValueError("multi-query requires --variants FILE with question-ID mappings")
+    if name == "metadata-filter" and not options.filters:
+        raise ValueError("metadata-filter requires --filters FILE or filters in configuration")
+    if name == "mmr" and options.mmr is None:
+        values["mmr"] = MMRConfig()
+    if name in {"rewrite", "auto-multi-query"}:
+        if options.rewrite is None:
+            raise ValueError(f"{name} requires --rewrite-model MODEL or rewrite configuration")
+        if name == "rewrite" and options.rewrite.count != 1:
+            raise ValueError("rewrite requires count=1; use auto-multi-query for multiple variants")
+    if name == "compress" and options.compression is None:
+        values["compression"] = CompressionConfig()
     if name == "import-data":
         if (
             variants
+            or options.filters
+            or options.mmr
+            or options.rewrite
+            or options.compression
             or options.reranker_model
             or options.representation != "body"
             or any(

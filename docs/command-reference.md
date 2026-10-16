@@ -18,6 +18,10 @@ Use `ragvi COMMAND --help` for the authoritative options installed with your ver
 | `ragvi parent-child INPUT` | Retrieve small children and return full original source units. |
 | `ragvi heading-context INPUT`, `ragvi contextual INPUT` | Index authentic headings or supplied reviewed prefixes. |
 | `ragvi multi-query INPUT` | Fuse original questions and supplied variants. |
+| `ragvi metadata-filter INPUT` | Apply typed global/question metadata predicates before ranking. |
+| `ragvi mmr INPUT` | Select relevant and diverse candidates with explicit cosine embeddings. |
+| `ragvi rewrite INPUT`, `ragvi auto-multi-query INPUT` | Generate bounded question-only queries with a user-owned model. |
+| `ragvi compress INPUT` | Return validated original spans using deterministic sentences or an optional model selector. |
 | `ragvi import-data INPUT` | Verify external original-span results or explicitly limited ID-only proxies. |
 | `ragvi compare-data INPUT` | Compare techniques on one frozen corpus with optional existing-system baseline, reviewed spans, grids and decision reports. |
 | `ragvi benchmark WORKSPACE` | Run body and heading-context retrieval configurations. |
@@ -48,6 +52,8 @@ See [Portable techniques](portable-techniques.md) for `--reviewed`, stage limits
 source-prefix/query-variant schemas, tokenizer budgets and exact context imports.
 See [Portable comparisons](portable-comparisons.md) for `--techniques`, `--suite`,
 `--phase`, `--shortlist`, `--resume`, intervals, criteria and supplied pricing.
+See [Advanced retrieval techniques](portable-advanced-techniques.md) for `--filters`,
+MMR, rewriting/compression flags, nested stage schemas and provider boundaries.
 
 `benchmark --strategies` accepts `bm25`, `semantic`, and `hybrid`, separated by commas.
 See [RAG technique coverage](rag-technique-coverage.md) for experiment settings,

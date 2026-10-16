@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "corpus_hash": "ce7549f177b5356b30b239eb80fa1c45270bad4fcda0ec6e516aa98b6bea4499",
+  "evidence": [
+    {
+      "evidence_id": "DURATION",
+      "spans": [
+        {
+          "source_id": "doc-42cab5935da9e6fb199f",
+          "start": 21,
+          "end": 34,
+          "text": "eight seconds"
+        }
+      ]
+    },
+    {
+      "evidence_id": "CONDITION",
+      "spans": [
+        {
+          "source_id": "doc-42cab5935da9e6fb199f",
+          "start": 36,
+          "end": 64,
+          "text": "Only with power disconnected"
+        }
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "question_id": "RESET",
+      "question": "reset",
+      "split": "dev",
+      "answerable": true,
+      "required_evidence_ids": [
+        "DURATION",
+        "CONDITION"
+      ]
+    },
+    {
+      "question_id": "RESET-HELDOUT",
+      "question": "reset",
+      "split": "heldout",
+      "answerable": true,
+      "required_evidence_ids": [
+        "DURATION",
+        "CONDITION"
+      ]
+    }
+  ]
+}

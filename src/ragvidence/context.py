@@ -1,7 +1,7 @@
 """One source of truth for the context inspected, scored and sent to a model."""
 
 from ragvidence.artifacts import content_hash
-from ragvidence.models import ContextPassage, RetrievalHit, SourceUnit
+from ragvidence.models import ContextPassage, RetrievalHit, SourceUnit, TextSpan
 
 
 def passages_for_hits(
@@ -10,18 +10,28 @@ def passages_for_hits(
     passages = []
     for hit in hits:
         source = sources[hit.source_unit_id]
-        start = source.metadata.get("source_start", 0)
-        passages.append(
-            ContextPassage(
-                source_unit_id=source.source_unit_id,
-                origin_source_id=source.metadata.get("origin_source_id", source.source_unit_id),
-                document_id=source.document_id,
-                start=start,
-                end=start + len(source.body),
-                text=source.body,
-                heading_path=source.heading_path,
+        origin_start = source.metadata.get("source_start", 0)
+        spans = hit.context_spans
+        if spans is None:
+            spans = [TextSpan(start=0, end=len(source.body))]
+        previous = 0
+        for span in spans:
+            if span.start < previous or span.end > len(source.body):
+                raise ValueError(
+                    "Returned context spans must be ordered, disjoint and within source"
+                )
+            previous = span.end
+            passages.append(
+                ContextPassage(
+                    source_unit_id=source.source_unit_id,
+                    origin_source_id=source.metadata.get("origin_source_id", source.source_unit_id),
+                    document_id=source.document_id,
+                    start=origin_start + span.start,
+                    end=origin_start + span.end,
+                    text=source.body[span.start : span.end],
+                    heading_path=source.heading_path,
+                )
             )
-        )
     return passages
 
 

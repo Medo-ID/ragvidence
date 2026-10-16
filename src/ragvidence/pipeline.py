@@ -4,6 +4,7 @@ from functools import lru_cache
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
+from ragvidence.artifacts import content_hash
 from ragvidence.budgets import tokenizer_hash
 from ragvidence.config import Settings
 from ragvidence.models import StrategyConfig
@@ -12,6 +13,7 @@ from ragvidence.strategies import BM25Strategy, SemanticStrategy
 from ragvidence.strategies.base import RetrievalStrategy
 from ragvidence.strategies.hybrid import HybridStrategy
 from ragvidence.strategies.parent_child import ParentChildStrategy
+from ragvidence.transformations import transformation_endpoint
 
 
 def resolve_config(config: StrategyConfig, settings: Settings) -> StrategyConfig:
@@ -23,6 +25,9 @@ def resolve_config(config: StrategyConfig, settings: Settings) -> StrategyConfig
         or config.query_variants
         or config.reranker_model
         or config.context_budget
+        or config.mmr
+        or config.compression
+        or config.rewrite
     )
     resolved = {
         **config.model_dump(),
@@ -30,11 +35,18 @@ def resolve_config(config: StrategyConfig, settings: Settings) -> StrategyConfig
     }
     if config.tokenizer_file:
         resolved["tokenizer_hash"] = tokenizer_hash(config.tokenizer_file)
-    if config.strategy in {"semantic", "hybrid"}:
+    if config.strategy in {"semantic", "hybrid"} or config.mmr:
         resolved.update(
             model=config.model or settings.embedding_model,
             provider=config.provider or settings.embedding_provider,
         )
+    for key in ("rewrite", "compression"):
+        stage = getattr(config, key)
+        if stage is not None and (key == "rewrite" or stage.mode == "model"):
+            endpoint = content_hash(transformation_endpoint(stage.provider, settings))
+            if stage.endpoint_hash is not None and stage.endpoint_hash != endpoint:
+                raise ValueError("Transformation endpoint differs from frozen configuration")
+            resolved[key] = {**stage.model_dump(), "endpoint_hash": endpoint}
     return StrategyConfig.model_validate(resolved)
 
 

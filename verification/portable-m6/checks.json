@@ -1,0 +1,39 @@
+{
+  "date": "2026-10-16",
+  "scope": "M6 milestone verification; consolidated M8 release verification has not started",
+  "python": "3.12.14",
+  "tests": {
+    "command": "uv run --no-sync pytest --tb=short",
+    "exit_code": 0,
+    "summary": "358 passed in 8.95s"
+  },
+  "lint": {
+    "command": ".venv/bin/ruff check src tests scripts --output-format concise",
+    "exit_code": 0,
+    "summary": "All checks passed!"
+  },
+  "installed_wheel": {
+    "command": ".venv/bin/python scripts/check_portable_install.py",
+    "exit_code": 0,
+    "summary": "PASS: installed command, unrelated directory, Unicode/space paths, all exports, source-only mode, HTML/JSON/JSONL/CSV, explicit configuration, missing PDF extra, reviewed spans, portable lexical modifiers, exact-context imports, comparisons/resume, unchanged input, verification and legacy tutorial"
+  },
+  "distributions": {
+    "ragvidence-0.1.0-py3-none-any.whl": "90b4440479068385e0dbc601c9493994bc8e69a403665338a37093dcd54c806a",
+    "ragvidence-0.1.0.tar.gz": "cb3f8139e3979f5a82b8622f06da7db32c5618ab3dd22c87aaff0851a8427c98"
+  },
+  "legacy_M5_resume": {
+    "source_commit": "173ffc5",
+    "status": "passed",
+    "description": "Existing six-configuration dev comparison validated and reused with the M6 implementation"
+  },
+  "model_evidence": [
+    "model-check.json",
+    "transform-check.json",
+    "transform-check-cold.json"
+  ],
+  "limits": [
+    "Local checks ran on Linux only.",
+    "This record does not approve publication or deployment.",
+    "Model compatibility checks do not establish general quality."
+  ]
+}

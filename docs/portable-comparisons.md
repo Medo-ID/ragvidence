@@ -23,6 +23,9 @@ Every comparison and export receives a new directory; existing artifacts stay in
 
 Use [portable techniques](portable-techniques.md) for provider settings, supported
 data types, reviewed span references, query variants, prefixes and model prerequisites.
+The [advanced techniques](portable-advanced-techniques.md) add metadata filters,
+MMR, automatic rewriting and exact-span compression. These can be selected as
+technique entries or composed explicitly in each suite variant's nested options.
 Local models can download on first use; remote data transmission is disclosed.
 Questions, reviewed references, selected sidecars, output/cache roots and marked
 previous runs are excluded from folder ingestion.

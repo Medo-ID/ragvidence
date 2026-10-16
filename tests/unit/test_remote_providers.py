@@ -52,6 +52,25 @@ def test_chat_adapter_extracts_content(monkeypatch) -> None:
     assert provider.answer("system", "user") == "answer"
 
 
+@pytest.mark.parametrize("provider", ["ollama", "openai_compatible"])
+def test_transformation_requests_have_explicit_output_bounds(monkeypatch, provider):
+    requests = []
+
+    def post(url, payload, headers, **kwargs):
+        requests.append(payload)
+        assert kwargs["timeout"] == 60
+        return {"message": {"content": "{}"}, "choices": [{"message": {"content": "{}"}}]}
+
+    monkeypatch.setattr(remote, "_post_json", post)
+    chat = ChatProvider(provider, "model", "http://localhost:11434", max_output_tokens=128)
+    assert chat.answer("system", "question") == "{}"
+    if provider == "ollama":
+        assert requests[0]["options"] == {"temperature": 0, "num_predict": 128}
+        assert requests[0]["think"] is False
+    else:
+        assert requests[0]["max_tokens"] == 128
+
+
 @pytest.mark.parametrize("indexes", [[0, 0], [1, 2], [-1, 0], [True, 0]])
 def test_embedding_adapter_rejects_invalid_response_indexes(monkeypatch, indexes):
     monkeypatch.setattr(

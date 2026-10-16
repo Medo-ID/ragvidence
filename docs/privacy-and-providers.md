@@ -26,3 +26,17 @@ input is reread on resume. Share selected exports, not the entire comparison dir
 when original corpus text or reviewed labels should remain private. Comparison exports
 include retrieved passages and source locations. Supplied token usage/pricing produces
 labeled estimates; the tool does not fetch billing or pricing from external accounts.
+
+M6 query transformations use separate `RAGVIDENCE_TRANSFORM_BASE_URL` and
+`RAGVIDENCE_TRANSFORM_API_KEY` settings. The CLI discloses the transfer before
+execution. Rewriting sends only the question and variant limit. Optional model
+compression sends the question and candidate bodies. Neither receives reviewed
+evidence IDs/reference answers from evaluation. Deterministic sentence compression
+does not call a provider. MMR uses the configured embedding adapter and only indexes
+the union of source units permitted by the run's metadata scopes.
+
+Transformation prompts, bounded raw outputs and selected spans are retained in run
+stage evidence; failed default-fail attempts retain private `failure.json` traces.
+Model compression prompts may therefore expose full candidate text in reports.
+Credentials never enter these artifacts, and endpoint identities are hashes.
+Share only exports whose source text, questions and prompts you have reviewed.

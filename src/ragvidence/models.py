@@ -6,6 +6,10 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
+    StrictBool,
+    StrictFloat,
+    StrictInt,
+    StrictStr,
     field_validator,
     model_serializer,
     model_validator,
@@ -70,6 +74,95 @@ class RetrievalHit(StrictModel):
     evidence_ids: set[str] = Field(default_factory=set)
     preview: str = ""
     metadata: dict[str, Any] = Field(default_factory=dict)
+    context_spans: list["TextSpan"] | None = None
+
+    @model_serializer(mode="wrap")
+    def serialize_hit(self, handler):
+        values = handler(self)
+        if values.get("context_spans") is None:
+            values.pop("context_spans", None)
+        return values
+
+
+class TextSpan(StrictModel):
+    """Half-open character offsets relative to one retrieved source body."""
+
+    start: int = Field(ge=0, strict=True)
+    end: int = Field(ge=1, strict=True)
+
+    @model_validator(mode="after")
+    def ordered(self):
+        if self.end <= self.start:
+            raise ValueError("Text span end must exceed start")
+        return self
+
+
+MetadataScalar = StrictStr | StrictBool | StrictInt | StrictFloat | None
+
+
+class MetadataPredicate(StrictModel):
+    field: str = Field(min_length=1, max_length=256, pattern=r"^[^.]+(?:\.[^.]+)*$")
+    op: Literal["eq", "in", "gt", "gte", "lt", "lte"]
+    value: MetadataScalar | list[MetadataScalar]
+
+    @model_validator(mode="after")
+    def operand(self):
+        if self.op == "in":
+            if not isinstance(self.value, list) or not 1 <= len(self.value) <= 100:
+                raise ValueError("Membership requires 1 to 100 scalar values")
+        elif isinstance(self.value, list):
+            raise ValueError("This predicate requires one scalar value")
+        elif self.op != "eq" and type(self.value) not in {int, float, str}:
+            raise ValueError("Range comparisons require a number or string")
+        return self
+
+
+class FilterConfig(StrictModel):
+    all: list[MetadataPredicate] = Field(default_factory=list, max_length=32)
+    questions: dict[str, list[MetadataPredicate]] = Field(default_factory=dict, max_length=10000)
+
+    @model_validator(mode="after")
+    def bounded(self):
+        if any(not key or len(values) > 32 for key, values in self.questions.items()):
+            raise ValueError("Question filters require IDs and at most 32 predicates")
+        return self
+
+
+class MMRConfig(StrictModel):
+    lambda_mult: float = Field(default=0.5, ge=0, le=1)
+    candidates: int = Field(default=20, ge=1, le=1000)
+
+
+class RewriteConfig(StrictModel):
+    model: str = Field(min_length=1, max_length=256)
+    provider: Literal["ollama", "openai_compatible"] = "ollama"
+    count: int = Field(default=3, ge=1, le=8, strict=True)
+    max_output_tokens: int = Field(default=512, ge=32, le=4096, strict=True)
+    timeout_seconds: float = Field(default=60, ge=1, le=300)
+    include_original: bool = True
+    failure: Literal["fail", "original"] = "fail"
+    endpoint_hash: str | None = None
+    prompt_version: Literal["query-rewrite-v1"] = "query-rewrite-v1"
+
+
+class CompressionConfig(StrictModel):
+    mode: Literal["sentences", "model"] = "sentences"
+    max_spans: int = Field(default=2, ge=1, le=16, strict=True)
+    max_output_tokens: int = Field(default=1024, ge=32, le=4096, strict=True)
+    timeout_seconds: float = Field(default=60, ge=1, le=300)
+    model: str | None = Field(default=None, min_length=1, max_length=256)
+    provider: Literal["ollama", "openai_compatible"] = "ollama"
+    failure: Literal["fail", "original"] = "fail"
+    endpoint_hash: str | None = None
+    prompt_version: Literal["extractive-spans-v1"] = "extractive-spans-v1"
+
+    @model_validator(mode="after")
+    def model_required(self):
+        if self.mode == "model" and self.model is None:
+            raise ValueError("Model compression requires a model")
+        if self.mode == "sentences" and self.model is not None:
+            raise ValueError("A compression model requires mode=model")
+        return self
 
 
 ChangeClassification = Literal[
@@ -104,6 +197,10 @@ class StrategyConfig(StrictModel):
     context_budget: int | None = Field(default=None, ge=1)
     tokenizer_file: str | None = None
     tokenizer_hash: str | None = None
+    filters: FilterConfig | None = None
+    mmr: MMRConfig | None = None
+    rewrite: RewriteConfig | None = None
+    compression: CompressionConfig | None = None
 
     @model_serializer(mode="wrap")
     def serialize_config(self, handler):
@@ -117,6 +214,10 @@ class StrategyConfig(StrictModel):
             "context_budget",
             "tokenizer_file",
             "tokenizer_hash",
+            "filters",
+            "mmr",
+            "rewrite",
+            "compression",
         ):
             if values.get(key) is None:
                 values.pop(key, None)
@@ -124,6 +225,10 @@ class StrategyConfig(StrictModel):
 
     @model_validator(mode="after")
     def validate_pipeline(self) -> "StrategyConfig":
+        if self.strategy == "imported" and any(
+            value is not None for value in (self.filters, self.mmr, self.rewrite, self.compression)
+        ):
+            raise ValueError("Imported results cannot execute retrieval transformations")
         if self.candidate_k is not None and self.candidate_k < self.k:
             raise ValueError("candidate_k must be at least k")
         if self.child_splitter != "none" and self.child_overlap >= self.child_size:

@@ -95,7 +95,7 @@ def check(cache: Path, output: Path) -> None:
                 }
             )
         )
-        for technique in ("semantic", "hybrid", "rerank"):
+        for technique in ("semantic", "hybrid", "rerank", "mmr"):
             destination = root / technique
             arguments = [
                 technique,
@@ -116,8 +116,10 @@ def check(cache: Path, output: Path) -> None:
                 "--context-budget",
                 "100",
             ]
-            if technique == "rerank":
+            if technique in {"rerank", "mmr"}:
                 arguments += ["--reranker-model", "Xenova/ms-marco-MiniLM-L-6-v2"]
+            if technique == "mmr":
+                arguments += ["--mmr-candidates", "2", "--mmr-lambda", "0.3"]
             report = execute(arguments, destination)
             question = report["questions"][0]
             assert question["metrics"]["sufficient_evidence"] is True
@@ -169,6 +171,8 @@ def check(cache: Path, output: Path) -> None:
             ("minilm", "semantic", ["--model", "sentence-transformers/all-MiniLM-L6-v2"]),
             ("hybrid", "hybrid", ["--model", "BAAI/bge-small-en-v1.5"]),
             ("reranked", "rerank", ["--reranker-model", "Xenova/ms-marco-MiniLM-L-6-v2"]),
+            ("mmr", "mmr", ["--base-retriever", "hybrid", "--mmr-lambda", "0.3"]),
+            ("compressed", "compress", []),
         ]
         for label, technique, extra in configurations:
             destination = root / ("quality-" + label)
@@ -242,6 +246,12 @@ def check(cache: Path, output: Path) -> None:
                             "options": {"model": "sentence-transformers/all-MiniLM-L6-v2"},
                         },
                         {"name": "hybrid", "technique": "hybrid"},
+                        {
+                            "name": "diverse",
+                            "technique": "mmr",
+                            "options": {"mmr": {"lambda_mult": 0.3}},
+                        },
+                        {"name": "compressed", "technique": "compress"},
                     ],
                 }
             )
@@ -269,7 +279,7 @@ def check(cache: Path, output: Path) -> None:
             raise RuntimeError(result.output) from result.exception
         comparison_path = next(destination.glob("*/exports/*/report.json"))
         comparison = json.loads(comparison_path.read_text())
-        assert comparison["state"] == "complete" and len(comparison["participants"]) == 4
+        assert comparison["state"] == "complete" and len(comparison["participants"]) == 6
         assert all(
             item["summaries"]["dev"]["all"]["answerable_questions"] == 6
             for item in comparison["participants"]
@@ -293,7 +303,7 @@ def check(cache: Path, output: Path) -> None:
         if resumed.exit_code:
             raise RuntimeError(resumed.output) from resumed.exception
         print(
-            "PASS: real four-configuration comparison, repeated trials and validated resume",
+            "PASS: real six-configuration comparison, repeated trials and validated resume",
             flush=True,
         )
         suite_evidence = {

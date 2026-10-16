@@ -14,6 +14,10 @@ ragvi parent-child ./manual.md --query "Reset procedure" --chunk-size 100 --chun
 ragvi heading-context ./manual.md --query "Reset procedure"
 ragvi multi-query ./data --questions questions.json --variants variants.json
 ragvi contextual ./data --questions questions.json --prefixes prefixes.json
+ragvi metadata-filter ./records.json --query "Reset procedure" --filters filters.json
+ragvi mmr ./data --query "Reset procedure" --mmr-lambda 0.3
+ragvi auto-multi-query ./data --query "Reset procedure" --rewrite-model qwen3:8b
+ragvi compress ./data --query "Reset procedure"
 ```
 
 All techniques use the same ingestion, snapshot, context assembly and report
@@ -147,8 +151,9 @@ Variant JSON maps question IDs to one through eight supplied nonblank strings:
 ```
 
 The original question is always searched. Duplicate strings are removed; unknown
-question IDs fail. Prepare variants independently of expected evidence, particularly
-for heldout questions. No LLM generates queries automatically.
+question IDs fail. Prepare supplied variants independently of expected evidence,
+particularly for heldout questions. Separate `rewrite` and `auto-multi-query`
+commands generate variants through an explicit question-only model interface.
 
 Prefix JSON maps every original source ID to a reviewed prefix and text hash:
 
@@ -180,8 +185,10 @@ are validated before selection. Missing query/index timings remain unavailable.
 External internal-stage traces and generation-request context are unavailable.
 
 One-command comparisons, paired intervals, controlled grids and resumable suites
-are available through [compare-data](portable-comparisons.md). Metadata filters,
-MMR, automatic rewriting and extractive compression remain later roadmap work.
+are available through [compare-data](portable-comparisons.md). Typed metadata filters,
+MMR, automatic rewriting and extractive compression are covered in the
+[advanced technique guide](portable-advanced-techniques.md), including composition,
+provider/output bounds, failure provenance and exact-span evidence rules.
 Current real-model evidence covers a paraphrase smoke fixture and a
 fixed fictional corpus (eight sources, twelve questions) with two embedding models,
 hybrid and reranking. Results include failures and ties. These bounded fixtures do

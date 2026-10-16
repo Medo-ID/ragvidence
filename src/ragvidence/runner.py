@@ -9,12 +9,14 @@ import time
 from datetime import UTC, datetime
 from pathlib import Path
 
-from ragvidence import __version__
-from ragvidence.artifacts import HASH_ALGORITHM, canonical_bytes, write_json
+from ragvidence import __version__, pipeline
+from ragvidence.artifacts import HASH_ALGORITHM, canonical_bytes, content_hash, write_json
 from ragvidence.budgets import ContextCounter, select_context
+from ragvidence.compression import compress_hits
 from ragvidence.config import Settings
 from ragvidence.context import context_fields
 from ragvidence.data import canonical_dataset_bytes, load_dataset, validate_search_inputs
+from ragvidence.filtering import eligible_sources, predicates_for
 from ragvidence.models import (
     ExperimentRun,
     InputPreparation,
@@ -25,7 +27,10 @@ from ragvidence.models import (
     StageTrace,
     StrategyConfig,
 )
-from ragvidence.pipeline import build_strategy, resolve_config, runtime_versions, vector_cache_state
+from ragvidence.pipeline import (
+    build_strategy,
+    resolve_config,
+)
 from ragvidence.provenance import (
     configuration_identity,
     corpus_identity,
@@ -35,10 +40,19 @@ from ragvidence.provenance import (
 )
 from ragvidence.representation import build_records
 from ragvidence.reranking import FastEmbedReranker
-from ragvidence.strategies.hybrid import fuse_rankings
+from ragvidence.retrieval_stages import (
+    candidate_depth,
+    fuse_queries,
+    rerank_candidates,
+    search_queries,
+)
+from ragvidence.selection import diversify_hits
+from ragvidence.transformations import TransformationError, rewrite_question
 
 
 def run_experiment(dataset: Path, config: StrategyConfig) -> ExperimentRun:
+    if config.compression:
+        raise ValueError("Compression needs portable original-span references; use ragvi compress")
     sources, questions = load_dataset(dataset)
     return execute_retrieval(
         sources,
@@ -70,31 +84,83 @@ def execute_retrieval(
     unknown = config.query_variants.keys() - {question.question_id for question in questions}
     if unknown:
         raise ValueError(f"Query variants reference unknown question IDs: {sorted(unknown)}")
+    if config.filters and config.filters.questions.keys() - {q.question_id for q in questions}:
+        raise ValueError("Metadata filters reference unknown question IDs")
     config = resolve_config(config, settings)
     candidate_k = config.candidate_k or config.k
     # Retrieval sees text and IDs; evaluation evidence is attached only afterwards.
     search_sources = [source.model_copy(update={"evidence_ids": set()}) for source in sources]
     records = build_records(search_sources, config.representation)
     started = time.perf_counter()
-    strategy = build_strategy(config, cache_dir, settings) if questions else None
-    if strategy:
-        strategy.index(records)
+    indexes = {}
+    for question in questions:
+        predicates = predicates_for(config.filters, question.question_id)
+        key = content_hash(predicates)
+        if key not in indexes:
+            eligible = eligible_sources(search_sources, predicates)
+            ids = {source.source_unit_id for source in eligible}
+            filtered = [record for record in records if record.source.source_unit_id in ids]
+            strategy = build_strategy(config, cache_dir, settings) if filtered else None
+            if strategy:
+                strategy.index(filtered)
+            indexes[key] = (strategy, ids)
+    eligible_union = set().union(*(ids for _, ids in indexes.values()))
+    diversity = (
+        pipeline.semantic_strategy(config, cache_dir, settings)
+        if eligible_union and config.mmr
+        else None
+    )
+    if diversity:
+        diversity.index(
+            [record for record in records if record.source.source_unit_id in eligible_union]
+        )
     reranker = (
         FastEmbedReranker(config.reranker_model, cache_dir=cache_dir / "models")
         if questions and config.reranker_model
         else None
     )
-    index_ms = (time.perf_counter() - started) * 1000 if strategy is not None else None
+    index_ms = (time.perf_counter() - started) * 1000 if questions else None
     texts = {record.source.source_unit_id: record.searchable_text for record in records}
     sources_by_id = {source.source_unit_id: source for source in sources}
     counter = ContextCounter(config.tokenizer_file, config.tokenizer_hash)
     query_runs = []
     for question in questions:
         query_started = time.perf_counter()
+        predicates = predicates_for(config.filters, question.question_id)
+        strategy, eligible_ids = indexes[content_hash(predicates)]
+        stages = []
+        if config.filters:
+            stages.append(
+                StageTrace(
+                    name="metadata_filter",
+                    details={
+                        "predicates": [predicate.model_dump() for predicate in predicates],
+                        "policy": "conjunction-before-ranking-v1",
+                        "missing_fields": "exclude",
+                        "input_count": len(search_sources),
+                        "eligible_count": len(eligible_ids),
+                        "eligible_ids": [
+                            s.source_unit_id
+                            for s in search_sources
+                            if s.source_unit_id in eligible_ids
+                        ],
+                    },
+                )
+            )
+        queries = [question.question]
+        if config.rewrite:
+            try:
+                queries, rewrite_trace = rewrite_question(
+                    question.question, config.rewrite, settings
+                )
+            except TransformationError as exc:
+                exc.question_id = question.question_id
+                raise
+            stages.append(rewrite_trace)
         queries = list(
             dict.fromkeys(
                 [
-                    question.question,
+                    *queries,
                     *(
                         variant.strip()
                         for variant in config.query_variants.get(question.question_id, [])
@@ -102,61 +168,30 @@ def execute_retrieval(
                 ]
             )
         )
-        depth = config.query_k or (
-            candidate_k if reranker or len(queries) > 1 or config.context_budget else config.k
-        )
-        rankings, stages = [], []
-        for query in queries:
-            stage_started = time.perf_counter()
-            ranking = strategy.search(query, k=depth)
-            rankings.append(ranking)
-            stages.extend(getattr(strategy, "last_trace", []))
-            stages.append(
-                StageTrace(
-                    name="retrieval",
-                    hits=ranking,
-                    elapsed_ms=(time.perf_counter() - stage_started) * 1000,
-                    details={
-                        "query": query,
-                        "limit": depth,
-                        "index_cache": vector_cache_state(strategy),
-                        "model_cache": "unknown",
-                        "runtime_versions": runtime_versions(),
-                    },
-                )
-            )
-        stage_started = time.perf_counter()
-        hits = (
-            fuse_rankings(rankings, k=depth, constant=config.rrf_constant)
-            if len(rankings) > 1
-            else rankings[0]
-        )
-        if len(rankings) > 1:
-            stages.append(
-                StageTrace(
-                    name="multi_query_fusion",
-                    hits=hits,
-                    elapsed_ms=(time.perf_counter() - stage_started) * 1000,
-                )
-            )
+        depth = candidate_depth(config, len(queries))
+        rankings, retrieval_traces = search_queries(strategy, queries, depth, eligible_ids)
+        stages.extend(retrieval_traces)
+        hits, fusion_traces = fuse_queries(rankings, config, depth)
+        stages.extend(fusion_traces)
         if reranker:
-            stage_started = time.perf_counter()
-            pool = hits[: config.rerank_k or candidate_k]
-            hits = reranker.rerank(question.question, pool, texts, k=len(pool))
-            stages.append(
-                StageTrace(
-                    name="reranking",
-                    hits=hits,
-                    elapsed_ms=(time.perf_counter() - stage_started) * 1000,
-                    details={
-                        "query": question.question,
-                        "input_ids": [hit.source_unit_id for hit in pool],
-                        "limit": config.rerank_k or candidate_k,
-                    },
-                )
+            hits, rerank_trace = rerank_candidates(
+                question.question, hits, reranker, texts, config.rerank_k or candidate_k
             )
-        if any(hit.source_unit_id not in sources_by_id for hit in hits):
-            raise ValueError("Retriever returned an unknown source ID")
+            stages.append(rerank_trace)
+        if any(hit.source_unit_id not in eligible_ids for hit in hits):
+            raise ValueError("Candidate selection returned an unknown or excluded source ID")
+        if config.mmr:
+            hits, diversity_trace = diversify_hits(question.question, hits, diversity, config.mmr)
+            stages.append(diversity_trace)
+        if config.compression:
+            try:
+                hits, compression_trace = compress_hits(
+                    question.question, hits, sources_by_id, config.compression, settings
+                )
+            except TransformationError as exc:
+                exc.question_id = question.question_id
+                raise
+            stages.append(compression_trace)
         stage_started = time.perf_counter()
         hits, measurement = select_context(
             hits, sources_by_id, k=config.k, budget=config.context_budget, counter=counter
@@ -170,7 +205,13 @@ def execute_retrieval(
             )
         )
         hits = [
-            hit.model_copy(update={"evidence_ids": sources_by_id[hit.source_unit_id].evidence_ids})
+            hit.model_copy(
+                update={
+                    "evidence_ids": set()
+                    if hit.context_spans is not None
+                    else sources_by_id[hit.source_unit_id].evidence_ids
+                }
+            )
             for hit in hits
         ]
         context = context_fields(hits, sources_by_id)
@@ -186,7 +227,7 @@ def execute_retrieval(
             )
         )
     warnings = []
-    if config.strategy in {"semantic", "hybrid"} or config.reranker_model:
+    if config.strategy in {"semantic", "hybrid"} or config.reranker_model or config.mmr:
         warnings.append(
             "Model adapters may truncate embedding/reranking inputs; exact truncation "
             "counts are unavailable. Evidence scores describe returned original text, "
@@ -204,6 +245,27 @@ def execute_retrieval(
         warnings.append(
             "Query variants are supplied in the configuration. Keep held-out questions "
             "independent of evidence labels when preparing variants."
+        )
+    if config.rewrite:
+        warnings.append(
+            "Automatic query variants can drift from the original intent; "
+            "evaluation uses the original question."
+        )
+    if config.compression:
+        warnings.append(
+            "Extractive compression can remove required facts or qualifications; "
+            "evidence is rescored from only the returned spans."
+        )
+    if config.rewrite or (config.compression and config.compression.mode == "model"):
+        warnings.append(
+            "Transformation model token usage and input truncation are unknown; "
+            "exact prompts and bounded outputs are retained."
+        )
+    if config.mmr or config.rewrite or (config.compression and config.compression.mode == "model"):
+        warnings.append(
+            "Model names and endpoints may resolve to changed weights. Runtime model "
+            "revisions are not independently verified by each run; recorded integration "
+            "fingerprints apply only to those compatibility checks."
         )
     return ExperimentRun(
         manifest=build_manifest(

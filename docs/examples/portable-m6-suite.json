@@ -1,0 +1,10 @@
+{
+  "baseline": "scoped",
+  "bootstrap_samples": 200,
+  "variants": [
+    {"name": "lexical", "technique": "bm25", "options": {"k": 1}},
+    {"name": "scoped", "technique": "metadata-filter", "filters_file": "portable-m6-filters.json", "options": {"k": 1}},
+    {"name": "diverse", "technique": "mmr", "options": {"k": 1, "mmr": {"lambda_mult": 0.3, "candidates": 3}}},
+    {"name": "extracts", "technique": "compress", "filters_file": "portable-m6-filters.json", "options": {"k": 1}}
+  ]
+}

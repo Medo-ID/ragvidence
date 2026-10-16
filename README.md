@@ -75,6 +75,8 @@ See [Portable techniques and reviewed evidence](docs/portable-techniques.md) for
 technique settings, context budgets and existing-system imports.
 See [Portable comparisons](docs/portable-comparisons.md) for one-command comparisons,
 bounded grids, paired intervals, frozen shortlists and validated resume.
+See [Filters, MMR, rewriting and compression](docs/portable-advanced-techniques.md)
+for additional retrieval experiments and their evidence/quality limits.
 
 The tutorial writes a complete comparison to:
 
@@ -106,7 +108,9 @@ The complete CLI reference is in [Command reference](https://ragvidence.medo-id.
 The development source build also supports JSON-configured hybrid RRF search,
 parent-child retrieval with recursive or Markdown splitting and overlap,
 supplied query variants and contextual prefixes, and optional local cross-encoder
-reranking. See [technique coverage, examples, and remaining gaps](docs/rag-technique-coverage.md).
+reranking. Typed metadata filters, cosine MMR, bounded model query rewriting and
+exact-span compression use the same portable evaluation/comparison workflow.
+See [technique coverage, examples, and remaining gaps](docs/rag-technique-coverage.md).
 These additions are not yet published to PyPI.
 
 - Controlled body versus heading-context experiments

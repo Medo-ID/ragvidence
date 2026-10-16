@@ -9,6 +9,7 @@ from ragvidence.models import (
     ContextPassage,
     ExperimentRun,
     QueryRun,
+    RetrievalHit,
     SearchQuestion,
     StrategyConfig,
 )
@@ -185,7 +186,17 @@ def test_hand_calculated_prefix_completion_rank_and_coverage():
     )
     run = ExperimentRun(
         manifest=manifest,
-        queries=[QueryRun(question_id="Q", hits=[], context=contexts, query_time_ms=1)],
+        queries=[
+            QueryRun(
+                question_id="Q",
+                hits=[
+                    RetrievalHit(source_unit_id=p.source_unit_id, rank=i, score=1.0)
+                    for i, p in enumerate(contexts, 1)
+                ],
+                context=contexts,
+                query_time_ms=1,
+            )
+        ],
     )
     row = score_spans(run, references)["questions"][0]
     assert row["sufficient_evidence"] is False

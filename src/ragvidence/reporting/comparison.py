@@ -49,13 +49,26 @@ def render_comparison_markdown(report: dict) -> str:
         )
         for question in entry["report"]["questions"]:
             lines.extend(["", f"### {escape(question['question'])}", ""])
+            lines.extend(f"- {escape(value)}" for value in question["observations"])
             for hit in question["hits"]:
                 lines.extend(
                     [
                         f"Rank {hit['rank']} · {escape(hit['source_path'])} · "
-                        f"{escape(hit['location_label'])}",
+                        f"{escape(hit['location_label'])} · "
+                        f"Original characters {hit['start']}–{hit['end']}",
                         "",
                         "<pre>" + escape(hit["text"]) + "</pre>",
+                        "",
+                    ]
+                )
+            if question["stages"]:
+                lines.extend(
+                    [
+                        "<details><summary>Observed stages and selection evidence</summary>",
+                        "<pre>"
+                        + escape(json.dumps(question["stages"], ensure_ascii=False, indent=2))
+                        + "</pre>",
+                        "</details>",
                         "",
                     ]
                 )

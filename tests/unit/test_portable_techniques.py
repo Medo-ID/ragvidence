@@ -49,6 +49,13 @@ def fake_models(monkeypatch):
 
     module.TextCrossEncoder = Encoder
     monkeypatch.setitem(sys.modules, "fastembed.rerank.cross_encoder", module)
+    from ragvidence.providers.remote import ChatProvider
+
+    def answer(self, system, user):
+        observed.extend([system, user])
+        return json.dumps({"queries": [json.loads(user)["question"]]})
+
+    monkeypatch.setattr(ChatProvider, "answer", answer)
     return observed
 
 
@@ -135,6 +142,12 @@ def test_each_portable_technique_uses_shared_snapshot_reports_and_traces(
         args.extend(["--prefixes", str(prefixes)])
     if command == "rerank":
         args.extend(["--reranker-model", "fixture-reranker"])
+    if command == "metadata-filter":
+        filters = tmp_path / "filters.json"
+        filters.write_text('{"all":[{"field":"format","op":"eq","value":".md"}]}')
+        args.extend(["--filters", str(filters)])
+    if command in {"rewrite", "auto-multi-query"}:
+        args.extend(["--rewrite-model", "fixture-rewriter"])
     result = CliRunner().invoke(app, args)
     assert result.exit_code == 0, result.output
     root = next((tmp_path / "out").iterdir())

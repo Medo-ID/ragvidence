@@ -14,6 +14,7 @@ from ragvidence.pipeline import resolve_config
 from ragvidence.portable import create_output_directory, default_cache_dir
 from ragvidence.portable_config import PortableOptions
 from ragvidence.portable_inputs import load_variants
+from ragvidence.portable_stages import load_filters
 from ragvidence.reviewed import ReviewedReferences, load_reviewed
 from ragvidence.suites.models import FrozenJob, FrozenShortlist, FrozenSuite, SuiteSpec
 from ragvidence.suites.storage import file_digest, freeze_file, member, read_json
@@ -33,7 +34,13 @@ INGESTION_FIELDS = {
 def read_spec(path: Path) -> SuiteSpec:
     spec = SuiteSpec.model_validate(read_json(path))
     for variant in [*spec.variants, *(grid.variant for grid in spec.grids)]:
-        for field in ("variants_file", "prefixes_file", "results_file", "usage_file"):
+        for field in (
+            "variants_file",
+            "prefixes_file",
+            "results_file",
+            "usage_file",
+            "filters_file",
+        ):
             value = getattr(variant, field)
             if value is not None:
                 setattr(variant, field, (path.resolve().parent / value).resolve())
@@ -46,7 +53,10 @@ def read_spec(path: Path) -> SuiteSpec:
 
 
 def provider_state(settings: Settings) -> str:
-    return content_hash({"embedding_base_url": settings.embedding_base_url})
+    state = {"embedding_base_url": settings.embedding_base_url}
+    if settings.transform_base_url:
+        state["transform_base_url"] = settings.transform_base_url.rstrip("/")
+    return content_hash(state)
 
 
 def rechunk(snapshot: CorpusSnapshot, size: int, overlap: int) -> CorpusSnapshot:
@@ -67,13 +77,22 @@ def rechunk(snapshot: CorpusSnapshot, size: int, overlap: int) -> CorpusSnapshot
 
 def effective_config(job: FrozenJob, questions: list[SearchQuestion]) -> StrategyConfig:
     ids = {question.question_id for question in questions}
-    return job.config.model_copy(
-        update={
-            "query_variants": {
-                key: values for key, values in job.config.query_variants.items() if key in ids
-            }
+    update = {
+        "query_variants": {
+            key: values for key, values in job.config.query_variants.items() if key in ids
         }
-    )
+    }
+    if job.config.filters:
+        update["filters"] = job.config.filters.model_copy(
+            update={
+                "questions": {
+                    key: values
+                    for key, values in job.config.filters.questions.items()
+                    if key in ids
+                }
+            }
+        )
+    return job.config.model_copy(update=update)
 
 
 def jobs_identity(jobs: list[FrozenJob]) -> str:
@@ -152,6 +171,7 @@ def prepare_suite(
                 variant.prefixes_file,
                 variant.results_file,
                 variant.usage_file,
+                variant.filters_file,
             )
             if path
         )
@@ -234,14 +254,22 @@ def prepare_suite(
             "chunk_size",
             "chunk_overlap",
             "child_splitter",
+            "filters",
+            "mmr",
+            "rewrite",
+            "compression",
         }
         if variant.options.keys() - allowed:
             raise ValueError("Variant options may only change retrieval or chunk parameters")
         merged = PortableOptions.model_validate({**options.model_dump(), **variant.options})
+        if variant.filters_file:
+            merged.filters = load_filters(variant.filters_file)
         config = preset(variant.technique, merged, variants=load_variants(variant.variants_file))
         config = config.model_copy(update={"name": variant.name})
         if config.query_variants.keys() - known:
             raise ValueError("Query variants contain unknown question IDs")
+        if config.filters and config.filters.questions.keys() - known:
+            raise ValueError("Metadata filters contain unknown question IDs")
         if config.tokenizer_file:
             relative = freeze_file(root, Path(config.tokenizer_file))
             config = config.model_copy(
@@ -272,9 +300,23 @@ def prepare_suite(
         jobs = _copy_jobs(selected_jobs, shortlist.parent, root)
     check_policy(jobs, spec.policy)
     call_bound = sum(
-        sum(1 + len(set(job.config.query_variants.get(q.question_id, []))) for q in questions)
+        sum(
+            (
+                job.config.rewrite.count + int(job.config.rewrite.include_original)
+                if job.config.rewrite
+                else 1
+            )
+            + len(set(job.config.query_variants.get(q.question_id, [])))
+            for q in questions
+        )
         * (2 if job.config.strategy == "hybrid" else 1)
-        + len(questions) * bool(job.config.reranker_model)
+        + len(questions)
+        * (
+            bool(job.config.reranker_model)
+            + bool(job.config.mmr)
+            + bool(job.config.rewrite)
+            + bool(job.config.compression and job.config.compression.mode == "model")
+        )
         for job in jobs
         if job.config.strategy != "imported"
     ) * (1 + spec.warm_repeats)

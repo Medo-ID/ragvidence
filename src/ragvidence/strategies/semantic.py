@@ -75,7 +75,24 @@ class SemanticStrategy:
     def _cache_path(self, texts: list[str]) -> Path | None:
         if self._cache_dir is None:
             return None
-        identity = getattr(
+        identity = self.embedding_identity
+        return self._cache_dir / f"{content_hash({'identity': identity, 'texts': texts})}.npy"
+
+    def vectors_for(self, source_ids: list[str]) -> np.ndarray:
+        """Reuse indexed vectors for selection without another document encoding."""
+        if self._vectors is None:
+            raise RuntimeError("index() must be called before vector selection")
+        positions = {record.source.source_unit_id: i for i, record in enumerate(self._records)}
+        return self._vectors[[positions[source_id] for source_id in source_ids]]
+
+    def encode_query(self, query: str) -> np.ndarray:
+        if self._vectors is None:
+            raise RuntimeError("index() must be called before query encoding")
+        return query_vector(self._provider.embed_query(query), self._vectors.shape[1])
+
+    @property
+    def embedding_identity(self) -> dict:
+        return getattr(
             self._provider,
             "cache_identity",
             {
@@ -83,7 +100,6 @@ class SemanticStrategy:
                 "model": self._provider.model_name,
             },
         )
-        return self._cache_dir / f"{content_hash({'identity': identity, 'texts': texts})}.npy"
 
 
 def _normalize(vectors: np.ndarray) -> np.ndarray:

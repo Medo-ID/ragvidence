@@ -107,9 +107,18 @@ class OllamaEmbeddingProvider:
 
 class ChatProvider:
     def __init__(
-        self, provider: str, model: str, base_url: str, api_key: str | None = None
+        self,
+        provider: str,
+        model: str,
+        base_url: str,
+        api_key: str | None = None,
+        *,
+        max_output_tokens: int | None = None,
+        timeout_seconds: float = 60,
     ) -> None:
         self.provider, self.model, self.base_url = provider, model, base_url.rstrip("/")
+        self.max_output_tokens = max_output_tokens
+        self.timeout_seconds = timeout_seconds
         self._headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
 
     def answer(self, system: str, user: str) -> str:
@@ -117,8 +126,21 @@ class ChatProvider:
         if self.provider == "ollama":
             value = _post_json(
                 f"{self.base_url}/api/chat",
-                {"model": self.model, "messages": messages, "stream": False},
+                {
+                    "model": self.model,
+                    "messages": messages,
+                    "stream": False,
+                    **(
+                        {
+                            "options": {"temperature": 0, "num_predict": self.max_output_tokens},
+                            "think": False,
+                        }
+                        if self.max_output_tokens is not None
+                        else {}
+                    ),
+                },
                 {},
+                timeout=self.timeout_seconds,
             )
             try:
                 return str(value["message"]["content"])
@@ -126,8 +148,18 @@ class ChatProvider:
                 raise RuntimeError("Ollama response is missing message content") from exc
         value = _post_json(
             f"{self.base_url}/chat/completions",
-            {"model": self.model, "messages": messages, "temperature": 0},
+            {
+                "model": self.model,
+                "messages": messages,
+                "temperature": 0,
+                **(
+                    {"max_tokens": self.max_output_tokens}
+                    if self.max_output_tokens is not None
+                    else {}
+                ),
+            },
             self._headers,
+            timeout=self.timeout_seconds,
         )
         try:
             return str(value["choices"][0]["message"]["content"])

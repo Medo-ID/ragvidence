@@ -10,7 +10,7 @@ from typing import Any, Literal
 from dotenv import dotenv_values
 from pydantic import Field, model_validator
 
-from ragvidence.models import StrictModel
+from ragvidence.models import CompressionConfig, FilterConfig, MMRConfig, RewriteConfig, StrictModel
 
 
 class PortableOptions(StrictModel):
@@ -42,6 +42,10 @@ class PortableOptions(StrictModel):
     tokenizer_file: Path | None = None
     lexical_weight: float = Field(default=0.5, gt=0, lt=1)
     rrf_constant: int = Field(default=60, ge=0)
+    filters: FilterConfig | None = None
+    mmr: MMRConfig | None = None
+    rewrite: RewriteConfig | None = None
+    compression: CompressionConfig | None = None
 
     @model_validator(mode="after")
     def validate_options(self) -> "PortableOptions":
@@ -114,11 +118,24 @@ def resolve_portable_options(
     for field in PortableOptions.model_fields:
         raw = environment.get("RAGVIDENCE_" + field.upper())
         if raw is not None:
-            if field in {"formats", "include_patterns", "exclude_patterns"}:
+            if field in {
+                "formats",
+                "include_patterns",
+                "exclude_patterns",
+                "filters",
+                "mmr",
+                "rewrite",
+                "compression",
+            }:
                 try:
                     raw = json.loads(raw)
                 except ValueError as exc:
-                    raise ValueError(f"RAGVIDENCE_{field.upper()} must be a JSON array") from exc
+                    kind = (
+                        "a JSON array"
+                        if field in {"formats", "include_patterns", "exclude_patterns"}
+                        else "a JSON object"
+                    )
+                    raise ValueError(f"RAGVIDENCE_{field.upper()} must be {kind}") from exc
             values[field] = raw
     values.update({key: value for key, value in overrides.items() if value is not None})
     for key in ("output", "cache_dir", "tokenizer_file"):

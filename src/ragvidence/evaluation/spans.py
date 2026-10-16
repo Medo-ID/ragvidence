@@ -49,8 +49,16 @@ def score_spans(run: ExperimentRun, references: ReviewedReferences) -> dict:
         first_rank = next(
             (
                 rank
-                for rank in range(1, len(query.context) + 1)
-                if required & completed_evidence(required_items, query.context[:rank])
+                for rank in range(1, len(query.hits) + 1)
+                if required
+                & completed_evidence(
+                    required_items,
+                    [
+                        p
+                        for p in query.context
+                        if p.source_unit_id in {hit.source_unit_id for hit in query.hits[:rank]}
+                    ],
+                )
             ),
             None,
         )
@@ -60,8 +68,10 @@ def score_spans(run: ExperimentRun, references: ReviewedReferences) -> dict:
                 and max(span.start, passage.start) < min(span.end, passage.end)
                 for item in required_items
                 for span in item.spans
+                for passage in query.context
+                if passage.source_unit_id == hit.source_unit_id
             )
-            for passage in query.context
+            for hit in query.hits
         )
         results.append(
             {

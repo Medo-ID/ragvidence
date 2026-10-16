@@ -4,9 +4,11 @@ Date: 2026-10-15. Status: M1–M3 implemented in development. The integrity foun
 portable BM25, additional file loaders and portable configuration are available.
 M4's portable techniques, span scoring, budgets and external imports are implemented
 and tested, including two fingerprinted embedding models on fixed reviewed data.
-M5 now provides comparisons, bounded grids, paired intervals, frozen shortlists and
-validated resume in development. Later
-milestones remain planned. No new release has been published. See
+M5 provides comparisons, bounded grids, paired intervals, frozen shortlists and
+validated resume. M6 now implements metadata scopes, cosine MMR, bounded query
+rewriting and exact-span compression through the shared portable pipeline.
+M7 is deferred at the user's request. Stop before M8 for a scope/release discussion;
+consolidated release verification has not started. No new release has been published. See
 [implementation evidence](portable-implementation-evidence.md) for delivered scope.
 
 ## Feasibility and product contract
@@ -345,6 +347,10 @@ slices, timing gaps, ties and no-better-alternative cases. All export facts reco
 **M1–M5 define the first complete portable diagnosis/comparison release scope.**
 
 ### M6 — Extend the catalog with prioritized techniques
+
+Status: implemented in development. See the implementation evidence and
+[advanced technique guide](../portable-advanced-techniques.md). M7 remains deferred;
+routine milestone tests do not constitute the consolidated M8 release gate.
 
 Implement through the same stages, loaders, artifacts and reports:
 
