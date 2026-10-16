@@ -1,0 +1,31 @@
+{
+  "runs": [
+    {
+      "id": 38921470479,
+      "head_sha": "42e774974e0ebf8a880f33f0aded9f587d22f40c",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Medo-ID/ragvidence/actions/runs/38921470479"
+    },
+    {
+      "id": 38920238447,
+      "head_sha": "dd0e74794411243772c10fdece640b3e6aaaf786",
+      "status": "completed",
+      "conclusion": "failure",
+      "html_url": "https://github.com/Medo-ID/ragvidence/actions/runs/38920238447"
+    },
+    {
+      "id": 38917776739,
+      "head_sha": "f4f411aa822883af7850d05335199e8df197d1d3",
+      "status": "completed",
+      "conclusion": "failure",
+      "html_url": "https://github.com/Medo-ID/ragvidence/actions/runs/38917776739"
+    }
+  ],
+  "corrections": [
+    "Fresh dependency installation uses uv.lock constraints and explicit package-index access; unit/model tests remain offline.",
+    "CRLF assertions compare exact decoded source bytes; Windows offset regression added.",
+    "BM25S import notice is deferred and routed to stderr to preserve version/JSON protocols.",
+    "Dependency setup diagnostics and exception tracebacks are retained."
+  ]
+}

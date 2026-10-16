@@ -63,11 +63,10 @@ def main(
 
 @app.command()
 def edition() -> None:
-    """Show the installed product edition and activation requirement."""
-    if __edition__ == "Free":
-        console.print("Free — no account or activation required")
-    else:
-        console.print(__edition__)
+    """Show the single free edition; all included capabilities are available."""
+    console.print(
+        f"{__edition__} — no account or activation required; all included features available"
+    )
 
 
 @app.command()

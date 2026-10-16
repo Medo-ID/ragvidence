@@ -52,6 +52,21 @@ def test_semantic_index_reuses_local_cache(tmp_path: Path) -> None:
     assert second.cache_hit is True
 
 
+def test_deleted_embedding_cache_is_rebuilt_without_changing_ranking(tmp_path):
+    first = SemanticStrategy(cache_dir=tmp_path / "vectors", provider=FakeProvider())
+    first.index(_records())
+    expected = first.search("alpha concept", k=2)
+    for artifact in (tmp_path / "vectors").iterdir():
+        artifact.unlink()
+    (tmp_path / "vectors").rmdir()
+    provider = FakeProvider()
+    rebuilt = SemanticStrategy(cache_dir=tmp_path / "vectors", provider=provider)
+    rebuilt.index(_records())
+    assert provider.document_calls == 1
+    assert rebuilt.cache_hit is False
+    assert rebuilt.search("alpha concept", k=2) == expected
+
+
 @pytest.mark.parametrize(
     "vectors",
     [

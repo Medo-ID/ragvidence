@@ -5,13 +5,13 @@ Use `ragvi COMMAND --help` for the authoritative options installed with your ver
 | Command | Purpose |
 | --- | --- |
 | `ragvi health` | Check Python, dependencies, bundled data, workspace access, semantic support, and local privacy defaults. |
-| `ragvi edition` | Show the installed Free or Plus edition and its activation requirement. |
+| `ragvi edition` | Show that all included features are free and require no activation. |
 | `ragvi verify` | Run deterministic release and installation fixtures. |
 | `ragvi tutorial` | Run the complete first-use BM25 comparison and create an HTML report. |
 | `ragvi quickstart` | Copy only the bundled heading-context exercise. |
 | `ragvi init NAME` | Create a named editable experiment. |
 | `ragvi validate WORKSPACE` | Validate schemas, unique IDs, answerability, and evidence references. |
-| `ragvi bm25 INPUT` | Development build: inspect TXT/Markdown, HTML, document JSON/JSONL, CSV or optional text PDFs and export reports without workspace setup. |
+| `ragvi bm25 INPUT` | Inspect TXT/Markdown, HTML, document JSON/JSONL, CSV or optional text PDFs and export reports without workspace setup. |
 | `ragvi techniques` | List portable techniques and requirements; `--format json` for automation. |
 | `ragvi semantic INPUT`, `ragvi hybrid INPUT` | Portable dense cosine or weighted lexical/dense fusion. |
 | `ragvi rerank INPUT` | Portable cross-encoder reranking with an explicit model. |

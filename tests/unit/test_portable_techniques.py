@@ -203,7 +203,7 @@ def test_parent_context_passes_when_matching_child_is_insufficient(tmp_path):
     )
     assert child["questions"][0]["metrics"]["sufficient_evidence"] is False
     assert parent["questions"][0]["metrics"]["sufficient_evidence"] is True
-    assert parent["questions"][0]["hits"][0]["text"] == source.read_text()
+    assert parent["questions"][0]["hits"][0]["text"] == source.read_bytes().decode("utf-8")
     assert (
         parent["questions"][0]["context_characters"] > child["questions"][0]["context_characters"]
     )

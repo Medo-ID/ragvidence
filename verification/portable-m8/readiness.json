@@ -1,0 +1,225 @@
+{
+  "schema_version": 1,
+  "prepared_date": "2026-10-16",
+  "version": "0.2.0",
+  "status": "automated_release_checks_passed",
+  "license": "Apache-2.0",
+  "source": {
+    "commit": "a5d2d9e8c6a3a76df52f43ad9ee3345577e7dca3",
+    "working_tree_dirty": true
+  },
+  "core_tests": {
+    "status": "passed",
+    "passed": 395,
+    "skipped": 0
+  },
+  "platforms": [
+    {
+      "os": "Linux",
+      "architecture": "x86_64",
+      "runner": "ubuntu-latest",
+      "github_status": "passed",
+      "passed_tests": 395,
+      "installation_modes": 3,
+      "upgrade": "passed",
+      "artifact_archive_sha256": "18ce285c369d9ba039b79cafe018ec4cdc813e41962e099caac873ada4272220",
+      "evidence_directory": "github/38921470479/ubuntu-latest"
+    },
+    {
+      "os": "Windows",
+      "architecture": "AMD64",
+      "runner": "windows-latest",
+      "github_status": "passed",
+      "passed_tests": 395,
+      "installation_modes": 3,
+      "upgrade": "passed",
+      "artifact_archive_sha256": "283b74cb2c3d9bbccc25d46c84c1c00104bdaaa40fa2c895cdacdd7ad8a18e8e",
+      "evidence_directory": "github/38921470479/windows-latest"
+    },
+    {
+      "os": "macOS",
+      "architecture": "arm64",
+      "runner": "macos-latest",
+      "github_status": "passed",
+      "passed_tests": 395,
+      "installation_modes": 3,
+      "upgrade": "passed",
+      "artifact_archive_sha256": "79ce3a24c290828523c3b68e452ca2e50f524dbd9078c5b341f9b91d0183ed7c",
+      "evidence_directory": "github/38921470479/macos-latest"
+    },
+    {
+      "os": "macOS",
+      "architecture": "x86_64",
+      "runner": "macos-15-intel",
+      "github_status": "passed",
+      "passed_tests": 395,
+      "installation_modes": 3,
+      "upgrade": "passed",
+      "artifact_archive_sha256": "32b39ff05cf7a97d02818dd99e234e250fd468e3f2e5dcf3bf843ea66fdc0e23",
+      "evidence_directory": "github/38921470479/macos-15-intel"
+    }
+  ],
+  "workflow_static_validation": {
+    "status": "passed",
+    "tool": "actionlint 1.7.12"
+  },
+  "isolated_upgrade": {
+    "status": "passed",
+    "from_version": "0.1.0",
+    "to_version": "0.2.0",
+    "old_sha256": "6dc10ba92245c332292f578591bbc88aab0d5827a1e445292c75fcc5dd5029ee",
+    "candidate_sha256": "97cd4dc87a154b85dd20c748e16ad8ce062c3bb9b88b42a583f6c3c7a9851387",
+    "legacy_artifacts_unchanged": true,
+    "legacy_version_stdout_notice": false,
+    "legacy_exports": [
+      "html",
+      "json",
+      "markdown"
+    ],
+    "limit": "Legacy reads retain legacy provenance; rerun experiments for modern validation."
+  },
+  "real_model_compatibility": {
+    "platform": "Linux x86_64",
+    "embeddings_reranker": "model-check.json",
+    "transformations": "transform-check.json",
+    "limit": "Specific pinned local models, not universal model or hardware support.",
+    "transformation_observations": [
+      {
+        "technique": "rewrite",
+        "contract_status": "passed",
+        "sufficient_evidence": true
+      },
+      {
+        "technique": "compression",
+        "contract_status": "passed",
+        "sufficient_evidence": false
+      }
+    ],
+    "locked_onnxruntime": "1.23.2"
+  },
+  "candidate_artifacts": {
+    "ragvidence-0.2.0-py3-none-any.whl": {
+      "status": "passed",
+      "member_count": 98,
+      "sha256": "97cd4dc87a154b85dd20c748e16ad8ce062c3bb9b88b42a583f6c3c7a9851387",
+      "bytes": 288044
+    },
+    "ragvidence-0.2.0.tar.gz": {
+      "status": "passed",
+      "member_count": 188,
+      "sha256": "a6aa2654b0f8848ca074a121ec0e119e88eed801bf90522e60613e0d78e57dc4",
+      "bytes": 380772
+    }
+  },
+  "manual_usability": "not_run_by_a_human",
+  "remote_trusted_publishers": "not_verified",
+  "testpypi_candidate_publication": "not_performed",
+  "pypi_candidate_publication": "not_performed",
+  "website": "handoff_only_instructions.md",
+  "m7": "deferred_not_implemented",
+  "evidence_files": {
+    "capabilities.json": "dea7d7a7920384e0b0264554e77e604895ab757e78c109b584b0872894e116aa",
+    "checks.json": "04816d4d1cff49314ae60b284635f874e12cc3935a304d5761504dac8f5de9c5",
+    "model-check.json": "a95579d76bccd37fdeba83ed4a8d499ab11521331a9f621919f8a170430dec8e",
+    "source-snapshot.json": "90f8f975debdf51e10035140c8f8d1fe5d88e6d01a45dda4123a2e4b43251772",
+    "tests.json": "97a91d6c79f9de5f0f49a0e881ea322e1aaa0328c56682c03c37268c60d9b280",
+    "transform-check.json": "58734384c61406e75e6b62f8dd1e33745f93ab5b6e41991bbb001033ea0fa981",
+    "upgrade.json": "946affce7fd9db67bc9a80dd02ea6f7d80a4c6d02b4655c8379488bbc5289afa"
+  },
+  "next_gates": [
+    "Prepare public contribution/docs/sponsorship and inspect publishing configuration.",
+    "Complete optional human CLI/report usability review separately.",
+    "Publish the tested release deliberately and verify index wheel hashes; no package has been published by M8."
+  ],
+  "platform_dependency_preflight": {
+    "status": "passed",
+    "targets": [
+      "x86_64-unknown-linux-gnu",
+      "x86_64-pc-windows-msvc",
+      "aarch64-apple-darwin",
+      "x86_64-apple-darwin"
+    ],
+    "limit": "Offline wheel/dependency selection only; no Windows or macOS process was executed."
+  },
+  "audit_fixes": [
+    "Intel macOS ONNX Runtime constraint in published semantic extra; locked runtime 1.23.2 with all target wheel checks.",
+    "Required-platform lock constraints for Linux x64, Windows x64 and macOS ARM64/Intel.",
+    "Manifest rejects missing planned modifiers and duplicate loader contracts.",
+    "Core UDP network guard and deleted-vector-cache recovery regression tests.",
+    "Direct verification-only workflow dispatch prepared without publication jobs.",
+    "Fresh CI installs use exported lock constraints with explicit package-index access.",
+    "Windows CLI version and JSON output avoid BM25S import notices; import is lazy with stderr diagnostics.",
+    "CRLF original spans have explicit regression coverage; setup and assertion diagnostics are retained."
+  ],
+  "github_access": {
+    "ssh_read": "passed",
+    "remote_head_observed": "e9f83a388a9a313202d603ed09b2051485daaf9c",
+    "actions_api_authentication": "unavailable",
+    "current_m8_source": "matches passing verification revision",
+    "hosted_execution": "passed",
+    "reason": "User authorized temporary verification commits, cleanup and a final M8 main commit. CI was triggered using SSH Git push; anonymous public API/artifact access supplied outcomes.",
+    "prepared_trigger": "push to verification/** runs CI without publication"
+  },
+  "public_transition": "Repository is public; release preparation follows verified M8 main commit.",
+  "source_snapshot": "source-snapshot.json",
+  "github_verification": {
+    "run_id": 38921470479,
+    "url": "https://github.com/Medo-ID/ragvidence/actions/runs/38921470479",
+    "commit": "42e774974e0ebf8a880f33f0aded9f587d22f40c",
+    "status": "passed",
+    "workflow_lint": "passed",
+    "platforms": [
+      {
+        "os": "Linux",
+        "architecture": "x86_64",
+        "runner": "ubuntu-latest",
+        "github_status": "passed",
+        "passed_tests": 395,
+        "installation_modes": 3,
+        "upgrade": "passed",
+        "artifact_archive_sha256": "18ce285c369d9ba039b79cafe018ec4cdc813e41962e099caac873ada4272220",
+        "evidence_directory": "github/38921470479/ubuntu-latest"
+      },
+      {
+        "os": "Windows",
+        "architecture": "AMD64",
+        "runner": "windows-latest",
+        "github_status": "passed",
+        "passed_tests": 395,
+        "installation_modes": 3,
+        "upgrade": "passed",
+        "artifact_archive_sha256": "283b74cb2c3d9bbccc25d46c84c1c00104bdaaa40fa2c895cdacdd7ad8a18e8e",
+        "evidence_directory": "github/38921470479/windows-latest"
+      },
+      {
+        "os": "macOS",
+        "architecture": "arm64",
+        "runner": "macos-latest",
+        "github_status": "passed",
+        "passed_tests": 395,
+        "installation_modes": 3,
+        "upgrade": "passed",
+        "artifact_archive_sha256": "79ce3a24c290828523c3b68e452ca2e50f524dbd9078c5b341f9b91d0183ed7c",
+        "evidence_directory": "github/38921470479/macos-latest"
+      },
+      {
+        "os": "macOS",
+        "architecture": "x86_64",
+        "runner": "macos-15-intel",
+        "github_status": "passed",
+        "passed_tests": 395,
+        "installation_modes": 3,
+        "upgrade": "passed",
+        "artifact_archive_sha256": "32b39ff05cf7a97d02818dd99e234e250fd468e3f2e5dcf3bf843ea66fdc0e23",
+        "evidence_directory": "github/38921470479/macos-15-intel"
+      }
+    ]
+  },
+  "temporary_verification_cleanup": {
+    "remote_branch": "deleted",
+    "local_branch": "deleted",
+    "worktree": "removed",
+    "pull_request": "none_created",
+    "verified_changes": "retained on main for final commit"
+  }
+}

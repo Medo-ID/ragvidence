@@ -1,0 +1,393 @@
+{
+  "schema_version": 1,
+  "capabilities": [
+    {
+      "id": "T01",
+      "scope": "BM25",
+      "commands": [
+        "bm25"
+      ],
+      "positive": [
+        "tests/unit/test_data_and_retrieval.py::test_bm25_returns_ranked_source_evidence"
+      ],
+      "negative": [
+        "tests/unit/test_portable_techniques.py::test_bm25_ties_are_stable_in_frozen_source_order"
+      ],
+      "journey": [
+        "tests/unit/test_portable_techniques.py::test_each_portable_technique_uses_shared_snapshot_reports_and_traces[bm25]"
+      ],
+      "model_check": null
+    },
+    {
+      "id": "T02",
+      "scope": "Dense cosine",
+      "commands": [
+        "semantic"
+      ],
+      "positive": [
+        "tests/unit/test_semantic.py::test_semantic_search_ranks_by_cosine_similarity"
+      ],
+      "negative": [
+        "tests/unit/test_semantic.py::test_invalid_document_vectors_are_rejected"
+      ],
+      "journey": [
+        "tests/unit/test_portable_techniques.py::test_each_portable_technique_uses_shared_snapshot_reports_and_traces[semantic]"
+      ],
+      "model_check": "model-check.json"
+    },
+    {
+      "id": "T03",
+      "scope": "Hybrid RRF",
+      "commands": [
+        "hybrid"
+      ],
+      "positive": [
+        "tests/unit/test_advanced_retrieval.py::test_rrf_uses_ranks_weights_and_one_contribution_per_source"
+      ],
+      "negative": [
+        "tests/unit/test_advanced_retrieval.py::test_hybrid_fetches_candidates_before_final_cutoff"
+      ],
+      "journey": [
+        "tests/unit/test_portable_techniques.py::test_each_portable_technique_uses_shared_snapshot_reports_and_traces[hybrid]"
+      ],
+      "model_check": "model-check.json"
+    },
+    {
+      "id": "T04",
+      "scope": "Cross-encoder",
+      "commands": [
+        "rerank"
+      ],
+      "positive": [
+        "tests/unit/test_advanced_retrieval.py::test_cross_encoder_uses_complete_context_and_preserves_prior_ranking"
+      ],
+      "negative": [
+        "tests/unit/test_advanced_retrieval.py::test_cross_encoder_rejects_invalid_scores"
+      ],
+      "journey": [
+        "tests/unit/test_portable_techniques.py::test_each_portable_technique_uses_shared_snapshot_reports_and_traces[rerank]"
+      ],
+      "model_check": "model-check.json"
+    },
+    {
+      "id": "T05",
+      "scope": "Recursive splitting",
+      "commands": [],
+      "positive": [
+        "tests/unit/test_advanced_retrieval.py::test_children_preserve_all_characters_and_size_bounds"
+      ],
+      "negative": [
+        "tests/unit/test_advanced_retrieval.py::test_invalid_pipeline_options_fail_validation"
+      ],
+      "journey": [
+        "tests/unit/test_portable_techniques.py::test_each_portable_technique_uses_shared_snapshot_reports_and_traces"
+      ],
+      "model_check": null
+    },
+    {
+      "id": "T06",
+      "scope": "Markdown splitting",
+      "commands": [],
+      "positive": [
+        "tests/unit/test_advanced_retrieval.py::test_markdown_keeps_heading_boundaries_and_ignores_fenced_headings"
+      ],
+      "negative": [
+        "tests/unit/test_advanced_retrieval.py::test_invalid_pipeline_options_fail_validation"
+      ],
+      "journey": [
+        "tests/unit/test_portable_techniques.py::test_each_portable_technique_uses_shared_snapshot_reports_and_traces"
+      ],
+      "model_check": null
+    },
+    {
+      "id": "T07",
+      "scope": "Chunk overlap",
+      "commands": [],
+      "positive": [
+        "tests/unit/test_portable_techniques.py::test_shared_reviewed_spans_remain_valid_across_chunk_size_and_overlap"
+      ],
+      "negative": [
+        "tests/unit/test_span_evaluation.py::test_evidence_requires_complete_union_and_never_counts_overlap_twice"
+      ],
+      "journey": [
+        "tests/unit/test_portable_techniques.py::test_each_portable_technique_uses_shared_snapshot_reports_and_traces"
+      ],
+      "model_check": null
+    },
+    {
+      "id": "T08",
+      "scope": "Parent-child",
+      "commands": [
+        "parent-child"
+      ],
+      "positive": [
+        "tests/unit/test_portable_techniques.py::test_parent_context_passes_when_matching_child_is_insufficient"
+      ],
+      "negative": [
+        "tests/unit/test_advanced_retrieval.py::test_parent_child_returns_full_parent_labels_without_duplicates"
+      ],
+      "journey": [
+        "tests/unit/test_portable_techniques.py::test_each_portable_technique_uses_shared_snapshot_reports_and_traces[parent-child]"
+      ],
+      "model_check": null
+    },
+    {
+      "id": "T09",
+      "scope": "Heading/reviewed context",
+      "commands": [
+        "heading-context",
+        "contextual"
+      ],
+      "positive": [
+        "tests/unit/test_advanced_retrieval.py::test_context_prefix_is_searchable_without_mutating_evidence"
+      ],
+      "negative": [
+        "tests/unit/test_portable_techniques.py::test_misleading_context_prefix_can_regress_and_never_becomes_gold"
+      ],
+      "journey": [
+        "tests/unit/test_portable_techniques.py::test_each_portable_technique_uses_shared_snapshot_reports_and_traces[heading-context]",
+        "tests/unit/test_portable_techniques.py::test_each_portable_technique_uses_shared_snapshot_reports_and_traces[contextual]"
+      ],
+      "model_check": null
+    },
+    {
+      "id": "T10",
+      "scope": "Supplied query fusion",
+      "commands": [
+        "multi-query"
+      ],
+      "positive": [
+        "tests/unit/test_portable_techniques.py::test_supplied_variants_can_help_or_regress_without_changing_original_question"
+      ],
+      "negative": [
+        "tests/unit/test_advanced_retrieval.py::test_unknown_query_variants_and_imported_strategy_rejected_before_indexing"
+      ],
+      "journey": [
+        "tests/unit/test_portable_techniques.py::test_each_portable_technique_uses_shared_snapshot_reports_and_traces[multi-query]"
+      ],
+      "model_check": null
+    },
+    {
+      "id": "T11",
+      "scope": "Embedding configuration comparisons",
+      "commands": [],
+      "positive": [
+        "tests/unit/test_semantic.py::test_provider_identity_prevents_cross_endpoint_cache_reuse"
+      ],
+      "negative": [
+        "tests/unit/test_semantic.py::test_corrupted_embedding_cache_does_not_silently_produce_a_ranking"
+      ],
+      "journey": [
+        "tests/unit/test_suites.py::test_vector_cache_compatibility_and_warm_trials_do_not_inflate_question_counts"
+      ],
+      "model_check": "model-check.json"
+    },
+    {
+      "id": "T12",
+      "scope": "Independent chunk evidence",
+      "commands": [],
+      "positive": [
+        "tests/unit/test_portable_techniques.py::test_shared_reviewed_spans_remain_valid_across_chunk_size_and_overlap"
+      ],
+      "negative": [
+        "tests/unit/test_portable_techniques.py::test_context_budget_loss_is_reflected_in_reviewed_evidence"
+      ],
+      "journey": [
+        "tests/unit/test_portable_techniques.py::test_each_portable_technique_uses_shared_snapshot_reports_and_traces"
+      ],
+      "model_check": null
+    },
+    {
+      "id": "T13",
+      "scope": "Typed metadata filters",
+      "commands": [
+        "metadata-filter"
+      ],
+      "positive": [
+        "tests/unit/test_metadata_filters.py::test_typed_predicate_truth_table"
+      ],
+      "negative": [
+        "tests/unit/test_metadata_filters.py::test_invalid_predicates_are_rejected"
+      ],
+      "journey": [
+        "tests/unit/test_portable_techniques.py::test_each_portable_technique_uses_shared_snapshot_reports_and_traces[metadata-filter]"
+      ],
+      "model_check": null
+    },
+    {
+      "id": "T14",
+      "scope": "MMR",
+      "commands": [
+        "mmr"
+      ],
+      "positive": [
+        "tests/unit/test_mmr.py::test_mmr_matches_independent_two_dimension_oracle"
+      ],
+      "negative": [
+        "tests/unit/test_mmr.py::test_mmr_rejects_invalid_embeddings"
+      ],
+      "journey": [
+        "tests/unit/test_portable_techniques.py::test_each_portable_technique_uses_shared_snapshot_reports_and_traces[mmr]"
+      ],
+      "model_check": "model-check.json"
+    },
+    {
+      "id": "T15",
+      "scope": "Automatic rewriting",
+      "commands": [
+        "rewrite",
+        "auto-multi-query"
+      ],
+      "positive": [
+        "tests/unit/test_query_rewriting.py::test_bounded_unique_queries_and_original_policy"
+      ],
+      "negative": [
+        "tests/unit/test_query_rewriting.py::test_invalid_output_fails_or_explicitly_falls_back"
+      ],
+      "journey": [
+        "tests/unit/test_portable_techniques.py::test_each_portable_technique_uses_shared_snapshot_reports_and_traces[rewrite]",
+        "tests/unit/test_portable_techniques.py::test_each_portable_technique_uses_shared_snapshot_reports_and_traces[auto-multi-query]"
+      ],
+      "model_check": "transform-check.json"
+    },
+    {
+      "id": "T16",
+      "scope": "Exact extractive compression",
+      "commands": [
+        "compress"
+      ],
+      "positive": [
+        "tests/unit/test_extractive_compression.py::test_multiple_extracts_keep_one_hit_rank_and_precision_denominator"
+      ],
+      "negative": [
+        "tests/unit/test_extractive_compression.py::test_invalid_model_spans_fail_or_explicitly_fall_back"
+      ],
+      "journey": [
+        "tests/unit/test_portable_techniques.py::test_each_portable_technique_uses_shared_snapshot_reports_and_traces[compress]"
+      ],
+      "model_check": "transform-check.json"
+    },
+    {
+      "id": "I01",
+      "scope": "External result imports",
+      "commands": [
+        "import-data"
+      ],
+      "positive": [
+        "tests/unit/test_portable_techniques.py::test_native_exact_import_and_id_proxy_score_equivalent_spans_with_disclosed_scope"
+      ],
+      "negative": [
+        "tests/unit/test_portable_techniques.py::test_imported_context_and_truncated_tails_are_validated"
+      ],
+      "journey": [
+        "tests/unit/test_suites.py::test_imported_baseline_keeps_missing_timing_and_proxy_scope_and_all_phase_records"
+      ],
+      "model_check": null
+    },
+    {
+      "id": "L01",
+      "scope": "TXT",
+      "commands": [],
+      "positive": [
+        "tests/unit/test_release_journeys.py::test_each_loader_has_a_real_cli_to_report_journey[manual.txt]"
+      ],
+      "negative": [
+        "tests/unit/test_release_journeys.py::test_empty_text_formats_fail_without_quality_report[txt]"
+      ],
+      "journey": [
+        "tests/unit/test_release_journeys.py::test_each_loader_has_a_real_cli_to_report_journey[manual.txt]"
+      ],
+      "model_check": null
+    },
+    {
+      "id": "L02",
+      "scope": "Markdown",
+      "commands": [],
+      "positive": [
+        "tests/unit/test_ingestion.py::test_markdown_passages_preserve_unicode_offsets_and_heading_paths"
+      ],
+      "negative": [
+        "tests/unit/test_release_journeys.py::test_empty_text_formats_fail_without_quality_report[md]"
+      ],
+      "journey": [
+        "tests/unit/test_release_journeys.py::test_each_loader_has_a_real_cli_to_report_journey[manual.md]"
+      ],
+      "model_check": null
+    },
+    {
+      "id": "L03",
+      "scope": "HTML",
+      "commands": [],
+      "positive": [
+        "tests/unit/test_file_formats.py::test_html_extracts_reviewed_visible_sections_with_heading_paths"
+      ],
+      "negative": [
+        "tests/unit/test_file_formats.py::test_malformed_and_empty_inputs_fail_clearly"
+      ],
+      "journey": [
+        "tests/unit/test_release_journeys.py::test_each_loader_has_a_real_cli_to_report_journey[manual.html]"
+      ],
+      "model_check": null
+    },
+    {
+      "id": "L04",
+      "scope": "JSON",
+      "commands": [],
+      "positive": [
+        "tests/unit/test_file_formats.py::test_record_text_and_original_locations_are_independently_checked"
+      ],
+      "negative": [
+        "tests/unit/test_file_formats.py::test_malformed_and_empty_inputs_fail_clearly"
+      ],
+      "journey": [
+        "tests/unit/test_release_journeys.py::test_each_loader_has_a_real_cli_to_report_journey[documents.json]"
+      ],
+      "model_check": null
+    },
+    {
+      "id": "L05",
+      "scope": "JSONL",
+      "commands": [],
+      "positive": [
+        "tests/unit/test_file_formats.py::test_record_text_and_original_locations_are_independently_checked"
+      ],
+      "negative": [
+        "tests/unit/test_file_formats.py::test_malformed_and_empty_inputs_fail_clearly"
+      ],
+      "journey": [
+        "tests/unit/test_release_journeys.py::test_each_loader_has_a_real_cli_to_report_journey[documents.jsonl]"
+      ],
+      "model_check": null
+    },
+    {
+      "id": "L06",
+      "scope": "CSV",
+      "commands": [],
+      "positive": [
+        "tests/unit/test_file_formats.py::test_record_text_and_original_locations_are_independently_checked"
+      ],
+      "negative": [
+        "tests/unit/test_file_formats.py::test_malformed_and_empty_inputs_fail_clearly"
+      ],
+      "journey": [
+        "tests/unit/test_release_journeys.py::test_each_loader_has_a_real_cli_to_report_journey[documents.csv]"
+      ],
+      "model_check": null
+    },
+    {
+      "id": "L07",
+      "scope": "Text PDF",
+      "commands": [],
+      "positive": [
+        "tests/unit/test_pdf_ingestion.py::test_real_pdf_pages_retain_text_locations_and_parser_version"
+      ],
+      "negative": [
+        "tests/unit/test_pdf_ingestion.py::test_empty_and_encrypted_pdf_have_explicit_failures"
+      ],
+      "journey": [
+        "tests/unit/test_release_journeys.py::test_each_loader_has_a_real_cli_to_report_journey[text-pages.pdf]"
+      ],
+      "model_check": null
+    }
+  ]
+}

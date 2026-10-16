@@ -7,8 +7,11 @@ and tested, including two fingerprinted embedding models on fixed reviewed data.
 M5 provides comparisons, bounded grids, paired intervals, frozen shortlists and
 validated resume. M6 now implements metadata scopes, cosine MMR, bounded query
 rewriting and exact-span compression through the shared portable pipeline.
-M7 is deferred at the user's request. Stop before M8 for a scope/release discussion;
-consolidated release verification has not started. No new release has been published. See
+M7 is deferred at the user's request. M8 release preparation is now authorized:
+the 0.2.0 candidate is completely free under Apache-2.0, with consolidated Linux
+evidence and cross-platform CI gates. Linux, Windows and macOS ARM64/Intel now
+pass 395 tests plus installed wheel/source/optional-runtime and upgrade journeys.
+Live index publication remains pending. No new release has been published. See
 [implementation evidence](portable-implementation-evidence.md) for delivered scope.
 
 ## Feasibility and product contract

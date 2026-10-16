@@ -1,13 +1,17 @@
 """Install a wheel as a global-style tool and exercise it away from the checkout.
 
-Uses only cached dependencies and isolated temporary tool/bin directories.
+Uses locked dependencies and isolated temporary tool/bin directories. Offline by
+default; --online-install allows package-index metadata/downloads on fresh runners.
 Run after `uv build`: uv run python scripts/check_portable_install.py
 """
 
 from __future__ import annotations
 
+import argparse
+import hashlib
 import json
 import os
+import platform
 import shutil
 import subprocess
 import sys
@@ -16,36 +20,91 @@ from pathlib import Path
 
 
 def run(command: list[str], *, cwd: Path, env: dict[str, str]) -> str:
-    result = subprocess.run(command, cwd=cwd, env=env, capture_output=True, text=True)
+    result = subprocess.run(
+        command, cwd=cwd, env=env, capture_output=True, text=True, encoding="utf-8"
+    )
     if result.returncode:
         raise RuntimeError(f"Command failed: {command}\n{result.stdout}\n{result.stderr}")
     return result.stdout
 
 
-def check_install(wheel: Path, directory: Path) -> None:
+def install_tool(
+    wheel: Path,
+    directory: Path,
+    *,
+    extras: list[str] | None = None,
+    reinstall: bool = False,
+    offline: bool = True,
+) -> tuple[str, Path, dict[str, str]]:
+    extras = extras or []
     client = directory / "customer folder"
-    client.mkdir()
+    client.mkdir(exist_ok=True)
     tool_bin = directory / "bin"
     env = {
         **{key: value for key, value in os.environ.items() if not key.startswith("RAGVIDENCE_")},
         "UV_TOOL_DIR": str(directory / "tools"),
         "UV_TOOL_BIN_DIR": str(tool_bin),
         "PYTHONPATH": "",
+        "PYTHONUTF8": "1",
+        "HF_HUB_OFFLINE": "1",
         "PATH": str(tool_bin) + os.pathsep + os.environ.get("PATH", ""),
         "XDG_CONFIG_HOME": str(directory / "config"),
         "APPDATA": str(directory / "roaming"),
     }
+    target = (
+        f"ragvidence[{','.join(extras)}] @ {wheel.resolve().as_uri()}"
+        if extras
+        else str(wheel.resolve())
+    )
+    constraints = directory / "locked-requirements.txt"
     run(
-        ["uv", "tool", "install", "--offline", "--python", sys.executable, str(wheel)],
+        [
+            "uv",
+            "export",
+            "--frozen",
+            "--no-dev",
+            "--all-extras",
+            "--no-emit-project",
+            "--no-hashes",
+            "--output-file",
+            str(constraints),
+        ],
+        cwd=Path(__file__).resolve().parents[1],
+        env=env,
+    )
+    run(
+        [
+            "uv",
+            "tool",
+            "install",
+            *(["--offline"] if offline else []),
+            "--constraint",
+            str(constraints),
+            "--python",
+            sys.executable,
+            *(["--reinstall"] if reinstall else []),
+            target,
+        ],
         cwd=client,
         env=env,
     )
     executable = shutil.which("ragvi", path=env["PATH"])
     if not executable or Path(executable).parent != tool_bin:
         raise RuntimeError("The isolated global-style ragvi command was not installed")
+    return executable, client, env
+
+
+def check_install(
+    wheel: Path, directory: Path, *, extras: list[str] | None = None, offline: bool = True
+) -> dict:
+    extras = extras or []
+    executable, client, env = install_tool(wheel, directory, extras=extras, offline=offline)
+    expected_version = wheel.name.removeprefix("ragvidence-").split("-")[0].removesuffix(".tar.gz")
+    assert run([executable, "--version"], cwd=client, env=env).strip() == expected_version
+    assert "all included features" in run([executable, "edition"], cwd=client, env=env)
     source = client / "manual α.md"
     text = "# Device\n\nHold the reset button for eight seconds.\n\nUse USB-C power.\n"
-    source.write_text(text, encoding="utf-8")
+    source.write_bytes(text.encode("utf-8"))
     output = run(
         [
             executable,
@@ -68,7 +127,7 @@ def check_install(wheel: Path, directory: Path) -> None:
     if len(reports) != 1:
         raise RuntimeError("Expected one automatically generated report directory")
     root = reports[0].parent
-    report = json.loads(reports[0].read_text())
+    report = json.loads(reports[0].read_text(encoding="utf-8"))
     assert report["evaluation_level"] == "retrieval_inspection"
     assert "eight seconds" in report["questions"][0]["hits"][0]["text"]
     assert (root / "report.html").is_file() and (root / "report.md").is_file()
@@ -177,7 +236,7 @@ def check_install(wheel: Path, directory: Path) -> None:
             cwd=client,
             env=env,
         )
-        evidence = json.loads(next(destination.glob("*/report.json")).read_text())
+        evidence = json.loads(next(destination.glob("*/report.json")).read_text(encoding="utf-8"))
         assert evidence["questions"][0]["metrics"]["sufficient_evidence"] is True
         assert evidence["questions"][0]["stages"]
     comparison_root = client / "comparisons"
@@ -208,7 +267,7 @@ def check_install(wheel: Path, directory: Path) -> None:
         env=env,
     )
     comparison_path = next(comparison_root.glob("*/exports/*/report.json"))
-    comparison = json.loads(comparison_path.read_text())
+    comparison = json.loads(comparison_path.read_text(encoding="utf-8"))
     assert comparison["state"] == "complete" and comparison["baseline"] == "existing"
     assert len(comparison["participants"]) == 5
     assert comparison["participants"][0]["resources"]["query_ms"]["mean_known"] is None
@@ -252,7 +311,7 @@ def check_install(wheel: Path, directory: Path) -> None:
         env=env,
     )
     mixed_report = next((client / "mixed-results").glob("*/report.json"))
-    mixed_data = json.loads(mixed_report.read_text())
+    mixed_data = json.loads(mixed_report.read_text(encoding="utf-8"))
     assert mixed_data["input"]["file_count"] == 4
     assert mixed_data["manifest"]["config"]["k"] == 1
     assert mixed_data["questions"][0]["hits"][0]["location"]
@@ -265,7 +324,55 @@ def check_install(wheel: Path, directory: Path) -> None:
         capture_output=True,
         text=True,
     )
-    assert missing_extra.returncode != 0 and "ragvidence[pdf]" in missing_extra.stdout
+    if "pdf" in extras:
+        fixture = Path(__file__).resolve().parents[1] / "tests/fixtures/portable/text-pages.pdf"
+        shutil.copyfile(fixture, pdf)
+        run(
+            [
+                executable,
+                "bm25",
+                str(pdf),
+                "--query",
+                "reset",
+                "--format",
+                "json",
+                "--output",
+                str(client / "pdf-results"),
+                "--no-input",
+            ],
+            cwd=client,
+            env=env,
+        )
+        pdf_report = json.loads(
+            next((client / "pdf-results").glob("*/report.json")).read_text(encoding="utf-8")
+        )
+        assert pdf_report["input"]["document_count"] == 2
+    else:
+        assert missing_extra.returncode != 0 and "ragvidence[pdf]" in missing_extra.stdout
+    # Read-only inputs must remain byte-identical and work with a separate output root.
+    digest = hashlib.sha256(source.read_bytes()).hexdigest()
+    try:
+        source.chmod(0o444)
+        run(
+            [
+                executable,
+                "bm25",
+                str(source),
+                "--query",
+                "reset",
+                "--format",
+                "json",
+                "--output",
+                str(client / "read-only-results"),
+                "--no-input",
+            ],
+            cwd=client,
+            env=env,
+        )
+    finally:
+        source.chmod(0o644)
+    assert hashlib.sha256(source.read_bytes()).hexdigest() == digest
+
     run(
         [executable, "bm25", str(source), "--no-input", "--output", str(client / "source-only")],
         cwd=client,
@@ -276,16 +383,61 @@ def check_install(wheel: Path, directory: Path) -> None:
     print(output.strip())
     print(
         "PASS: installed command, unrelated directory, Unicode/space paths, all exports, "
-        "source-only mode, HTML/JSON/JSONL/CSV, explicit configuration, missing PDF extra, "
+        "source-only mode, HTML/JSON/JSONL/CSV, explicit configuration, PDF extra contract, "
         "reviewed spans, portable lexical modifiers, exact-context imports, comparisons/resume, "
         "unchanged input, verification and legacy tutorial"
     )
 
+    return {
+        "status": "passed",
+        "platform": platform.system(),
+        "machine": platform.machine(),
+        "python": sys.version.split()[0],
+        "version": expected_version,
+        "distribution": wheel.name,
+        "extras": extras,
+        "installation_network": "offline" if offline else "package-index only; models offline",
+        "dependency_policy": "uv.lock constraints",
+        "sha256": hashlib.sha256(wheel.read_bytes()).hexdigest(),
+        "journeys": [
+            "global-style command",
+            "unrelated directory",
+            "Unicode and space paths",
+            "source-only",
+            "questions",
+            "reviewed spans",
+            "all exports",
+            "structured loaders",
+            "filters",
+            "compression",
+            "comparison",
+            "resume",
+            "read-only input",
+            "legacy tutorial",
+            "installed verification",
+        ],
+    }
+
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--distribution", type=Path)
+    parser.add_argument("--extras", default="", help="pdf,semantic or empty for core")
+    parser.add_argument("--output", type=Path)
+    parser.add_argument("--online-install", action="store_true")
+    args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
-    wheels = sorted((root / "dist").glob("ragvidence-*.whl"), key=lambda path: path.stat().st_mtime)
-    if not wheels:
-        raise SystemExit("Build the wheel first: uv build")
+    wheels = sorted((root / "dist").glob("**/ragvidence-*.whl"), key=lambda p: p.stat().st_mtime)
+    artifact = args.distribution or (wheels[-1] if wheels else None)
+    if artifact is None:
+        raise SystemExit("Build the wheel first: uv build --out-dir dist/release")
     with tempfile.TemporaryDirectory(prefix="ragvi-installed-") as temporary:
-        check_install(wheels[-1], Path(temporary))
+        result = check_install(
+            artifact.resolve(),
+            Path(temporary),
+            extras=[v for v in args.extras.split(",") if v],
+            offline=not args.online_install,
+        )
+    if args.output:
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")

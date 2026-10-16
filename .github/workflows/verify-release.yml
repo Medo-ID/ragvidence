@@ -1,0 +1,87 @@
+name: Portable release verification
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      release-tag:
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  workflow-lint:
+    name: Validate workflow syntax and expressions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - run: go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+
+  verify:
+    name: Python 3.12 / ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest, macos-15-intel]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    env:
+      PYTHONUTF8: "1"
+      HF_HUB_OFFLINE: "1"
+      RAGVI_RELEASE_TAG: ${{ inputs.release-tag }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          enable-cache: true
+          version: "0.12.9"
+      - name: Install Python
+        run: uv python install 3.12
+      - name: Sync locked dependencies and optional runtimes
+        run: uv run --no-project --python 3.12 python scripts/sync_release.py --output verification/ci
+      - name: Test, build and exercise isolated installed distributions
+        run: uv run --no-sync python -m scripts.verify_release --output verification/ci --online-install
+      - name: Fetch only the checksum-pinned published upgrade baseline
+        run: >-
+          uv run --no-sync python -m scripts.fetch_release --index pypi --version 0.1.0
+          --output .ragvidence-cache/releases
+          --expected-sha256 6dc10ba92245c332292f578591bbc88aab0d5827a1e445292c75fcc5dd5029ee
+      - name: Verify upgrade and unchanged legacy artifacts
+        run: >-
+          uv run --no-sync python -m scripts.check_upgrade
+          --old .ragvidence-cache/releases/ragvidence-0.1.0-py3-none-any.whl
+          --candidate-dir dist/release
+          --output verification/ci/upgrade.json
+          --online-install
+      - name: Retain actual outcomes, including failures
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: verification-${{ matrix.os }}
+          path: verification/ci/
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Store canonical distributions
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v7
+        with:
+          name: python-package-distributions
+          path: |
+            dist/release/*.whl
+            dist/release/*.tar.gz
+          if-no-files-found: error
+          retention-days: 7
+      - name: Store canonical release assets
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-assets
+          path: dist/release/
+          if-no-files-found: error
+          retention-days: 30

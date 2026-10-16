@@ -1,6 +1,6 @@
 # Resolved dependency license inventory
 
-Generated from the locked Free and semantic runtime environment for version 0.1.0;
+Generated from the locked core and semantic runtime environment for version 0.2.0;
 extended with the optional PDF runtime in development. Package metadata is
 informational; upstream license files remain authoritative.
 
@@ -32,11 +32,11 @@ informational; upstream license files remain authoritative.
 | mdurl              | 0.1.2     | MIT License                                        | https://github.com/executablebooks/mdurl                             |
 | mmh3               | 5.3.1     | MIT License                                        | https://pypi.org/project/mmh3/                                       |
 | numpy              | 2.5.4     | BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0 | https://numpy.org                                                    |
-| onnxruntime        | 1.31.0    | MIT License                                        | https://onnxruntime.ai                                               |
+| onnxruntime        | 1.23.2    | MIT License                                        | https://onnxruntime.ai                                               |
 | packaging          | 26.3      | Apache-2.0 OR BSD-2-Clause                         | https://github.com/pypa/packaging                                    |
 | pillow             | 12.3.0    | MIT-CMU                                            | https://python-pillow.github.io                                      |
 | protobuf           | 7.36.2    | 3-Clause BSD License                               | https://developers.google.com/protocol-buffers/                      |
-| py_rust_stemmers   | 0.1.8     | UNKNOWN                                            | UNKNOWN                                                              |
+| py_rust_stemmers   | 0.1.8     | MIT (wheel LICENSE; metadata UNKNOWN)               | https://pypi.org/project/py-rust-stemmers/                             |
 | pydantic           | 2.14.1    | MIT                                                | https://github.com/pydantic/pydantic                                 |
 | pydantic-settings  | 2.15.0    | MIT                                                | https://github.com/pydantic/pydantic-settings                        |
 | pydantic_core      | 2.50.1    | MIT                                                | https://github.com/pydantic                                          |
@@ -52,3 +52,20 @@ informational; upstream license files remain authoritative.
 | typing-inspection  | 0.4.4     | MIT                                                | https://github.com/pydantic/typing-inspection                        |
 | typing_extensions  | 4.16.0    | PSF-2.0                                            | https://github.com/python/typing_extensions                          |
 | urllib3            | 2.8.0     | MIT                                                | https://github.com/urllib3/urllib3/blob/main/CHANGES.rst             |
+
+The installed `py-rust-stemmers` 0.1.8 wheel includes an MIT LICENSE (copyright 2024 qdrant), despite UNKNOWN metadata. The portability audit constrains ONNX Runtime below 1.24 for Intel macOS; the universal lock now selects 1.23.2 on all four CI targets. This adds coloredlogs, humanfriendly, mpmath and sympy, plus pyreadline3 on Windows. Other runtime versions are unchanged.
+
+## Additional portability dependencies
+
+| Component | Locked version | Identified license | Scope |
+| --- | --- | --- | --- |
+| coloredlogs | 15.0.1 | MIT | ONNX Runtime logging |
+| humanfriendly | 10.0 | MIT | coloredlogs |
+| mpmath | 1.3.0 | BSD (package metadata; preserve bundled license) | sympy |
+| sympy | 1.14.0 | BSD (package metadata; preserve bundled license) | ONNX Runtime |
+| pyreadline3 | 3.5.6 | BSD-3-Clause | Windows humanfriendly |
+| colorama | 0.4.6 | BSD-3-Clause | Windows terminal adapters |
+| win32-setctime | 1.2.0 | MIT | Windows loguru |
+
+The inventory includes Windows-only runtime dependencies not installed in the Linux
+verification environment. Each locked wheel retains its own upstream license.

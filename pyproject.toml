@@ -1,17 +1,17 @@
 [project]
 name = "ragvidence"
-version = "0.1.0"
+version = "0.2.0"
 description = "Evidence-first RAG retrieval diagnostics, built to run locally."
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
-authors = [{ name = "Medo" }]
-license = { file = "LICENSE.md" }
+authors = [{ name = "Medo-ID" }]
+license = "Apache-2.0"
+license-files = ["LICENSE.md", "NOTICE", "THIRD_PARTY_NOTICES.md", "THIRD_PARTY_LICENSES.md"]
 keywords = ["rag", "retrieval", "evaluation", "debugging", "bm25", "embeddings"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Environment :: Console",
   "Intended Audience :: Developers",
-  "License :: Other/Proprietary License",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3.12",
   "Topic :: Scientific/Engineering :: Artificial Intelligence",
@@ -31,6 +31,8 @@ dependencies = [
 pdf = ["pypdf>=6,<7"]
 semantic = [
   "fastembed>=0.7,<1",
+  # ONNX Runtime 1.24+ no longer publishes Intel macOS wheels.
+  "onnxruntime>=1.17,<1.24; sys_platform == 'darwin' and platform_machine == 'x86_64'",
 ]
 
 [dependency-groups]
@@ -58,6 +60,7 @@ include = [
   "/docs",
   "/README.md",
   "/LICENSE.md",
+  "/NOTICE",
   "/SECURITY.md",
   "/SUPPORT.md",
   "/CHANGELOG.md",
@@ -71,12 +74,21 @@ include = [
 exclude = ["/docs/maintainer", "/docs/portable-cli-design.md"]
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling>=1.27"]
 build-backend = "hatchling.build"
 
 [tool.pytest.ini_options]
 addopts = "-q"
 testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.uv]
+required-environments = [
+  "sys_platform == 'linux' and platform_machine == 'x86_64'",
+  "sys_platform == 'win32' and platform_machine == 'AMD64'",
+  "sys_platform == 'darwin' and platform_machine == 'arm64'",
+  "sys_platform == 'darwin' and platform_machine == 'x86_64'",
+]
 
 [tool.ruff]
 line-length = 100

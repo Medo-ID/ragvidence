@@ -12,7 +12,7 @@ uv run ragvi health
 When installing the wheel as a CLI tool, use:
 
 ```bash
-uv tool install ./ragvidence-0.1.0-py3-none-any.whl
+uv tool install ./ragvidence-0.2.0-py3-none-any.whl
 ragvi health
 ```
 

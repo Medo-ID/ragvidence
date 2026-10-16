@@ -1,13 +1,20 @@
 """Deterministic local BM25 retrieval."""
 
-import re
-from collections.abc import Sequence
+from __future__ import annotations
 
-import bm25s
+import re
+import sys
+from collections.abc import Sequence
+from contextlib import redirect_stdout
+from typing import TYPE_CHECKING
+
 import numpy as np
 
 from ragvidence.models import RetrievalHit
 from ragvidence.representation import RetrievalRecord
+
+if TYPE_CHECKING:
+    import bm25s
 
 TOKEN_PATTERN = re.compile(r"[^\W_]+(?:[._-][^\W_]+)*", re.UNICODE)
 
@@ -23,6 +30,11 @@ class BM25Strategy:
         self._retriever: bm25s.BM25 | None = None
 
     def index(self, records: Sequence[RetrievalRecord]) -> None:
+        # BM25S prints its Windows resource-module notice during import. Keep
+        # diagnostics on stderr and metadata/JSON commands free of import side effects.
+        with redirect_stdout(sys.stderr):
+            import bm25s
+
         self._records = list(records)
         corpus_tokens = [tokenize(item.searchable_text) for item in self._records]
         if not any(corpus_tokens):

@@ -1,0 +1,12 @@
+{
+  "command": [
+    "uv",
+    "sync",
+    "--frozen",
+    "--dev",
+    "--all-extras"
+  ],
+  "status": "passed",
+  "exit_code": 0,
+  "seconds": 2.875
+}

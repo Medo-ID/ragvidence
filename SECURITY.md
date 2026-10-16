@@ -2,11 +2,11 @@
 
 ## Supported versions
 
-Security fixes are provided for the latest released Free build and actively supported Plus builds. Upgrade before reporting behavior from an older release.
+Security fixes are provided for the latest released CLI version. Upgrade before reporting behavior from an older release.
 
 ## Report a vulnerability privately
 
-Do not publish exploitable details in a public issue or discussion. Contact the seller through the support channel shown on the product page or purchase receipt and include:
+Do not publish exploitable details in a public issue or discussion. Use GitHub’s private vulnerability reporting for Medo-ID/ragvidence if enabled, or the maintainer’s private security contact listed on the project page. If neither is available, request a private contact without posting exploit details. Include:
 
 - affected version and operating system;
 - minimal reproduction steps;
@@ -23,7 +23,7 @@ Do not include live API keys, customer documents, or unrelated personal informat
 - Ollama and OpenAI-compatible endpoints are selected by the user.
 - Remote providers receive the text required for the requested operation.
 - `.env` values are not written to manifests or reports.
-- Exported reports may contain source identifiers and previews and must be reviewed before sharing.
+- Exported reports may contain full source passages, questions, prompts and model outputs and must be reviewed before sharing.
 - The CLI is not a sandbox. Only run trusted releases and trusted custom templates.
 
 ## Release integrity

@@ -19,6 +19,6 @@ Then check [Getting started](docs/getting-started.md) and [Troubleshooting](docs
 - complete error text with credentials and private document content removed;
 - whether the bundled tutorial succeeds.
 
-Use the support channel listed on the product page or purchase receipt. Support scope and response targets, if any, are determined by the plan and checkout terms.
+Use the project’s GitHub issues for reproducible bugs and questions, with synthetic data. Support is community/maintainer best effort. Voluntary donations do not purchase features or a response-time guarantee.
 
 Support does not include reviewing confidential corpora, designing a production architecture, operating third-party providers, or guaranteeing model/retrieval quality unless separately agreed in writing.

@@ -4,9 +4,12 @@ from ragvidence.ingestion import load_corpus
 from ragvidence.questions import load_questions
 
 
-def test_markdown_passages_preserve_unicode_offsets_and_heading_paths(tmp_path):
+@pytest.mark.parametrize("line_ending", ["\n", "\r\n"], ids=["LF", "CRLF"])
+def test_markdown_passages_preserve_unicode_offsets_and_heading_paths(tmp_path, line_ending):
     path = tmp_path / "manual.md"
-    text = "# Device α\n\nGeneral instructions.\n## Reset\nHold for eight seconds.\n"
+    text = "# Device α\n\nGeneral instructions.\n## Reset\nHold for eight seconds.\n".replace(
+        "\n", line_ending
+    )
     path.write_bytes(text.encode("utf-8"))
     snapshot = load_corpus(path, exclude=[], size=28, overlap=4)
     document = snapshot.documents[0]

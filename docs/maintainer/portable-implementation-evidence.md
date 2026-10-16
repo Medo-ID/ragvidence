@@ -182,7 +182,7 @@ uv run ragvi bm25 ./manual.txt --query "Reset instructions" --format html --form
   heldout case. Scoped retrieval passes; extraction removes the condition. The
   demonstration's small denominator does not support a general recommendation.
 
-## Current verification
+## M6 verification record
 
 ```bash
 uv sync --frozen --dev --all-extras
@@ -194,7 +194,7 @@ uv build
 git diff --check
 ```
 
-The test suite contains **358 passing tests** with all extras installed (150 at
+The M6 test suite contained **358 passing tests** with all extras installed (150 at
 M1/M2, 196 at M3, 241 at M4, 274 at M5). The current run is retained in
 [the M6 check record](../../verification/portable-m6/checks.json). It includes
 cross-process hash-seed checks for dataset identities and saved evaluations;
@@ -223,9 +223,76 @@ they are not evidence of Windows/macOS execution.
   deferred at the user's request; no M7 capability was added in this milestone.
 - Pinned model-revision fingerprints where provider APIs expose them, plus the
   wider model/OS coverage and release gates specified by later milestones.
-- Stop before M8: consolidated release verification and publication require a
-  scope discussion. Routine milestone checks above do not mark that gate complete.
+- M8 is now authorized and prepared below. Publication and Windows/macOS execution
+  remain external gates; routine Linux checks do not count as those outcomes.
 
 These remaining features are not claimed by the portable implementation. PDF/
 HTML extraction does not establish visual/table/column fidelity; input limits are
 not a memory sandbox. Windows/macOS installed execution remains unverified.
+
+
+## M8 — Free release and portable verification
+
+Version 0.2.0 is prepared under Apache-2.0 with NOTICE and preserved third-party
+licenses. Free/Plus/activation messaging is retired. No new techniques or M7
+answer/citation judging were added. The root website `instructions.md` handoff
+specifies actual scope, limits and voluntary sponsorship for a later session;
+no website files were edited.
+
+The shared `python -m scripts.verify_release` gate lints, blocks external sockets
+in core tests (explicit local HTTP fixtures only), records per-test outcomes,
+requires capability contracts to have actually passed, verifies bundled assets,
+builds and inspects the exact wheel/sdist, then exercises isolated core wheel,
+core source and optional-runtime installations from unrelated directories.
+See [Linux release evidence](../../verification/portable-m8/checks.json) and
+[capability outcomes](../../verification/portable-m8/capabilities.json).
+
+[Upgrade evidence](../../verification/portable-m8/upgrade.json) uses the exact
+SHA-verified official 0.1.0 wheel, creates legacy artifacts, upgrades only an
+isolated tool environment, verifies unchanged original artifacts, exports all
+three formats and runs new workflows. Legacy reads remain legacy provenance;
+rerun old experiments for modern validation.
+
+[Real adapter evidence](../../verification/portable-m8/model-check.json) repeats
+the pinned BGE/MiniLM/Xenova checks, reviewed runs, context/tokenizer budgets,
+MMR, compression, six-configuration repeats and validated resume on Linux.
+[Local Qwen evidence](../../verification/portable-m8/transform-check.json) records
+two bounded digest-checked transformation calls. Compatibility passed; model
+compression still lost both required facts. This is an observed quality failure,
+not a reason to hide the run or claim the technique universally works well.
+
+CI and release publication share a reusable Python 3.12 matrix for Linux x64,
+Windows x64 and macOS ARM64/Intel. The entire matrix and workflow lint must pass
+before publishing. Manual dispatch defaults to verify-only; TestPyPI is explicit,
+PyPI remains version-tag driven. Post-publication installation checks require the
+index wheel's SHA to match the candidate. No publication was performed here.
+
+The local run does **not** verify Windows/macOS execution, remote Trusted Publisher
+settings, hosted environment approvals or a person's manual usability experience.
+Those remain pending in the [release procedure](releasing.md). Artifacts built
+from the current dirty development tree must be rebuilt from the final committed
+candidate before tagging. The matrix and release workflow pass local actionlint.
+
+
+### Completed hosted M8 verification
+
+[Successful run 38921470479](https://github.com/Medo-ID/ragvidence/actions/runs/38921470479)
+verified revision `42e774974e0ebf8a880f33f0aded9f587d22f40c` on Linux x64,
+Windows x64, macOS ARM64 and macOS Intel: **395 tests on each platform**, all three
+isolated installation modes and the official 0.1.0 upgrade/legacy-export journey.
+Workflow lint passed. The source matches the verified implementation before its
+final main commit; temporary branch history is discarded after evidence retention.
+See `verification/portable-m8/github/38921470479/` for per-platform raw outcomes.
+
+Earlier failed attempts remain recorded in `github/run-history.json`. Fresh frozen
+syncs lacked simple-index resolver metadata, so fresh installs now use explicit
+package-index access with exported lock constraints. A CRLF expectation was fixed
+without normalizing actual source offsets. A real Windows CLI defect was fixed:
+BM25S printed an import notice into stdout, corrupting version/JSON protocols.
+Retrieval now imports that dependency only when indexing and sends its import
+notice to stderr; subprocess regressions simulate the missing Windows resource
+module. Setup failures and assertion tracebacks now have retained diagnostics.
+
+These hosted executions supersede the earlier pending Windows/macOS status above.
+Human usability review and remote Trusted Publisher/environment settings remain
+separate. No PyPI/TestPyPI publication occurred during M8 verification.

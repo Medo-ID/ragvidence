@@ -2,8 +2,10 @@
 
 All notable user-facing changes are documented here.
 
-## Unreleased
+## 0.2.0 — release candidate (not yet published)
 
+- Adopt Apache-2.0 for the new CLI release, with all included features free and no activation.
+- Add shared release gates, platform-matrix installation journeys and capability evidence checks.
 - Add typed metadata scopes before ranking, deterministic cosine MMR selection,
   automatic question-only rewriting/multi-query fusion, and exact-span compression.
 - Compose the new stages with hybrid retrieval, parents, reranking and context

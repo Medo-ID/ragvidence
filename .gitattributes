@@ -1,0 +1,4 @@
+# Bundled fixture checksums must be identical in Windows and Unix checkouts.
+* text=auto eol=lf
+*.pdf binary
+*.woff2 binary

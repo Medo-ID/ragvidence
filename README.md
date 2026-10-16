@@ -1,156 +1,133 @@
 # RAGvidence
 
-**Evidence-first RAG diagnostics, built to run locally.**
+**Diagnose and compare RAG retrieval techniques on your own data.**
 
-RAGvidence is a local, CLI-first toolkit for testing retrieval changes with reviewed evidence instead of judging generated answers by intuition.
+Install `ragvi` once and run it from any data folder. Inspect the technique you
+already use, import your system’s retrieved results, and compare alternatives
+without implementing every experiment. RAGvidence produces evidence to help you
+choose a technique for your project. It does not change your production RAG system.
 
-It helps you answer questions such as:
-
-- Did the retriever return **all** evidence required for the answer?
-- Did a new chunk representation fix failures or introduce regressions?
-- Is the first relevant result early enough at the real context depth `k`?
-- Does lexical, semantic, or an existing application retriever work better on your data?
-
-No account, telemetry, hosted database, or vendor-provided API key is required. BM25 works completely offline. Semantic retrieval can run locally or through a provider chosen by the user.
-
-> RAGvidence evaluates retrieval evidence. It does not prove that a generated answer is correct, safe, or legally compliant.
+This source prepares **0.2.0**, a free CLI under [Apache-2.0](LICENSE.md).
+All included capabilities are available without an account or activation.
+Voluntary sponsorship does not unlock features. The earlier published 0.1.0 has
+its original license and lacks the portable commands described here; check
+`ragvi --version` and use the matching release documentation.
 
 ## Install
 
-### Production PyPI
+Python **3.12** is required. After 0.2.0 is published:
 
 ```bash
-uv tool install --python 3.12 "ragvidence[semantic]"
-ragvi health
-ragvi tutorial
+uv tool install --python 3.12 "ragvidence==0.2.0"
+ragvi --version
+ragvi verify
 ```
 
-See the [public installation guide](https://ragvidence.medo-id.com/docs/installation).
-The report presentation in the development source build is documented separately
-from the currently published PyPI release; publishing it requires a new release.
-
-
-### Customer release archive
-
-Extract the release, open a terminal in its directory, and run:
+Optional runtimes are installed as `"ragvidence[pdf,semantic]==0.2.0"`.
+For this source candidate, build and install the exact wheel:
 
 ```bash
-uv sync --frozen
-uv run ragvi health
-uv run ragvi tutorial
+uv build --out-dir dist/release
+uv tool install --python 3.12 ./dist/release/ragvidence-0.2.0-py3-none-any.whl
 ```
 
-During source-based use, prefix commands with `uv run`. After installing the CLI as a tool, use `ragvi` directly.
+The CI matrix targets Linux x64, Windows x64, macOS Apple Silicon and macOS Intel.
+Only successful runs constitute platform verification; see the
+[release procedure](docs/maintainer/releasing.md). Other Python versions,
+architectures and model/hardware combinations are not covered by those checks.
 
-### Install a built wheel
+## Use your own data
 
 ```bash
-uv tool install ./ragvidence-0.1.0-py3-none-any.whl
-ragvi health
-ragvi tutorial
+ragvi bm25 ./manual.txt --query "How do I reset the device?"
+ragvi bm25 ./docs --questions ./questions.txt --format html --format json
+ragvi compare-data ./docs --questions ./questions.txt --techniques bm25,parent-child
+ragvi techniques
 ```
 
-Python 3.12 is pinned in `.python-version`; `uv` can install the required Python runtime automatically.
+No workspace or project setup is needed. The command prints a summary and writes
+self-contained HTML by default under `ragvi-reports/`. Repeat `--format` to choose
+HTML, JSON and/or Markdown; `--output` selects the destination.
 
-## First report
+Inputs: UTF-8 TXT and Markdown, visible-text HTML, document JSON/JSONL, CSV and,
+with the `pdf` extra, text-bearing PDF pages. Folders may mix these formats.
+Scans/OCR, DOCX, spreadsheets, images, URL crawling and database connectors are
+not included. Extraction does not establish table or page-layout fidelity.
 
-The development source also includes the first portable file/folder command:
-
-```bash
-uv run ragvi bm25 ./manual.txt --query "How do I reset the device?"
-uv run ragvi bm25 ./docs --questions ./questions.txt --format html --format json
-uv run ragvi compare-data ./docs --questions ./questions.txt --techniques bm25,parent-child
-```
-
-It reads TXT, Markdown, HTML, document JSON/JSONL and CSV (text PDFs with the optional
-`pdf` extra), prepares passages automatically, prints retrieved results,
-and writes reports under `ragvi-reports/`. No workspace setup is needed. Without
-questions it produces source diagnostics; `--reviewed` adds validated original-span
-evidence scoring. Semantic, hybrid, reranking, parent-child, contextual and supplied
-multi-query commands share this workflow; `ragvi techniques` lists prerequisites.
-After installing a wheel built from this source,
-invoke `ragvi` directly from any directory. See [Portable file usage](docs/portable-file-usage.md).
-This command is not yet part of the published PyPI release.
-See [Portable techniques and reviewed evidence](docs/portable-techniques.md) for
-technique settings, context budgets and existing-system imports.
-See [Portable comparisons](docs/portable-comparisons.md) for one-command comparisons,
-bounded grids, paired intervals, frozen shortlists and validated resume.
-See [Filters, MMR, rewriting and compression](docs/portable-advanced-techniques.md)
-for additional retrieval experiments and their evidence/quality limits.
-
-The tutorial writes a complete comparison to:
-
-```text
-workspaces/first-run/reports/tutorial.html
-```
-
-Open it in any browser. It contains the baseline, intervention, changed questions, diagnosis, ranked evidence, limitations, and reproducibility metadata.
-
-Then follow [Getting started](https://ragvidence.medo-id.com/docs/first-tutorial) to understand the experiment rather than only running it.
-
-## Supported workflows
-
-| Goal | Start here |
+| Input | Result |
 | --- | --- |
-| Learn the workflow on bundled data | `ragvi tutorial` |
-| Evaluate your own labeled dataset | [Bring your own data](https://ragvidence.medo-id.com/docs/bring-your-own-data) |
-| Compare BM25 and semantic retrieval | [User guide](https://ragvidence.medo-id.com/docs/semantic-workflow) |
-| Test an existing RAG retriever | [User guide](https://ragvidence.medo-id.com/docs/import-retriever) |
-| Generate optional answers for inspection | [User guide](https://ragvidence.medo-id.com/docs/commands) |
-| Understand each metric | [Interpreting results](https://ragvidence.medo-id.com/docs/metrics) |
-| Recover a broken workspace | [Troubleshooting](https://ragvidence.medo-id.com/docs/troubleshooting) |
-| Review data and provider boundaries | [Privacy and providers](https://ragvidence.medo-id.com/docs/privacy-providers) |
+| Sources only | Extraction/chunk diagnostics; no retrieval-quality score |
+| Sources and questions | Ranked passages, traces, timings and context inspection |
+| Sources and reviewed original-span evidence | Evidence sufficiency, coverage, rank, reciprocal rank, precision and paired comparisons |
 
-The complete CLI reference is in [Command reference](https://ragvidence.medo-id.com/docs/commands).
+A document alone cannot tell the tool which evidence a question requires.
+Reviewed references are optional but necessary for scored quality claims.
+Answer correctness, citation correctness and abstention judging are not included.
 
-## What is included
+## Techniques
 
-The development source build also supports JSON-configured hybrid RRF search,
-parent-child retrieval with recursive or Markdown splitting and overlap,
-supplied query variants and contextual prefixes, and optional local cross-encoder
-reranking. Typed metadata filters, cosine MMR, bounded model query rewriting and
-exact-span compression use the same portable evaluation/comparison workflow.
-See [technique coverage, examples, and remaining gaps](docs/rag-technique-coverage.md).
-These additions are not yet published to PyPI.
+The catalog includes BM25, dense cosine, weighted hybrid RRF, cross-encoder
+reranking, parent-child retrieval, heading context, supplied reviewed context
+prefixes, supplied multi-query fusion, typed metadata filters, MMR, automatic
+query rewriting/multi-query generation, exact extractive compression and existing
+system imports. Recursive/Markdown splitting, overlap, context budgets and
+embedding configuration comparisons are composed through shared configuration.
+A catalog entry is a runnable preset or import path, not a claim of an independent
+algorithm or guaranteed improvement.
 
-- Controlled body versus heading-context experiments
-- BM25 lexical retrieval
-- Optional local semantic retrieval with FastEmbed
-- Ollama and OpenAI-compatible embedding adapters
-- Import of ranked results from another RAG stack
-- Evidence sufficiency, coverage, first relevant rank, reciprocal rank, and precision@k
-- Explicit improvement and regression classification
-- Evidence-backed diagnostic suggestions
-- JSON, Markdown, and self-contained HTML reports
-- Optional answer inspection using a user-selected model
-- Recoverable local workspaces and deterministic installation verification
+Comparisons share frozen data and references, record per-question gains and losses,
+retain failures, support bounded grids, dev shortlists, heldout evaluation,
+paired intervals and validated resume. Small or unrepresentative datasets cannot
+establish a general winner. Missing costs/timings remain unavailable.
 
-## Free and Plus
+- [Portable files and formats](docs/portable-file-usage.md)
+- [Techniques, reviewed evidence and external imports](docs/portable-techniques.md)
+- [Comparisons and experiment suites](docs/portable-comparisons.md)
+- [Filters, MMR, rewriting and compression](docs/portable-advanced-techniques.md)
+- [Coverage and remaining gaps](docs/rag-technique-coverage.md)
+- [Command reference](docs/command-reference.md)
 
-The current release contains the complete Free feature set. Plus is a separate paid entitlement for advanced features released in Plus builds; features are never advertised as available until they ship. See [Plans and editions](https://ragvidence.medo-id.com/#plans) and [LICENSE.md](https://ragvidence.medo-id.com/ragvidence-0.1.0-license.txt).
+## Local models and data boundaries
 
-The Free edition does not require activation. Plus activation will be issued after verified checkout and must never require placing payment credentials inside this CLI.
+BM25 needs no LLM or network. Optional FastEmbed embeddings and cross-encoder
+reranking download selected model files before local inference. Ollama supports
+user-owned embedding models and chat models for query rewriting or model-selected
+exact-span compression. OpenAI-compatible endpoints are also supported; the user
+chooses whether an endpoint is local or remote. Sentence compression needs no model.
 
-## Privacy and trust boundaries
+There is no bundled LLM server, API credit, GPU requirement guarantee or promise
+that every model follows the output contracts. Review each model’s license and
+hardware needs. Model tags may change; compatibility checks for specific pinned
+files/digests do not pin every user run. Remote endpoints receive the text needed
+for the selected operation. Reviewed answer labels are kept out of retrieval
+and transformation prompts.
 
-- Workspaces, caches, `.env`, and generated reports are ignored by Git.
-- BM25 performs no network requests.
-- FastEmbed downloads a model, then performs inference locally.
-- Remote providers receive source text and questions; the CLI displays a disclosure first.
-- API keys are loaded from `.env` and are not included in run manifests or reports.
-- HTML reports escape dataset content, contain no scripts, and use no remote assets.
-- Reports include short source previews and may still contain confidential information. Review before sharing.
+Credentials are excluded from manifests. Reports and frozen artifacts can contain
+full source passages, questions and transformation prompts/outputs: review them
+before sharing. HTML uses escaped content, embedded fonts and no remote assets.
+Third-party providers and model download services have their own data policies.
 
-## Development and release verification
+## Existing workspace workflow
+
+`ragvi tutorial` creates a bundled fictional comparison and HTML report.
+The earlier `benchmark`, `import-run`, `evaluate`, `compare`, `report` and recovery
+commands remain available. Optional `generate` produces answers for inspection;
+it does not score their correctness. See [getting started](docs/getting-started.md).
+
+## Verify a release candidate
 
 ```bash
-uv sync --frozen --dev
-uv run ruff check src tests
-uv run pytest
-uv run ragvi verify
-uv build
+uv sync --frozen --dev --all-extras
+uv run --no-sync python -m scripts.verify_release --online-install
 ```
 
-See [Security](https://ragvidence.medo-id.com/security), [Support](https://ragvidence.medo-id.com/docs/troubleshooting), [Changelog](https://ragvidence.medo-id.com/releases), [Third-party notices](https://ragvidence.medo-id.com/ragvidence-source-notices.txt), and the [resolved dependency inventory](https://ragvidence.medo-id.com/ragvidence-source-licenses.txt).
+This shared gate runs offline unit/contracts, fixture verification, distribution
+inspection, and isolated core wheel, source and optional-runtime installation
+journeys from unrelated folders. GitHub Actions repeats it across the CI matrix;
+fresh package installations may fetch locked dependency metadata from PyPI.
+Real model compatibility checks and manual CLI/report usability are separate.
+See [security](SECURITY.md), [support](SUPPORT.md), [changelog](CHANGELOG.md),
+[third-party notices](THIRD_PARTY_NOTICES.md) and [dependency licenses](THIRD_PARTY_LICENSES.md).
 
-Copyright © 2026 Medo. Distributed under the proprietary Free or Plus license in [LICENSE.md](https://ragvidence.medo-id.com/ragvidence-0.1.0-license.txt).
+Copyright © 2026 Medo-ID. New releases from 0.2.0 use Apache-2.0;
+third-party components and models retain their own licenses.
