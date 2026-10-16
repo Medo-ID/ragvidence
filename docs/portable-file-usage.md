@@ -1,8 +1,7 @@
 # Portable file usage
 
-These portable workflows are included from version 0.2.0; use a matching release
-or source build. Version 0.1.0 lacks them. Portable BM25, semantic, hybrid, reranking,
-parent-child, heading/contextual
+Run a technique directly on a file or folder after [installing the CLI](installation.md).
+BM25, semantic, hybrid, reranking, parent-child, heading/contextual
 indexing, supplied multi-query and existing-system imports share TXT, Markdown,
 HTML, document JSON/JSONL, CSV and optional text-bearing PDF loaders. See
 [techniques and reviewed evidence](portable-techniques.md) for commands and scoring.
@@ -11,7 +10,7 @@ against the same frozen inputs and export one decision report.
 
 ## Run on your own text
 
-After installing a matching wheel as a tool:
+From any data folder:
 
 ```bash
 ragvi bm25 ./manual.txt --query "How do I reset the device?"
@@ -94,7 +93,7 @@ bytes; original page/row/record locations are retained separately.
 
 Folder discovery is recursive and deterministic. It skips hidden files/folders,
 symbolic links, known generated directories, the selected question file and output
-root, and directories marked as earlier RAGvidence runs. Skipped/invalid files are
+root, and directories marked as RAGvidence runs. Skipped/invalid files are
 listed in reports. An explicitly supplied invalid file fails with an explanation.
 
 Default limits: 1,000 supported files, 20 MiB per file, 100 MiB total attempted file
@@ -157,7 +156,7 @@ All portable options have an environment equivalent: `RAGVIDENCE_K`,
 `RAGVIDENCE_OUTPUT`, `RAGVIDENCE_CACHE_DIR`, `RAGVIDENCE_TEXT_FIELD`, etc. Lists use
 JSON arrays, for example `RAGVIDENCE_FORMATS='["html","json"]'`. Queries/questions,
 interactive behavior, browser opening and credential settings are not portable
-config keys. Provider settings keep their existing `RAGVIDENCE_EMBEDDING_*` /
+config keys. Provider settings use `RAGVIDENCE_EMBEDDING_*` /
 `RAGVIDENCE_GENERATION_*` names; credentials are not serialized into reports.
 
 User configuration location:
@@ -169,4 +168,5 @@ User configuration location:
 Use `--output` and `--cache-dir` to select writable destinations when inputs are
 read-only. Selected question/config/env files, output and cache roots are excluded
 from folder ingestion. Settings resolution and path selection have automated
-platform tests; installed-command execution has currently been verified on Linux.
+platform tests. Installed-package checks pass on Linux x64, Windows x64 and macOS
+ARM64/Intel with Python 3.12. See [installation](installation.md) for the tested scope.

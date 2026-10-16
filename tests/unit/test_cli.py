@@ -29,7 +29,8 @@ def test_edition_command_identifies_free_build() -> None:
 
     assert result.exit_code == 0
     assert "Free" in result.stdout
-    assert "no account or activation required" in result.stdout
+    assert "Apache-2.0" in result.stdout
+    assert "all included features available" in result.stdout
 
 
 def test_tutorial_runs_complete_local_workflow(tmp_path: Path) -> None:

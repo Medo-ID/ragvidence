@@ -1,12 +1,8 @@
 RAGvidence
 Copyright 2026 Medo-ID
 
-RAGvidence CLI version 0.2.0 and subsequent releases in this source tree are
-licensed under the Apache License, Version 2.0. See LICENSE.md.
+RAGvidence is licensed under the Apache License, Version 2.0. See LICENSE.md.
 
 Third-party software, fonts and downloaded models retain their respective
 licenses. See THIRD_PARTY_NOTICES.md and THIRD_PARTY_LICENSES.md. The bundled
 Geist font license is included in ragvidence/reporting/fonts/LICENSE.txt.
-
-Previously published version 0.1.0 was distributed under its own proprietary
-license; this notice describes the new distribution.

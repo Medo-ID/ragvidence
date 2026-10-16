@@ -27,7 +27,7 @@ when original corpus text or reviewed labels should remain private. Comparison e
 include retrieved passages and source locations. Supplied token usage/pricing produces
 labeled estimates; the tool does not fetch billing or pricing from external accounts.
 
-M6 query transformations use separate `RAGVIDENCE_TRANSFORM_BASE_URL` and
+Query transformations use separate `RAGVIDENCE_TRANSFORM_BASE_URL` and
 `RAGVIDENCE_TRANSFORM_API_KEY` settings. The CLI discloses the transfer before
 execution. Rewriting sends only the question and variant limit. Optional model
 compression sends the question and candidate bodies. Neither receives reviewed

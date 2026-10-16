@@ -1,85 +1,46 @@
 # Changelog
 
-All notable user-facing changes are documented here.
-
 ## 0.2.0
 
-- Adopt Apache-2.0 for the new CLI release, with all included features free and no activation.
-- Add shared release gates, platform-matrix installation journeys and capability evidence checks.
-- Verify 395 tests per platform and installed-package/upgrade journeys on Linux, Windows and macOS ARM64/Intel.
-- Keep Windows version/JSON output clean when BM25S lacks the resource module; preserve exact CRLF source offsets.
-- Add public contribution guidance and issue/PR templates; sponsorship setup is deferred.
-- Add typed metadata scopes before ranking, deterministic cosine MMR selection,
-  automatic question-only rewriting/multi-query fusion, and exact-span compression.
-- Compose the new stages with hybrid retrieval, parents, reranking and context
-  budgets; preserve original span evidence, ranking provenance and safe failure traces.
-- Bound transformation requests/output, record exact prompts and model/endpoint
-  identities, and validate frozen transformations on comparison resume.
-- Add `ragvi compare-data INPUT` for one-command technique comparisons over a shared
-  frozen corpus, optional existing-system baseline, and HTML/JSON/Markdown decision reports.
-- Add bounded configuration grids, declared depth/token/trade-off policies, split/slice
-  denominators, paired seeded cluster intervals and per-question evidence gains/losses.
-- Freeze dev shortlists before heldout evaluation, record local heldout reuse, and
-  validate checkpoints, exact context, recomputed scores and report facts before resume.
-- Keep failed attempts visible without overwriting; separate repeat timing trials and
-  observed vector cache states. Preserve unavailable timings/costs and label supplied-usage estimates.
-- Add portable semantic, hybrid, rerank, parent-child, heading-context, contextual,
-  supplied multi-query and existing-system import commands with a capability catalog.
-- Score reviewed evidence against complete unions of original text spans; preserve
-  labels across chunk changes and expose dev/heldout denominators without answer scores.
-- Record stage candidates/scores/timings, nested fusion contributions and exact
-  context selection. Add distinct stage limits and whole-passage context budgets
-  with exact character or identified local-tokenizer counts.
-- Verify external original spans before scoring; label ID-only results as registered-unit
-  proxies and retain unavailable timings. Freeze private search sources/prefixes.
-- Stabilize BM25 ties in frozen input order, including empty/OOV queries. Measure
-  complete message contents in optional workspace generation without inventing provider usage.
-- Add offline HTML, document JSON/JSONL and CSV ingestion plus optional `pdf`
-  extraction, with page/record/row/heading locations and identified parsers.
-- Add explicit text-field selection, document/schema boundaries, input patterns,
-  configurable resource limits and separate skipped/failed/warning notices.
-- Add portable user/config/environment/CLI precedence and explicit `--env-file`;
-  configuration paths resolve relative to their files and credentials stay out of artifacts.
-- Add `ragvi bm25 INPUT` for ordinary UTF-8 TXT/Markdown files and folders, with
-  question flags/files/prompts, automatic passages and HTML/JSON/Markdown exports.
-- Separate unscored questions from reviewed evaluation labels; show explicit
-  ingestion-only and retrieval-inspection status without fabricating metrics.
-- Fix cross-process dataset hash stability; validate sources, evidence, question
-  completeness, ranks and exact context before scoring or generating answers.
-- Version new runs, verify modern evaluation artifacts against retained snapshots,
-  reject nonfinite scores/vectors, validate complete imports and distinguish missing timing.
-- Separate pipeline construction from execution and share atomic artifact storage
-  and report-format dispatch across portable and existing workspace commands.
-- Include embedding provider/encoding identity in caches and validate cache contents.
-- Add an isolated global-style installed-wheel check to CI.
+RAGvidence is a fully free, open-source CLI under Apache-2.0. This update brings
+retrieval experiments and evidence reports directly to your own files and folders.
 
-- Add `ragvi experiment WORKSPACE CONFIG_FILE` for reproducible retrieval pipelines.
-- Add weighted RRF hybrid BM25/dense search, also available through `benchmark`.
-- Add recursive and ATX Markdown child splitting with configurable character overlap,
-  parent expansion, child offsets, and deduplication.
-- Add multi-query RRF using supplied variants and contextual indexing using reviewed prefixes.
-- Add optional local FastEmbed cross-encoder reranking with original stage scores retained.
-- Record effective embedding settings, candidate depth, searched queries and returned body character counts.
-- Expose full retrieval settings in reports and keep diagnostic explanations appropriate to the intervention.
-- Document coverage and missing techniques against the supplied Production RAG resource.
+### Use your data without project setup
 
-## 0.1.0 — 2026-10-08
+- Run `ragvi TECHNIQUE INPUT` from any folder. Use TXT, Markdown, visible-text HTML,
+  document JSON/JSONL, CSV or text-bearing PDF with the `pdf` extra.
+- Supply questions with flags, files or the terminal prompt. Inspect sources
+  without questions using `--no-input`.
+- Get a terminal summary and self-contained HTML, JSON or Markdown reports with
+  source locations, settings, warnings and exact returned context.
 
-### Added
+### Explore and compare retrieval techniques
 
-- Local BM25 body and heading-context experiments.
-- Optional semantic retrieval with FastEmbed, Ollama, and OpenAI-compatible endpoints.
-- Import path for existing retrievers.
-- Evidence sufficiency, coverage, rank, reciprocal-rank, and precision metrics.
-- Question-level regression classification and bounded diagnosis.
-- JSON, Markdown, and self-contained HTML reports.
-- Guided `ragvi tutorial` workflow.
-- Workspace backup and restore.
-- Health and deterministic verification commands.
-- Customer documentation, privacy boundaries, and Free/Plus license terms.
+- Use BM25, dense search, weighted hybrid RRF, cross-encoder reranking,
+  parent-child retrieval, heading/context enrichment and multi-query fusion.
+- Test typed metadata filters, cosine MMR, bounded model query rewriting and
+  exact extractive compression. Configure splitting, overlap and context budgets.
+- Import your retriever's results as a comparison baseline, with original-span
+  validation or explicitly limited source-ID proxies.
+- Compare configurations on one frozen corpus with `ragvi compare-data`. Use
+  bounded grids, separate dev/heldout questions, paired intervals and validated
+  resume. Inspect per-question gains, regressions and failed attempts.
 
-### Known limits
+### Evaluate evidence and preserve reproducibility
 
-- Unanswerable questions are excluded from retrieval-success scoring; abstention is not evaluated.
-- The bundled teaching dataset is small, fictional, and English-focused.
-- Retrieval evaluation does not establish generated-answer correctness.
+- Score reviewed original evidence spans after context selection and compression.
+  Report sufficiency, coverage, rank and precision with explicit denominators.
+- Keep unreviewed retrieval inspection separate from scored evaluation. Generated
+  answers and citations are not judged.
+- Retain input hashes, source offsets, stage rankings, model/provider settings,
+  transformation traces and cache identity. Keep missing timings/costs explicit.
+- Validate artifacts, imports and resumed comparisons before using their results.
+
+### Installation and reliability
+
+- Support Python 3.12 with automated installed-package checks on Linux x64,
+  Windows x64 and macOS Apple Silicon/Intel.
+- Exercise isolated wheel/source installations, optional runtimes and upgrades.
+  Keep Windows JSON/version output clean and preserve CRLF source offsets.
+- Include a capability catalog, bundled verification, input examples, contribution
+  guidance and issue/PR templates.

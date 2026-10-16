@@ -1,10 +1,8 @@
-# Sponsorship setup (deferred)
+# Optional sponsorship setup
 
-The maintainer deferred sponsorship setup during public-release preparation.
-There is no active funding URL, `.github/FUNDING.yml` or payment button configured
-by this change. All CLI features are free; support is optional and buys no feature
-unlock or support-response guarantee. Stars, bug reports and contributions already
-support the project without payment.
+Sponsorship is not configured. All CLI features are free. Stars, bug reports,
+documentation and code contributions are welcome ways to support the project.
+Financial setup can be completed independently of the release.
 
 ## Set up GitHub Sponsors later
 

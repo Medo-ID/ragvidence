@@ -63,10 +63,8 @@ def main(
 
 @app.command()
 def edition() -> None:
-    """Show the single free edition; all included capabilities are available."""
-    console.print(
-        f"{__edition__} — no account or activation required; all included features available"
-    )
+    """Show the CLI license and feature availability."""
+    console.print(f"{__edition__} CLI · Apache-2.0 · all included features available")
 
 
 @app.command()

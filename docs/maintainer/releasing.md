@@ -1,193 +1,117 @@
 # Maintainer release procedure
 
-This file is internal and excluded from source distributions. Version 0.2.0 is a
-free Apache-2.0 CLI; all included features require no account or activation.
-There is no paid build, entitlement server or checkout requirement. The separate
-website and historical 0.1.0 artifacts retain their existing licensing status.
+RAGvidence is a free Apache-2.0 CLI. Follow
+[the completion checklist](release-and-website-checklist.md) for the ordered CLI
+release and separate website work. Maintainer documents are excluded from the
+source distribution.
 
-## Prepare a candidate
+## Prepare the release commit
 
-1. Keep `pyproject.toml`, `src/ragvidence/__init__.py` and the project record in
-   `uv.lock` on the same version. Run `uv lock` after changing it.
-2. Update the changelog, capability contracts, docs and third-party notices for the
-   exact delivered scope. M7 answer/citation/abstention judging remains deferred.
-3. Run the shared gate from this repository:
+Keep `pyproject.toml`, `src/ragvidence/__init__.py` and the project entry in `uv.lock`
+on the same version. Update the lock after version/dependency changes. Keep the
+changelog, docs, capability contracts and third-party notices aligned with the
+actual delivered scope.
 
 ```bash
 uv sync --frozen --dev --all-extras
 uv run --no-sync python -m scripts.verify_release --online-install
 ```
 
-The gate records actual per-test outcomes in `verification/portable-m8/tests.json`
-and binds each advertised technique/loader to positive, adverse and workflow
-contracts in `capabilities.json`. A missing, skipped or failed referenced contract
-cannot count as passed. Core pytest blocks external sockets; explicitly marked
-HTTP fixtures allow loopback only. Synthetic adapters do not count as real models.
+The gate preflights dependencies for four target platforms, lints, runs tests,
+checks capability outcomes and bundled assets, builds to `dist/release/`, inspects
+wheel/sdist contents and licenses, and exercises isolated core wheel/source and
+PDF/semantic-runtime installations. Core tests stay offline; `--online-install`
+allows locked package metadata/dependencies from PyPI, with model downloads disabled.
+A fully warm resolver cache can run without that flag.
 
-The same gate preflights wheel availability for all four target platforms without
-installing their binaries, lints, runs bundled `ragvi verify`, builds to **dist/release/**,
-checks exact wheel/sdist contents and license metadata, and exercises isolated core
-wheel, core source and PDF/semantic-runtime installations from unrelated data
-folders. Installations use exported `uv.lock` constraints with isolated temporary tool/bin
-directories. Fresh runners pass `--online-install` to resolve package metadata and
-fetch locked dependencies from PyPI. A frozen sync downloads wheel URLs but does
-not necessarily populate the simple-index metadata needed by the resolver.
-With a fully warm metadata cache, omit that flag for `uv tool install --offline`.
-Unit tests and model inference remain offline in both modes.
-The checks do not replace a person's global CLI. They cover all report formats,
-reviewed spans, imports, comparisons/resume, Unicode/space paths and read-only data.
-Installing optional runtimes is not a model-inference quality check.
+The default outcome directory is `verification/portable-m8/`. Use `--output`
+with a new verification directory when recording another candidate; do not replace
+retained historical evidence. `tests.json` records actual per-test outcomes and
+`capabilities.json` binds claims to required passing contracts.
 
-Use an empty release output directory when changing versions: the artifact checker
-rejects stale distribution versions rather than accidentally publishing them.
-`SHA256SUMS.txt` and `provenance.json` bind inspected artifacts to source commit,
-working-tree status and hashes. A dirty-tree run is development evidence; build
-again from the committed candidate before tagging it. Never distribute local
-credentials, reports, caches, customer data or maintainer planning documents.
+Start with an empty distribution directory when changing versions. Stale versions
+fail inspection. `SHA256SUMS.txt` and `provenance.json` bind artifacts to hashes,
+source commit and working-tree status. Build the final candidate from a clean
+committed revision; a dirty-tree run is development evidence. Commit as Medo-ID,
+push and require hosted verification to pass before publication.
 
-## Compatibility and real models
+## Platforms and upgrades
 
-The reusable and directly dispatchable `verify-release.yml` runs on Ubuntu x64, Windows x64, macOS ARM64 and
-macOS Intel, all on Python 3.12. CI runs on main pushes and pull requests; both
-publication jobs depend on the **whole** matrix succeeding. `.gitattributes` keeps
-checksum-bound fixtures on LF across platforms. Actions retain outcomes/logs for
-failures too. No configured runner or skipped job counts as a passing platform.
-Intel macOS needs ONNX Runtime below 1.24; the published semantic extra carries
-that marker constraint. `tool.uv.required-environments` protects all four targets
-when updating the lock. The current universal lock selects 1.23.2; real Linux
-model checks must use that runtime too. Dependency preflight is not OS execution.
-The local preparation run is Linux only; hosted run 38921470479 passed all four
-targets (see the retained outcomes below). The matrix does not cover Windows/Linux ARM,
-other Python versions, every OS version or every model/hardware combination.
+`.github/workflows/verify-release.yml` runs the common gate on Ubuntu x64,
+Windows x64 and macOS ARM64/Intel with Python 3.12. CI invokes it on main pushes
+and pull requests; both publication jobs require the complete matrix. Optional
+runtime installation does not prove real-model inference compatibility.
 
-CI downloads **only** the official published 0.1.0 wheel, verifies its pinned SHA,
-and exercises an isolated upgrade with unchanged old artifacts and all old export
-formats. Run that check locally using:
+Intel macOS needs ONNX Runtime below 1.24; the semantic extra carries that marker.
+The universal lock and `tool.uv.required-environments` protect the four targets.
+`.gitattributes` keeps checksum-bound text fixtures on LF. Original input CRLF
+characters remain preserved for reviewed source offsets.
+
+CI fetches a checksum-pinned official upgrade baseline and exercises isolated
+upgrades, unchanged original artifacts and exports. To repeat it locally:
 
 ```bash
 uv run --no-sync python -m scripts.fetch_release --index pypi --version 0.1.0 --output .ragvidence-cache/releases --expected-sha256 6dc10ba92245c332292f578591bbc88aab0d5827a1e445292c75fcc5dd5029ee
-uv run --no-sync python -m scripts.check_upgrade --old .ragvidence-cache/releases/ragvidence-0.1.0-py3-none-any.whl --candidate-dir dist/release --output verification/portable-m8/upgrade.json
+uv run --no-sync python -m scripts.check_upgrade --old .ragvidence-cache/releases/ragvidence-0.1.0-py3-none-any.whl --candidate-dir dist/release --output verification/upgrade-check.json --online-install
 ```
 
-Old runs/evaluations can be inspected/exported with their legacy provenance.
-Do not claim that reading them retroactively supplies modern hash/span validation;
-rerun experiments for modern validated evaluations. Old evaluation hashes were not
-stable across all process hash seeds. Preserve old workspaces and create fresh runs.
+## Real-model and manual checks
 
-Real-model checks are separate and make actual model/file identities visible:
+Use already-downloaded approved files/digests, explicit request limits and a new
+outcome path. Keep actual quality outcomes, including valid output that loses
+required facts. Do not turn compatibility results into universal accuracy claims.
 
 ```bash
-HF_HUB_OFFLINE=1 uv run --no-sync python scripts/check_portable_models.py --cache-dir .ragvidence-cache --output verification/portable-m8/model-check.json
-uv run --no-sync python scripts/check_portable_transformations.py --model qwen3:8b --expected-digest 500a1f067a9f782620b40bee6f7b0c89e17ae61f686b92c24933e4ca4b2b8b41 --output verification/portable-m8/transform-check.json
+HF_HUB_OFFLINE=1 uv run --no-sync python scripts/check_portable_models.py --cache-dir .ragvidence-cache --output verification/model-check.json
+uv run --no-sync python scripts/check_portable_transformations.py --model qwen3:8b --expected-digest 500a1f067a9f782620b40bee6f7b0c89e17ae61f686b92c24933e4ca4b2b8b41 --output verification/transform-check.json
 ```
 
-For Windows, set `HF_HUB_OFFLINE=1` using PowerShell's `$env:HF_HUB_OFFLINE="1"`
-instead of the Unix inline assignment. Supply already-downloaded approved models;
-the transformation check does not install Ollama or pull a model. Its two calls
-have explicit limits. Compatibility can pass while reviewed quality fails: retain
-that outcome. Never claim that a local model check establishes universal accuracy,
-multilingual quality or remote-provider/model compatibility. Mutable model tags
-and user-selected endpoints are not pinned by a name alone.
+In PowerShell set `$env:HF_HUB_OFFLINE="1"` instead of the Unix inline assignment.
+The transformation check does not install Ollama or pull a model.
 
-## Manual user check
+For human review, install the exact candidate in an isolated tool environment,
+open a fresh terminal outside the repository and use synthetic data. Check
+question entry, file/folder runs, missing/malformed inputs, optional runtime errors,
+all exports, offline HTML/mobile/print, comparison and reviewed evidence. Record
+artifact hash, OS, shell/browser and observed issues. Automated checks do not
+substitute for that usability assessment.
 
-Perform this on the actual Windows machine (ordinary user shell, outside the repo),
-and on a Mac when available. GitHub automates regression checks; this check judges
-whether the product is understandable. Use a disposable folder with a small real
-or synthetic manual and a separate questions file.
+## Publish and verify
 
-1. Install the exact candidate wheel with `uv tool install --python 3.12 PATH_TO_WHEEL`.
-   If replacing an existing tool, preserve any needed version and use `--reinstall`
-   deliberately. This manual command affects that user's tool environment.
-2. Open a fresh terminal; run `ragvi --version`, `ragvi techniques`, `ragvi verify`.
-3. Run `ragvi bm25 ./manual.txt` and answer the question prompt. Confirm the terminal
-   text explains unscored inspection and prints a usable HTML report path.
-4. Run `ragvi bm25 ./manual.txt --questions ./questions.txt --format html --format json --format markdown`.
-   Open HTML in a browser with the network disabled. Check navigation, narrow-window
-   readability, long/Unicode content, exact passages, limitations and export paths.
-   Share a **synthetic** report to another folder/machine and open it there.
-5. Run `ragvi compare-data ./manual.txt --questions ./questions.txt --techniques bm25,parent-child`.
-   Confirm no invented quality winner without reviewed labels; optionally repeat
-   with the documented reviewed-span fixture and check gains/losses in each export.
-6. Check a missing input, malformed file, unsupported file, missing optional extra,
-   existing output, and `--no-input`. Errors should provide a useful next step.
-7. Optionally use a local Ollama embedding/chat model with an explicit `.env` file
-   and the advanced-technique guide. Check its provider disclosure and failure
-   handling; record model digest, OS/architecture and any invalid output.
+Confirm both index dashboards trust owner `Medo-ID`, repository `ragvidence`,
+workflow `release.yml` and the matching `testpypi` / `pypi` environment. Remote
+settings and environment approvals require an authenticated maintainer account.
 
-Record artifact SHA, OS/architecture, shell, terminal, browser and observed issues.
-Manual usability is not automatically marked passed by the unit suite.
+1. Dispatch **Publish release**, choosing **main** and **target: testpypi** on the
+   final release commit. The default `verify` target does not upload.
+2. Require the platform matrix, TestPyPI upload and exact published-wheel
+   installation to pass. Record the run, revision and distribution hashes.
+3. After the candidate review, tag that exact commit as `vVERSION` and push the
+   tag intentionally. This triggers production PyPI publication.
+4. Require the matrix, PyPI upload, production installation and GitHub Release
+   creation to pass. Compare production wheel/sdist hashes to the TestPyPI
+   candidate; the workflow rebuilds from the tag rather than promoting an upload.
+5. Review release assets, notes, license metadata and index description, then
+   test production installation outside the repository.
 
-## Existing publication flow
+Only wheel/sdist files enter the index upload directory. Checksums/provenance are
+release assets. The published-wheel check downloads the exact project wheel from
+the selected index and verifies its SHA against that run's build. Dependencies
+use PyPI; TestPyPI is not an unrestricted fallback index.
 
-The package already exists on PyPI/TestPyPI. Keep the current project and Trusted
-Publisher identity; this is an update, not a new package registration. Confirm in
-both index dashboards that the GitHub owner/repository, **release.yml** workflow
-and `testpypi`/`pypi` environment names match. Local files cannot verify remote
-publisher/environment settings or branch protections.
+If package contents change after upload, select a fresh candidate/version; index
+filenames cannot be overwritten. If upload succeeded but a later check failed,
+rerun failed jobs rather than the successful upload. Never move a published tag
+to different bytes. Prerelease tags create prereleases on GitHub. Release
+immutability settings must be confirmed separately in the repository dashboard.
 
-- Manual **Publish release** dispatch defaults to **verify** and publishes nothing.
-- Selecting **testpypi** runs every platform gate, then publishes the canonical
-  Ubuntu-built wheel/sdist using Trusted Publishing to TestPyPI.
-- A pushed **vVERSION** tag must match all three version declarations. After the
-  whole matrix succeeds, it publishes to PyPI using Trusted Publishing.
-- Publication jobs receive OIDC permission; tests do not. Only wheel/sdist files
-  enter the PyPI upload directory. Checksums and source provenance go to release assets.
-- After publication, `check_published` fetches only the project's wheel from the
-  selected official index, requires its SHA to match the built candidate, and
-  repeats installation journeys. Dependencies use the normal PyPI-populated cache;
-  TestPyPI is never added as an unrestricted dependency fallback index.
-- A GitHub release is created after PyPI and the published-wheel check pass.
-  Alpha/beta/rc tags are marked prereleases. GitHub release immutability depends on
-  repository settings; the workflow does not enable it by itself.
+Git SSH access can push commits/tags but does not authenticate Actions dispatch.
+Use the maintainer's GitHub UI or authenticated CLI to dispatch the workflow.
 
-If post-publication metadata is delayed, rerun the failed installation job once it
-is visible. If publication succeeded but a later job failed, rerun failed jobs,
-not the whole upload. Index versions cannot be overwritten. Never retag an already
-published version to different bytes. Tagging/pushing/publishing is a separate
-maintainer action; preparing these files performs none of those actions.
+## Finish
 
-## Website handoff
-
-Use root `instructions.md` in the later `../ragvidence-web` session. Replace the old
-Free/Plus messaging with one free CLI and optional user-chosen sponsorship. Verify
-live package version and actual platform outcomes before changing public claims.
-Do not fabricate a donation destination or relabel the website's license.
-
-
-## GitHub verification and authentication
-
-Hosted runners cannot see the local uncommitted working tree. The source and
-workflow under test must be available at a GitHub branch/tag revision. A temporary
-test branch still requires a commit and push; obtain the maintainer's exception if
-they have instructed that no commit be created before hosted checks. Do not run an
-old revision and report its result as M8 verification. The updated **Publish
-release** workflow defaults to verify-only; selecting **testpypi** publishes.
-The separate **Portable release verification** workflow has no publication jobs.
-
-SSH Git access does not itself authenticate Actions API dispatch. At the last
-local audit, SSH read access succeeded, but there was no `gh` installation/login,
-GitHub API token or connected GitHub app. Authentication should use the normal
-GitHub CLI/device flow on the maintainer's machine; never paste credentials in an
-issue, command log or chat. After the reviewed test revision is available, run the
-direct **Portable release verification** workflow on that branch. This workflow
-has no publication jobs. Its first `workflow_dispatch` entry must already exist on
-the default branch to use GitHub's manual dispatch interface; a test PR against
-main is an alternative trigger for the same verification-only jobs. Pushing an
-approved branch named `verification/...` also triggers the CI matrix directly,
-using SSH Git authentication without an Actions API dispatch. This still requires
-the explicit no-commit exception. A public repository's run outcomes can then be
-read without an API login, subject to GitHub access/rate limits.
-
-
-## Verified M8 candidate
-
-All four jobs in run 38921470479 passed at revision
-42e774974e0ebf8a880f33f0aded9f587d22f40c: 395 tests per platform, clean source
-identities, wheel/source/optional-runtime installations and actual 0.1.0 upgrades.
-Per-platform outcomes are retained under verification/portable-m8/github/38921470479.
-The user authorized temporary verification commits and their removal, followed by
-one M8 commit on main as Medo-ID before public-release preparation. GitHub's branch
-banner was a pull-request suggestion; no PR was opened or merged for verification.
-The repository is now public. Publication and sponsorship configuration follow as
-a separate release-preparation phase; no package was published by these CI runs.
+Record actual outcomes in the completion checklist and root `instructions.md`.
+The website session uses the exact production release for documentation, samples
+and media. Keep working GitHub documentation URLs until the website is live.
+See [repository maintenance](repository.md) for public settings and
+[sponsorship setup](sponsorship.md) for optional support links.

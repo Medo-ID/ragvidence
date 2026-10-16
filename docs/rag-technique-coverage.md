@@ -2,9 +2,8 @@
 
 Source: [Production RAG with LangChain & Vector Databases](https://www.medo-id.com/book/prod-rag-langchain), read on 2026-10-15.
 
-This describes version 0.2.0 and matching source builds. The older published 0.1.0
-wheel lacks these additions. The implementation uses RAGvidence's
-existing retrieval interfaces, without adding a LangChain dependency.
+This guide describes the experiments available in RAGvidence and their limits.
+The implementation uses native retrieval interfaces without a LangChain dependency.
 
 The product workflow is to diagnose a user's current RAG technique on their own
 data, run built-in alternatives, and provide comparative evidence for their project
@@ -18,11 +17,11 @@ than a promise that an alternative will improve that system.
 Portable entry points now share ordinary-file ingestion and original-span evidence
 scoring. Run `ragvi techniques` or see [Portable techniques](portable-techniques.md).
 `--reviewed` supplies validated references; unreviewed runs remain inspections.
-The T11 model check covers two fingerprinted embedding configurations on one fixed
-reviewed corpus. Broader quality/OS coverage remains release work; command availability
-alone is not a claim of universal quality or complete verification.
+Model checks cover identified embedding configurations on a fixed reviewed corpus.
+Installed-package checks cover Linux, Windows and macOS ARM64/Intel on Python 3.12.
+Neither establishes model quality on another corpus or hardware combination.
 
-| Technique | Development CLI coverage |
+| Technique | CLI coverage |
 | --- | --- |
 | BM25 lexical retrieval | Implemented. |
 | Dense semantic retrieval | Implemented: exact cosine ranking, FastEmbed, Ollama, OpenAI-compatible providers. |
@@ -37,7 +36,7 @@ alone is not a claim of universal quality or complete verification.
 | MMR | Implemented: deterministic cosine relevance/diversity selection with candidate bounds, explicit embedding identity and preserved prior scores. |
 | Query rewriting | Implemented: bounded question-only generation, retained prompt/model/query outputs, fail or explicit original-question fallback. |
 | Contextual retrieval | Partial: supplied, reviewed `metadata.context_prefix` is indexed before the body by BM25 and/or semantic search. Existing heading enrichment remains available. Automatic LLM prefix generation is missing. |
-| Contextual compression | Implemented: deterministic sentence selection or optional model-selected exact spans, original-offset validation, budgets and rescoring after removal. Abstractive summaries remain deferred. |
+| Contextual compression | Implemented: deterministic sentence selection or optional model-selected exact spans, original-offset validation, budgets and rescoring after removal. Abstractive summaries are not included. |
 | Semantic chunking | Missing: embedding-based sentence boundary selection. |
 | Code-aware splitting | Missing: language-aware syntax boundaries. |
 | Late chunking | Missing: requires token-level embeddings and pooling interfaces. |
@@ -57,10 +56,10 @@ authorization, hosted tracing, Redis, Docker and infrastructure tuning are not n
 capabilities. Existing retriever imports can evaluate exact text spans or explicitly
 limited registered-unit proxies from an external stack.
 
-See [M6 technique settings](portable-advanced-techniques.md) for runnable portable
+See [Advanced technique settings](portable-advanced-techniques.md) for runnable portable
 commands, nested suite configuration, bounded providers, provenance and known limits.
-Answer/citation evaluation remains deferred; consolidated release verification has
-not started. Neither is implied by retrieval technique coverage.
+Answer/citation evaluation is not included. See [installation](installation.md)
+for prerequisites and [interpreting results](interpreting-results.md) for metric scope.
 
 ## Running an experiment
 

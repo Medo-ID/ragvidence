@@ -1,59 +1,47 @@
-# Website update handoff: RAGvidence 0.2.0
+# Website handoff: RAGvidence 0.2.0
 
-Prepared 2026-10-16 in the CLI repository. Execute website changes later in
-`../ragvidence-web`, following that repository's own instructions. This file is
-an implementation brief, not a claim that the new CLI is already published or
-that website assets are now Apache-licensed. No website files were changed here.
+Use this brief in the separate `../ragvidence-web` session. Follow that repository's
+AGENTS.md, README and maintenance guidance, and preserve existing uncommitted work.
+The execution order is in
+[the completion checklist](docs/maintainer/release-and-website-checklist.md).
 
-## Product and business direction
+## Product
 
-RAGvidence is a portable CLI for **diagnosing and comparing RAG retrieval techniques
-on the user's own data**, validating evidence and producing shareable reports.
-It saves users from implementing each technique/framework experiment themselves.
-The decision is theirs, for their own RAG system. Do not promise automatic changes
-to production systems, universal retrieval improvements or correct generated answers.
+RAGvidence is a fully free Apache-2.0 CLI for diagnosing and comparing RAG retrieval
+techniques on users' own data. It saves users from implementing each experiment
+before deciding what to use in their RAG projects.
 
-From 0.2.0 the entire CLI is **free, Apache-2.0**, with every included feature
-available without accounts, activation, payment, seats or a subscription. Remove
-Free/Plus cards, locked capabilities, checkout/entitlement/activation flows and
-future paid-feature promises throughout pages, docs, metadata, structured data,
-assets and tests. Replace them with one free installation/download path.
+Present the current product directly. Focus on what users need: install the CLI,
+point it at data, ask questions, compare techniques and inspect/share evidence.
+Keep the copy simple. Explain the current release's additions without retelling
+product history, commercial proposals or internal decisions.
 
-Add an optional “Sponsor” or “Support the project” button. Users choose whether to
-contribute and the amount. Donations do not unlock features or buy a support SLA.
-The maintainer has not supplied a payment destination: obtain the chosen external
-sponsorship/donation URL before wiring a real button. Do not invent one, implement
-an unrequested payment backend, or make charitable/tax-deductibility claims.
-No donation requirement belongs in the CLI installation path.
+Use one installation path plus Source, Contribute and Star links. Sponsorship is
+unconfigured and optional; omit a Sponsor/Donate button until a working destination
+is supplied and verified. See [setup instructions](docs/maintainer/sponsorship.md).
+Keep website licensing separate from the CLI license and retain asset notices.
 
-Apache-2.0 applies to the new CLI release. Keep third-party/font/model notices.
-Historical 0.1.0 was published under earlier proprietary terms: do not silently
-replace that old license download with the new license. Label or archive old
-release docs. Website code, branding, images and other assets do not inherit a
-license from this change; assess them separately with the maintainer.
+## Technical sources
 
-## Source of truth and publication status
-
-Before editing public claims, read these from the CLI repository:
-
-- `pyproject.toml`, `src/ragvidence/__init__.py`, `uv.lock`: candidate version 0.2.0,
-  Python **3.12 only** (`>=3.12,<3.13`), console command `ragvi`, extras `pdf`, `semantic`.
-- `src/ragvidence/capabilities.py`, `ragvi techniques --format json`, installed
-  command help: actual presets, options and prerequisites.
-- README, CHANGELOG, `docs/portable-file-usage.md`, `docs/portable-techniques.md`,
+- `pyproject.toml`, `src/ragvidence/__init__.py`, `uv.lock`: version, Python 3.12
+  requirement, `ragvi` entry point and `pdf` / `semantic` extras.
+- Installed `ragvi --help`, `ragvi COMMAND --help`, `ragvi techniques --format json`
+  and `src/ragvidence/capabilities.py`: actual commands, options and requirements.
+- README, CHANGELOG and `docs/installation.md`, `docs/getting-started.md`,
+  `docs/portable-file-usage.md`, `docs/portable-techniques.md`,
   `docs/portable-comparisons.md`, `docs/portable-advanced-techniques.md`,
-  `docs/rag-technique-coverage.md`: actual scope, schemas and limitations.
-- `verification/portable-m8/`: actual Linux test/install/model/upgrade outcomes;
-  `.github/workflows/verify-release.yml` and the latest successful GitHub run:
-  actual OS results. A configured matrix is not evidence that its jobs passed.
-- `LICENSE.md`, `NOTICE`, `THIRD_PARTY_NOTICES.md`, `THIRD_PARTY_LICENSES.md`.
+  `docs/interpreting-results.md`, `docs/rag-technique-coverage.md`: supported use.
+- `LICENSE.md`, NOTICE and third-party/model/font notices: licensing.
+- `docs/maintainer/portable-implementation-evidence.md`, retained verification
+  outcomes and the latest CI results: what was actually checked.
 
-0.2.0 is prepared here, **not published by this session**. Verify live PyPI and
-TestPyPI separately before promoting installation commands or downloadable files.
-At preparation time the public PyPI release is 0.1.0 and lacks portable commands.
-Do not tell users to install the old release and then run unavailable commands.
-Match source commit, installed version, release notes, artifact SHA and demos.
-Once 0.2.0 is published the main installation example can be:
+## Release availability
+
+The intended release is 0.2.0. Publication is pending at preparation time;
+verify PyPI before saying it is available or regenerating production demos.
+Record the live version/tag, release commit, artifact hashes and verification links
+here after publication. Keep package, documentation, commands and demo provenance
+aligned. Until the website is deployed, GitHub documentation links are usable.
 
 ```bash
 uv tool install --python 3.12 "ragvidence==0.2.0"
@@ -61,31 +49,11 @@ ragvi --version
 ragvi verify
 ```
 
-Optional runtimes: `"ragvidence[pdf,semantic]==0.2.0"`. A globally installed
-`ragvi` runs from any ordinary data directory; users need no source checkout,
-Python project, workspace, database or framework setup for portable commands.
-Provide appropriate Windows/PowerShell and macOS/Linux instructions without
-claiming every OS/Python version works. `uv` can manage Python 3.12.
+Use the CLI installation guide for uv setup, upgrades, optional extras and source
+builds. A global `ragvi` runs from any data folder; portable commands do not need
+a Python project, RAG framework, database or manually prepared workspace.
 
-## Capabilities that can be described
-
-| Area | Implemented scope |
-| --- | --- |
-| Input | Local UTF-8 TXT/Markdown, visible-text HTML, document JSON/JSONL, CSV; text-bearing PDFs with `pdf` extra; mixed folders |
-| Techniques | BM25, dense cosine, weighted hybrid RRF, optional local cross-encoder reranking, parent-child, heading context, supplied reviewed context prefixes, supplied multi-query fusion |
-| Additional stages | Typed metadata predicates, cosine MMR, bounded model query rewrite/auto-multi-query, exact extractive compression (deterministic sentences or model-selected offsets) |
-| Configuration | Recursive/ATX Markdown splitting, overlap, stage depths, context budgets, explicit local tokenizer where selected, embedding/provider comparisons |
-| Existing systems | Import actual original-span results, or explicitly limited registered-unit ID proxies; optional existing-system comparison baseline |
-| Comparisons | Shared frozen inputs/labels, bounded suites/grids, paired intervals, dev shortlists before heldout, local heldout-reuse disclosure, partial failures and validated resume |
-| Outputs | Terminal summary and self-contained HTML by default; repeatable HTML/JSON/Markdown formats and custom output root |
-| Reproducibility | Frozen data, original span offsets, exact final contexts, hashes, stage candidates/scores/timings, transformations and explicit missing-resource values |
-| Existing workflow | Bundled fictional tutorial, workspace validation/benchmark/import/evaluate/compare/report/recovery; optional answer generation for inspection only |
-
-Do not advertise a catalog count as a count of distinct algorithms. There are 14
-preset/import entries; 16 planned technique contracts also include modifiers and
-ablation dimensions. Explain the actual experiments instead of inflating the count.
-
-Suggested examples, checked against installed command help:
+## Core journey
 
 ```bash
 ragvi bm25 ./manual.txt --query "How do I reset the device?"
@@ -94,115 +62,86 @@ ragvi compare-data ./docs --questions ./questions.txt --techniques bm25,parent-c
 ragvi techniques
 ```
 
-`--output` selects the report root, default `ragvi-reports/`. Queries can come
-from flags, a question file or an interactive prompt. Avoid promising a format
-selection prompt unless actual installed behavior is verified; format flags work.
-No file is automatically a scored benchmark:
+TXT questions use one question per nonblank line. Question entry is offered on a
+terminal when no questions are supplied. `--no-input` disables prompts;
+`--interactive` offers report-format selection on a terminal. Format flags work
+without prompts. Reports go under `ragvi-reports/`; `--output` selects a root.
+HTML is self-contained and opens offline. Original files remain unchanged.
 
-| Input available | Honest result |
+| Input | Result |
 | --- | --- |
-| Sources only | Ingestion/chunk diagnostics, no retrieval quality score |
-| Sources + questions | Ranked retrieval/context inspection, no invented relevance metrics or quality winner |
-| Reviewed original-span evidence too | Evidence sufficiency/coverage, first rank, reciprocal rank, precision and scored gains/regressions; disclosed denominators |
+| Sources | Extraction/structure/chunk diagnostics |
+| Sources and questions | Ranked passages, context, stage traces and resource inspection |
+| Reviewed original-span references too | Evidence sufficiency, coverage, rank/precision metrics and paired gains/regressions |
 
-Quality claims apply to the user's reviewed questions and corpus. Small synthetic
-checks establish execution/contracts, not general superiority. Imported ID-only
-proxies have narrower evidence scope. Missing timing, token usage and costs stay
-unavailable; supplied usage/pricing is an estimate, not an actual bill.
+Use real schema examples from the CLI docs. Questions alone do not create reviewed
+relevance labels or a scored quality winner. Show failures and trade-offs alongside
+improvements. Small samples do not establish a general best technique.
 
-## Local model wording
+## Included capabilities
 
-It is accurate to say: **“Supports local embedding models and user-owned Ollama
-models for query rewriting and extractive compression.”** FastEmbed runs selected
-ONNX embeddings/rerankers locally after a first model download. Ollama embedding
-and chat adapters and user-configured OpenAI-compatible endpoints are included.
-An OpenAI-compatible endpoint can be local or remote; do not imply all are local.
+- Local UTF-8 TXT/Markdown, visible-text HTML, document JSON/JSONL, CSV and optional
+  text-bearing PDFs, including mixed folders with discovery/extraction limits.
+- BM25, dense cosine, weighted hybrid RRF, local cross-encoder reranking,
+  parent-child retrieval, heading enrichment, supplied context prefixes and
+  supplied multi-query fusion.
+- Typed metadata filters, cosine MMR, bounded model query rewriting/multi-query
+  generation, deterministic sentence extraction and model-selected exact spans.
+- Recursive/ATX Markdown splitting, overlap, separate stage depths, context budgets
+  and identified local tokenizer settings.
+- Existing-retriever imports with original-span validation or clearly limited
+  registered-unit proxies.
+- Frozen comparisons, bounded suites/grids, paired intervals, dev shortlists before
+  heldout evaluation, local heldout-reuse disclosure, partial failures and resume.
+- Terminal summaries and HTML/JSON/Markdown reports, exact context, source locations,
+  hashes, configuration and model/provider/stage evidence.
+- A fictional tutorial and optional reviewed-workspace workflow. Answer generation
+  is available for inspection, without answer/citation correctness scoring.
 
-BM25 and deterministic sentence compression need no LLM. RAGvidence does not ship
-or install Ollama/a bundled chat model and does not provide API credits or hosting.
-Model license, first download, output-contract compliance, language quality,
-CPU/RAM/GPU needs and actual hardware remain user/provider dependent. Avoid “works
-with any LLM”, “all models tested”, “zero network under all configurations”, or
-universal GPU-free/hardware performance claims.
+Explain experiments rather than inflating a catalog count into independent algorithms.
 
-Linux compatibility evidence includes pinned BGE-small, MiniLM embeddings and a
-Xenova MiniLM reranker, plus bounded local Qwen3:8b transformation checks. Retain
-actual quality failures: a structurally valid compression can remove all required
-evidence. Check the current evidence file before quoting any specific result.
-Mutable model names are not immutable revision guarantees for every run.
+## Models, platforms and privacy
 
-## Limits and truthful claims
+BM25 and sentence extraction need no LLM. FastEmbed embeddings/rerankers run locally
+after model download. User-owned Ollama models and OpenAI-compatible endpoints can
+be used for selected operations. The CLI does not install a model server or supply
+API credits. Model requirements, output compliance and quality depend on the model
+and hardware. An OpenAI-compatible endpoint can be local or remote.
 
-- M7 answer correctness, citation correctness, abstention evaluation and calibrated
-  LLM judges are deferred and **not included**. Legacy `generate` is inspection.
-- No HyDE, multi-hop/agentic/self-reflective RAG, graph RAG, learned sparse search,
-  multi-vector/late interaction or production retriever optimization is implemented.
-  Check the coverage guide for further gaps; do not convert roadmap items into claims.
-- No OCR/scanned-PDF, DOCX/spreadsheet/image/audio ingestion, URL crawler, database
-  connector, hosted vector database or production RAG deployment service.
-- Text extraction does not establish faithful visual tables/columns/layout.
-  Resource limits do not imply unlimited datasets or a security sandbox.
-- CLI CI targets Linux x64, Windows x64, Mac ARM64 and Mac Intel on Python 3.12.
-  The preparation session ran Linux locally; GitHub run 38921470479 subsequently
-  passed all four targets with 395 tests each, installed-package and upgrade journeys.
-  Retained per-platform evidence is under `verification/portable-m8/github/38921470479`. Do not claim every OS/architecture.
-- Reviewed labels are excluded from retrieval/transformation prompts. Remote
-  providers receive the required questions/source text for the selected operation.
-  First-time model downloads can contact upstream services. Do not make blanket
-  telemetry/privacy promises for all third-party runtimes/providers.
-- Reports and frozen artifacts may contain **full passages, questions, prompts and
-  model output**, not just summaries. Explain reviewing/redacting before sharing.
-  HTML is escaped and self-contained with embedded fonts and no remote assets.
+Installed-package checks cover Linux x64, Windows x64 and macOS ARM64/Intel on
+Python 3.12. Run [38924470360](https://github.com/Medo-ID/ragvidence/actions/runs/38924470360)
+passed on the public-preparation commit. Recheck CI for the final release commit;
+a matrix definition alone is not proof of success. Real-model checks use identified
+Linux configurations and do not establish inference compatibility on every OS.
+
+Remote services receive the text needed for the selected operation. Reviewed
+reference answers/evidence IDs are excluded from retrieval/transformation prompts.
+Reports can contain full passages, questions, prompts and model output; internal
+artifacts can contain the full corpus/references. Explain reviewing content before
+sharing. HTML escapes source content and uses embedded fonts without remote assets.
+
+## Scope limits
+
+The CLI provides evidence for a user's choice; it does not modify or deploy their
+RAG system. It does not judge generated answers, citations or abstention.
+OCR/scanned PDFs, DOCX/spreadsheets, image/audio ingestion, crawling and database
+connectors are not supported. Text extraction does not guarantee layout/table fidelity.
+See the coverage guide for missing retrieval families. Supplied usage/pricing is
+an estimate; unavailable timing/cost data must not become zero or a fabricated saving.
 
 ## Website acceptance
 
-Audit landing page, docs, install snippets, FAQs, navigation, metadata/OpenGraph,
-structured data, license/download endpoints, videos/screenshots and sample reports.
-Regenerate demos from the exact release and synthetic data; do not manually alter
-scores, omit regressions or reuse old CLI output for new claims. Validate links
-and examples against installed help. Keep any old-version docs clearly labeled.
-Update existing tests that enforce Free/Plus messaging; add meaningful checks for
-one free path, working optional sponsor link, actual supported formats and no
-unsupported capabilities. Do not add rating collection or a payment system unless
-asked. A voluntary sponsor button does not imply a review/rating feature exists.
+Update the landing page, docs, version badges, install/upgrade snippets, FAQs,
+releases, trust/license pages, navigation, metadata/JSON-LD, downloadable notices,
+terminal demo, sample report and media together. Keep current docs focused on the
+current release. Audit links and tests for content being removed or replaced.
 
-Use that repository's build, lint, accessibility and browser checks. Confirm the
-sample HTML report opens offline and on a narrow screen. Deploy only as separately
-authorized in the website session; this handoff does not deploy anything.
+Generate reports/videos from the exact production release using synthetic data.
+Record commands, settings, version and artifact/report hashes. Do not hand-edit
+scores, omit regressions or imply the sample is an independent customer benchmark.
 
-
-## Public open-source transition
-
-The maintainer made `Medo-ID/ragvidence` public during M8. The public-transition
-follow-up should review all history, branches,
-release attachments, Actions logs/artifacts and contribution rights for public
-exposure. Private repositories can also run these OS checks. The maintainer authorized a
-temporary verification branch; its push triggered the successful public CI run.
-The branch is removed after testing, and the verified M8 changes are committed on
-main as Medo-ID before the next release-preparation phase. This handoff does not
-authorize deployment or invent a sponsorship destination.
-
-Preserve the historical v0.1.0 tag and immutable PyPI artifacts, and describe
-0.2.0 as the new Apache-2.0 release. Before announcing, add contributor setup,
-meaningful test requirements, issue/PR guidance and a maintainer support/security
-route. Link to Source / Contribute / Star once the repository is actually public.
-Use `.github/FUNDING.yml` plus the website sponsor button only after the maintainer
-chooses a working sponsorship/donation destination. Keep installation independent
-of payment. See the internal `docs/maintainer/open-source-transition.md` plan.
-
-
-## Latest release-preparation decisions
-
-M8 is committed and pushed on main as `16d2557` (Medo-ID). The temporary
-verification branch/worktree were removed; no PR was opened. Run 38921470479
-passed all four OS targets with 395 tests each and installed-package/upgrade checks.
-The owner confirmed the repository is public. Public contributor guidance and
-issue/PR templates are prepared before the version-tagged release. The shared
-release gate passed locally for this public-release preparation; raw outcomes
-are retained in `verification/public-release/`. Publication is still pending.
-
-The owner explicitly **deferred sponsorship setup** and requested setup guidance.
-Do not display an active Sponsor/Donate button or add a Funding metadata URL until
-an approved working destination exists. GitHub Sponsors offers custom amounts;
-see docs/maintainer/sponsorship.md for the setup steps. Donations remain optional
-and all included CLI features remain free. Website changes are still separate.
+Review and preserve the website's existing cleanup. Resolve the recorded
+reduced-motion failures and pass its complete `npm run verify` gate, including a
+normal production build on a capable host, browser checks and production audit.
+Verify a preview, then deploy as the separately authorized final action. Check the
+live domain, HTTPS, docs/search, keyboard/mobile use, copy controls and media.

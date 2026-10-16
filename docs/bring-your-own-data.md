@@ -1,6 +1,6 @@
 # Bring your own data
 
-For ordinary files or folders, start with the 0.2.0
+For ordinary files or folders, start with the
 [portable commands](portable-file-usage.md). They need no manually prepared
 workspace and support inspection or [reviewed span scoring](portable-techniques.md).
 The schemas below are for reviewed
@@ -21,7 +21,7 @@ One JSON object per retrievable unit:
 - `heading_path`: authentic source headings; never generated gold-answer text.
 - `body`: original text used in the body-only baseline.
 - `evidence_ids`: reviewed facts/passages represented by this unit.
-- `metadata`: optional information; not generally indexed. The development
+- `metadata`: optional information; not generally indexed. The
   `contextual` representation explicitly indexes a reviewed `context_prefix`.
 
 ## `questions.jsonl`

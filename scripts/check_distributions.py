@@ -31,7 +31,7 @@ def check_members(names: list[str]):
             or name.endswith((".pyc", ".log"))
         ):
             raise ValueError(f"Forbidden distribution member: {name}")
-        if name.endswith(("/instructions.md", "/portable-cli-design.md")):
+        if name.endswith("/instructions.md"):
             raise ValueError(f"Maintainer handoff must not be distributed: {name}")
 
 

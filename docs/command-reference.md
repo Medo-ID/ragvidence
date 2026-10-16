@@ -1,11 +1,12 @@
 # Command reference
 
 Use `ragvi COMMAND --help` for the authoritative options installed with your version.
+Start with [installation](installation.md) and [getting started](getting-started.md).
 
 | Command | Purpose |
 | --- | --- |
 | `ragvi health` | Check Python, dependencies, bundled data, workspace access, semantic support, and local privacy defaults. |
-| `ragvi edition` | Show that all included features are free and require no activation. |
+| `ragvi edition` | Show the CLI license and feature availability. |
 | `ragvi verify` | Run deterministic release and installation fixtures. |
 | `ragvi tutorial` | Run the complete first-use BM25 comparison and create an HTML report. |
 | `ragvi quickstart` | Copy only the bundled heading-context exercise. |

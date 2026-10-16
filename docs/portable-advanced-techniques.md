@@ -1,8 +1,8 @@
 # Filters, diversity, rewriting and extractive compression
 
-These capabilities are included from version 0.2.0. They diagnose
-trade-offs on your data; they do not change your RAG system. Use reviewed original
-spans for quality scores, or questions alone for unscored inspection.
+Use these techniques to examine retrieval trade-offs on your data. Supply reviewed
+original spans for quality scores, or questions alone for unscored inspection.
+The experiments help you decide what to use in your RAG system.
 
 ```bash
 ragvi metadata-filter ./records.json --query "Reset procedure" --filters filters.json
@@ -152,7 +152,7 @@ compressed source groups are kept or skipped; spans are not silently shortened.
 Several extracts from one source keep one retrieval rank and count as one hit for
 precision/depth. Reports display each extract with that rank and exact location.
 Evidence is recomputed from the returned span union, so removed conditions or
-qualifications lose credit. Legacy workspace unit labels cannot establish that
+qualifications lose credit. Workspace unit labels cannot establish that
 compressed text contains a fact: use portable original-span evaluation instead.
 
 `--compression-failure original` explicitly permits unchanged candidates on invalid
@@ -223,10 +223,10 @@ Model names/endpoints can resolve to changed weights. Runs record configuration
 and adapter identities, but do not independently pin every runtime model revision.
 The local model compatibility check records/checks its Ollama content digest;
 the cached-model check fingerprints its own model files. Those checks do not make
-an arbitrary future user run immutable. Broader revision pinning remains release work.
+an arbitrary user run immutable.
 
-The M6 checks include independent ranking/predicate/span oracles, positive and
-regression cases, composition tests, installed CLI journeys, real cached embedding
-and reranker checks, and bounded local Ollama compatibility checks with recorded
-model digest. These establish supported behavior, not universal quality. M7 answer
-evaluation is deferred; consolidated M8 release verification has not started.
+Verification includes independent ranking/predicate/span expectations, positive
+and regression cases, composed stages and installed CLI journeys. Separate model
+checks use identified cached embeddings/rerankers and bounded local Ollama calls.
+These establish supported behavior for the tested configurations; they do not
+establish universal retrieval quality or generated-answer correctness.

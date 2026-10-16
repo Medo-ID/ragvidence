@@ -32,8 +32,6 @@ uv run --no-sync ragvi verify
 
 Use `uv run --no-sync ragvi` while developing. A globally installed `ragvi` may
 come from a different version and will not automatically use this checkout.
-The older 0.1.0 release lacks the portable commands in this source; use the
-version installed from your checkout when testing a contribution.
 
 ## Architecture and boundaries
 
@@ -105,6 +103,5 @@ before merging; opening an issue does not promise delivery or a response deadlin
 
 Intentional contributions are submitted under this project's Apache-2.0 license
 unless a separate arrangement is agreed in advance. Preserve third-party and
-model/font notices. No payment, donation or sponsorship is required to contribute
-or use any included feature. Starring, sharing, reporting bugs and improving
-documentation are welcome ways to support the project.
+model/font notices. Starring, sharing, reporting bugs and improving documentation
+are welcome ways to support the project.

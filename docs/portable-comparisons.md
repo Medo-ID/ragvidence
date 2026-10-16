@@ -1,8 +1,8 @@
 # Compare techniques on your data
 
-Included from version 0.2.0; the older 0.1.0 release lacks this workflow. Install a
-development wheel as a tool, then invoke `ragvi` from any directory. In a source
-checkout, prefix examples with `uv run`.
+Compare alternatives on the same data and questions without building each
+experiment yourself. After [installing the CLI](installation.md), invoke `ragvi`
+from any directory. In a source checkout, prefix examples with `uv run`.
 
 ```bash
 ragvi compare-data ./data --query "How do I reset pairing?"

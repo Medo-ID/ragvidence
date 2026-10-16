@@ -2,10 +2,10 @@
 
 This guide covers supported workflows beyond the bundled tutorial. Commands use an installed `ragvi` tool. Prefix them with `uv run` when using the source archive.
 
-Version 0.2.0 supports [portable techniques and reviewed original spans](portable-techniques.md)
-directly on files/folders. Use that workflow for ordinary data without workspace
-setup. The optional reviewed-workspace lifecycle below remains available for
-existing experiments. Version 0.1.0 has only the earlier workspace commands.
+Use [portable techniques and reviewed original spans](portable-techniques.md)
+directly on files/folders for experiments without workspace setup. The optional
+reviewed-workspace lifecycle below uses manually labeled source units and explicit
+run/evaluate/report steps.
 
 ## The reviewed-workspace lifecycle
 

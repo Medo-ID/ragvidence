@@ -19,6 +19,6 @@ Then check [Getting started](docs/getting-started.md) and [Troubleshooting](docs
 - complete error text with credentials and private document content removed;
 - whether the bundled tutorial succeeds.
 
-Use the project’s GitHub issues for reproducible bugs and questions, with synthetic data. Support is community/maintainer best effort. Voluntary donations do not purchase features or a response-time guarantee.
+Use [GitHub issues](https://github.com/Medo-ID/ragvidence/issues) for reproducible bugs and questions, with synthetic data. Support is provided by the community and maintainer as time allows.
 
-Support does not include reviewing confidential corpora, designing a production architecture, operating third-party providers, or guaranteeing model/retrieval quality unless separately agreed in writing.
+Use synthetic examples so others can reproduce the problem without access to your confidential data or provider credentials.

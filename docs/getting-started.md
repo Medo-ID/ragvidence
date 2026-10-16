@@ -1,11 +1,12 @@
 # Getting started
 
-RAGvidence helps you inspect retrieval evidence and compare techniques on your own
-files. These instructions cover **0.2.0** and matching source builds. The older
-0.1.0 package has the earlier workspace workflow. Check `ragvi --version` and
-[the README](../README.md) for current release/install availability.
+Use RAGvidence to see what a retrieval technique finds in your data and compare
+alternatives before implementing them in your RAG project. Start with BM25 and
+parent-child retrieval; both run without a model or API key.
 
-## Check the installation
+## Install and check the CLI
+
+Follow the [installation guide](installation.md), then open a terminal:
 
 ```bash
 ragvi --version
@@ -17,7 +18,20 @@ Python 3.12 is required. BM25 needs no model, account or API key. A warning that
 optional semantic runtime is missing does not block BM25. From a source checkout,
 run `uv sync --frozen` and prefix commands with `uv run`.
 
-## Inspect your own data
+## Prepare your data
+
+Choose a small file or folder that represents the content your RAG system needs
+to search. Keep questions in a separate UTF-8 `questions.txt` file, one per line.
+For a first experiment, you can create `manual.txt` containing:
+
+```text
+Hold the reset button for eight seconds. Use USB-C power.
+```
+
+Choose questions that reflect real user needs, such as "How do I reset the device?"
+Start small enough to check the returned passages yourself.
+
+## Inspect retrieval
 
 Run from a folder containing a supported file or directory:
 
@@ -37,8 +51,13 @@ Open the printed HTML path in your browser. Use `--format json`, `html` or
 `markdown` repeatedly to select exports, and `--output DIRECTORY` to choose a root.
 Your source files remain unchanged.
 
-With sources only, the tool produces ingestion/chunk diagnostics. With questions,
-it shows retrieval/context inspection. Quality metrics require
+To inspect extraction and chunks without running retrieval, use:
+
+```bash
+ragvi bm25 ./manual.txt --no-input
+```
+
+With questions, the report shows retrieval/context inspection. Quality metrics require
 [reviewed original-span references](portable-techniques.md); the tool does not
 invent relevance labels or a quality score from a document alone.
 
@@ -55,10 +74,25 @@ scored quality winner. Add `--reviewed FILE` for evidence-level evaluation.
 See [comparisons](portable-comparisons.md) for suites, dev/heldout selection,
 intervals, an existing-system baseline and validated resume.
 
-Read regressions as well as improvements, check actual question counts and final
-contexts, and review limitations before adopting a technique in your own RAG
-system. The CLI provides diagnostic evidence; it does not change that system or
-establish generated-answer/citation correctness.
+## Read the report and choose your next test
+
+1. Check the status, loaded/skipped files, settings and question counts.
+2. Inspect the exact returned context. Does it include the conditions and details
+   needed to answer the original question? Ranking scores are not probabilities.
+3. With reviewed references, examine regressions as well as improvements. Check
+   whether the context contains every required evidence span.
+4. Compare context size and observed timing alongside quality. Missing costs or
+   timing measurements remain unavailable.
+5. Test a relevant alternative or setting using the same questions and budget.
+   Reserve separate heldout questions before drawing conclusions.
+
+For example, parent-child retrieval may restore surrounding details but use more
+context. Hybrid retrieval can combine lexical and semantic matches; it requires
+an embedding provider. `ragvi techniques` lists each preset's requirements.
+See [interpreting results](interpreting-results.md) for evidence metrics and limits.
+
+The CLI provides evidence for your decision. It does not change your RAG system
+or establish generated-answer/citation correctness.
 
 ## Try the fictional tutorial
 
@@ -77,7 +111,7 @@ The tutorial refuses to overwrite an existing workspace. Repeat it with a new na
 ragvi tutorial --name first-run-2
 ```
 
-The earlier reviewed-workspace commands remain available. See the
+For manually labeled source units and explicit run/evaluate/report steps, see the
 [user guide](user-guide.md) and [bring your own reviewed data](bring-your-own-data.md).
 
 ## Models and sharing

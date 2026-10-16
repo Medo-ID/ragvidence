@@ -75,7 +75,7 @@ include = [
   "/pyproject.toml",
   "/uv.lock",
 ]
-exclude = ["/docs/maintainer", "/docs/portable-cli-design.md"]
+exclude = ["/docs/maintainer"]
 
 [build-system]
 requires = ["hatchling>=1.27"]
