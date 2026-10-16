@@ -19,19 +19,68 @@ review them before sharing. Security reports follow [SECURITY.md](SECURITY.md).
 
 ## Local setup
 
-Clone your fork, create a branch and install the locked Python 3.12 environment:
+You need Git and [uv](https://docs.astral.sh/uv/getting-started/installation/).
+Use Windows, macOS or Linux with Python 3.12; uv can install Python for you.
+Initial setup downloads Python/dependencies. The default test suite needs no
+API key, running model service or downloaded model weights.
+
+Fork [Medo-ID/ragvidence](https://github.com/Medo-ID/ragvidence) on GitHub, then
+clone your fork and create a branch:
 
 ```bash
 git clone https://github.com/YOUR_USERNAME/ragvidence.git
 cd ragvidence
+git remote add upstream https://github.com/Medo-ID/ragvidence.git
 git switch -c fix/my-change
+uv python install 3.12
 uv sync --frozen --dev --all-extras
 uv run --no-sync ragvi --version
 uv run --no-sync ragvi verify
 ```
 
-Use `uv run --no-sync ragvi` while developing. A globally installed `ragvi` may
-come from a different version and will not automatically use this checkout.
+`uv sync` creates an isolated `.venv`; `uv run` selects its Python in each shell.
+All extras install the PDF/semantic runtimes needed by the complete test suite;
+this does not download model weights. Use `uv run --no-sync ragvi` while developing
+so commands use this checkout. A separate global installation does not follow
+your source edits.
+
+Try the CLI against the bundled fictional input:
+
+```bash
+uv run --no-sync ragvi bm25 docs/examples/device-manual.md --questions docs/examples/questions.txt
+```
+
+Open the printed HTML path. Generated reports go to ignored `ragvi-reports/`.
+For more commands and input schemas, see [getting started](docs/getting-started.md).
+
+## Keep your local setup separate
+
+The ignore rules cover virtual environments, editor/agent settings, local dotenv
+files, credentials directories, caches, build output, logs, reports and generated
+verification output. Use `local-data/` for personal datasets and
+`verification/ci/` for new check results. Review report contents before sharing.
+
+Keep `pyproject.toml`, `uv.lock`, `.python-version`, `.env.example`, CI workflows,
+tests/fixtures, documentation and license notices tracked. These define the
+shared development environment. A file already tracked by Git is not removed by
+adding an ignore rule; check staged changes before submitting them.
+
+The normal local workflow needs no `.env`. If testing your own provider, copy
+`.env.example` locally, fill only the needed settings and select it with
+`--env-file .env` on portable commands. Keep credentials out of source and fixtures.
+
+## Make your first change
+
+Choose a focused bug, documentation correction or proposed diagnostic experiment.
+Read the affected module and relevant tests, make the change, then run focused
+checks before the complete validation below. For example:
+
+```bash
+uv run --no-sync pytest tests/unit/test_portable.py
+```
+
+When adding or updating dependencies intentionally, update the manifest, lock and
+applicable notices together. Ordinary setup uses the existing frozen lock.
 
 ## Architecture and boundaries
 
@@ -93,6 +142,22 @@ Fixture contracts cannot establish universal model quality, language coverage or
 hardware support.
 
 ## Pull requests and licensing
+
+Review your changes and push your branch to your fork:
+
+```bash
+git diff --check
+git status --short
+git add PATH_TO_CHANGED_FILE
+git diff --cached
+git commit -m "Describe the change"
+git push -u origin fix/my-change
+```
+
+Use your own Git author identity for your contributions. Open a pull request to
+`Medo-ID/ragvidence:main` and wait for CI. Update your branch to address review or
+check failures; tests run on Linux, Windows and macOS. The project supplies the
+issue forms and PR template in `.github/`.
 
 Explain the concrete problem, resulting behavior and validation you performed.
 Keep changes scoped, disclose limitations and update affected help/docs/examples.

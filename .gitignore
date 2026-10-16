@@ -1,17 +1,62 @@
-.venv/
-.env
-.pytest_cache/
+# Local Python environments and tooling caches
+.venv*/
+/venv/
+/env/
 __pycache__/
 *.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.pyre/
+.tox/
+.nox/
+.cache/
+
+# Local credentials and provider configuration; keep the shared template
+.env
+.env.*
+*.env
+!.env.example
+.envrc
+.direnv/
+/.aws/
+/.ssh/
+
+# Personal editor and coding-agent settings
+/.vscode/
+/.idea/
+/.codex/
+/.agents/
+/.claude/
+/.cursor/
+/.mcp.json
+/AGENTS.local.md
+/CLAUDE.local.md
+*.code-workspace
+
+# OS/editor temporary files
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~
+
+# Build, coverage and generated test output
+dist/
+build/
+*.egg-info/
+.coverage
+.coverage.*
+htmlcov/
+/coverage.xml
+/junit.xml
+*.log
+
+# Local datasets, experiments, models and fresh verification output
+/local-data/
 workspaces/
 ragvi-reports/
 .ragvidence-cache/
-dist/
-build/
-.ruff_cache/
-*.egg-info/
-.coverage
-htmlcov/
-*.log
 verification/ci/
 verification/published/
