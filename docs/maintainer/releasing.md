@@ -24,9 +24,9 @@ PDF/semantic-runtime installations. Core tests stay offline; `--online-install`
 allows locked package metadata/dependencies from PyPI, with model downloads disabled.
 A fully warm resolver cache can run without that flag.
 
-The default outcome directory is `verification/portable-m8/`. Use `--output`
-with a new verification directory when recording another candidate; do not replace
-retained historical evidence. `tests.json` records actual per-test outcomes and
+The default outcome directory is ignored `verification/ci/local/`. Use `--output`
+with another directory when recording a candidate; do not replace retained
+canonical evidence. `tests.json` records actual per-test outcomes and
 `capabilities.json` binds claims to required passing contracts.
 
 Start with an empty distribution directory when changing versions. Stale versions
@@ -52,7 +52,7 @@ upgrades, unchanged original artifacts and exports. To repeat it locally:
 
 ```bash
 uv run --no-sync python -m scripts.fetch_release --index pypi --version 0.1.0 --output .ragvidence-cache/releases --expected-sha256 6dc10ba92245c332292f578591bbc88aab0d5827a1e445292c75fcc5dd5029ee
-uv run --no-sync python -m scripts.check_upgrade --old .ragvidence-cache/releases/ragvidence-0.1.0-py3-none-any.whl --candidate-dir dist/release --output verification/upgrade-check.json --online-install
+uv run --no-sync python -m scripts.check_upgrade --old .ragvidence-cache/releases/ragvidence-0.1.0-py3-none-any.whl --candidate-dir dist/release --output verification/ci/upgrade-check.json --online-install
 ```
 
 ## Real-model and manual checks
@@ -62,8 +62,8 @@ outcome path. Keep actual quality outcomes, including valid output that loses
 required facts. Do not turn compatibility results into universal accuracy claims.
 
 ```bash
-HF_HUB_OFFLINE=1 uv run --no-sync python scripts/check_portable_models.py --cache-dir .ragvidence-cache --output verification/model-check.json
-uv run --no-sync python scripts/check_portable_transformations.py --model qwen3:8b --expected-digest 500a1f067a9f782620b40bee6f7b0c89e17ae61f686b92c24933e4ca4b2b8b41 --output verification/transform-check.json
+HF_HUB_OFFLINE=1 uv run --no-sync python scripts/check_portable_models.py --cache-dir .ragvidence-cache --output verification/ci/model-check.json
+uv run --no-sync python scripts/check_portable_transformations.py --model qwen3:8b --expected-digest 500a1f067a9f782620b40bee6f7b0c89e17ae61f686b92c24933e4ca4b2b8b41 --output verification/ci/transform-check.json
 ```
 
 In PowerShell set `$env:HF_HUB_OFFLINE="1"` instead of the Unix inline assignment.

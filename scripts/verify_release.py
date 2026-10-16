@@ -124,7 +124,7 @@ def verify(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--output", type=Path, default=ROOT / "verification/portable-m8")
+    parser.add_argument("--output", type=Path, default=ROOT / "verification/ci/local")
     parser.add_argument("--dist", type=Path, default=ROOT / "dist/release")
     parser.add_argument("--tag", default=os.environ.get("RAGVI_RELEASE_TAG") or None)
     parser.add_argument("--online-install", action="store_true")

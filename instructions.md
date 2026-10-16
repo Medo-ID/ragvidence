@@ -13,10 +13,9 @@ before deciding what to use in their RAG projects.
 
 Present the current product directly. Focus on what users need: install the CLI,
 point it at data, ask questions, compare techniques and inspect/share evidence.
-Keep the copy simple. Explain the current release's additions without retelling
-product history, commercial proposals or internal decisions.
+Keep the copy simple and explain what the current release includes.
 
-Use one installation path plus Source, Contribute and Star links. Sponsorship is
+Use one installation path and Source, Contribute and Star links. Sponsorship is
 unconfigured and optional; omit a Sponsor/Donate button until a working destination
 is supplied and verified. See [setup instructions](docs/maintainer/sponsorship.md).
 Keep website licensing separate from the CLI license and retain asset notices.

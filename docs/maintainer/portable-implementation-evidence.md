@@ -38,10 +38,10 @@ metadata scopes, compression, imports, comparisons/resume, unchanged source file
 verification and the tutorial. Separate temporary tool/bin directories keep
 personal global installations unchanged.
 
-[Local preparation outcomes](../../verification/public-release/checks.json) and
-[per-test results](../../verification/public-release/tests.json) report a dirty
-working tree explicitly; they are development evidence rather than a clean
-release commit's identity.
+Local candidate outcomes go to ignored `verification/ci/` directories. Use the
+clean release commit's hosted results when assessing publication readiness.
+The [retained evidence index](../../verification/README.md) identifies the
+supporting records kept in source control.
 
 ## Upgrade integrity
 

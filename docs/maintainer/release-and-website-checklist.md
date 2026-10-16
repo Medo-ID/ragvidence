@@ -48,7 +48,7 @@ Exit: the current documentation is useful, concise and aligned with the CLI.
 - [x] Run documentation/link checks and execute the first-use examples.
 - [x] Run the shared release gate for the final cleanup and inspect its outcomes.
   Local results: 395 passing tests, all capability contracts, wheel/source checks
-  and three isolated installation modes. Outcomes: `verification/ci/cleanup/`.
+  and three isolated installation modes. Outcomes: `verification/ci/local/`.
 - [ ] Commit as **Medo-ID <midaghdour@gmail.com>**, push, and require the
   four-platform CI matrix to pass on that exact commit.
 
@@ -168,8 +168,8 @@ Exit: the website work has a reviewed baseline and a concrete content map.
 - [ ] Keep the diagnostic scope accurate: no production-system modification,
   universal best-technique promise, generated-answer judging or answer-judging capability.
   State tested OS/architecture/Python scope and precise local-model requirements.
-- [ ] Keep sponsorship deferred. Omit a payment button until a working verified
-  destination exists; no pricing tier, account or feature unlock is needed.
+- [ ] Keep sponsorship optional. Add its external link only after a working
+  destination is supplied and verified.
 
 Exit: all visible copy and machine-readable metadata describe the shipped product.
 
@@ -188,8 +188,8 @@ Exit: all visible copy and machine-readable metadata describe the shipped produc
 - [ ] Update license download routes, release links, site verification expectations
   and tests. Remove obsolete assets only after checking references. Do not rename
   an old license file and present its contents as the new release's license.
-- [ ] Review `AGENTS.md`, README and maintenance guidance for obsolete product
-  assumptions so later contributors do not reintroduce Plus or stale claims.
+- [ ] Align `AGENTS.md`, README and maintenance guidance with the current CLI's
+  capabilities and verified examples.
 
 Exit: every published example works and current docs agree with the actual wheel.
 
