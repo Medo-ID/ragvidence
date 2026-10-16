@@ -1,6 +1,6 @@
 # Compare techniques on your data
 
-Available in development builds; no new PyPI release has been published. Install a
+Included from version 0.2.0; the older 0.1.0 release lacks this workflow. Install a
 development wheel as a tool, then invoke `ragvi` from any directory. In a source
 checkout, prefix examples with `uv run`.
 

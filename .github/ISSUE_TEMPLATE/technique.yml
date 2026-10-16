@@ -1,0 +1,22 @@
+name: Technique or workflow proposal
+description: Propose a diagnostic experiment or portable CLI improvement.
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Diagnostic question
+      description: What decision should the user be able to make with their own data?
+    validations:
+      required: true
+  - type: textarea
+    id: experiment
+    attributes:
+      label: Proposed experiment and evidence
+      description: Describe the input, technique, useful output and a case where it may help or regress.
+    validations:
+      required: true
+  - type: textarea
+    id: requirements
+    attributes:
+      label: Requirements and references
+      description: Include model/provider/dependency needs and primary references, if available.

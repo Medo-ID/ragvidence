@@ -6,7 +6,9 @@ activation, an account or payment. There is no Plus edition or paid feature gate
 
 Optional donations or sponsorship support the maintainer. Users choose whether
 to contribute and the amount; contributions do not unlock features or purchase a
-support response guarantee. A support link may be added to the website separately.
+support response guarantee. Sponsorship setup is currently deferred: no payment URL or Sponsor button is
+configured. Users can already star the public repository, report issues or
+contribute changes. A funding link and website button can be added later.
 
 Third-party API usage, model downloads, hardware and hosting remain the user's
 responsibility. RAGvidence does not provide API credits or guarantee retrieval or

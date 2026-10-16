@@ -7,7 +7,7 @@ already use, import your system’s retrieved results, and compare alternatives
 without implementing every experiment. RAGvidence produces evidence to help you
 choose a technique for your project. It does not change your production RAG system.
 
-This source prepares **0.2.0**, a free CLI under [Apache-2.0](LICENSE.md).
+This documentation covers **0.2.0**, a free CLI under [Apache-2.0](https://github.com/Medo-ID/ragvidence/blob/main/LICENSE.md).
 All included capabilities are available without an account or activation.
 Voluntary sponsorship does not unlock features. The earlier published 0.1.0 has
 its original license and lacks the portable commands described here; check
@@ -15,7 +15,7 @@ its original license and lacks the portable commands described here; check
 
 ## Install
 
-Python **3.12** is required. After 0.2.0 is published:
+Python **3.12** is required. Install the matching version from PyPI:
 
 ```bash
 uv tool install --python 3.12 "ragvidence==0.2.0"
@@ -24,17 +24,23 @@ ragvi verify
 ```
 
 Optional runtimes are installed as `"ragvidence[pdf,semantic]==0.2.0"`.
-For this source candidate, build and install the exact wheel:
+If that version is not yet available on the index, build this source and install
+the exact wheel:
 
 ```bash
 uv build --out-dir dist/release
 uv tool install --python 3.12 ./dist/release/ragvidence-0.2.0-py3-none-any.whl
 ```
 
-The CI matrix targets Linux x64, Windows x64, macOS Apple Silicon and macOS Intel.
-Only successful runs constitute platform verification; see the
-[release procedure](docs/maintainer/releasing.md). Other Python versions,
+The [release checks](https://github.com/Medo-ID/ragvidence/actions/runs/38921470479)
+passed on Linux x64, Windows x64, macOS Apple Silicon and macOS Intel: 395 tests
+per platform plus installed-package and 0.1.0 upgrade journeys. Other Python versions,
 architectures and model/hardware combinations are not covered by those checks.
+
+After 0.2.0 is available, existing uv-tool installations can upgrade with
+`uv tool upgrade ragvidence`. Check `ragvi --version` afterward. Preserve old
+workspaces: legacy artifacts remain readable, but rerun experiments when modern
+span/hash validation is needed.
 
 ## Use your own data
 
@@ -80,12 +86,12 @@ retain failures, support bounded grids, dev shortlists, heldout evaluation,
 paired intervals and validated resume. Small or unrepresentative datasets cannot
 establish a general winner. Missing costs/timings remain unavailable.
 
-- [Portable files and formats](docs/portable-file-usage.md)
-- [Techniques, reviewed evidence and external imports](docs/portable-techniques.md)
-- [Comparisons and experiment suites](docs/portable-comparisons.md)
-- [Filters, MMR, rewriting and compression](docs/portable-advanced-techniques.md)
-- [Coverage and remaining gaps](docs/rag-technique-coverage.md)
-- [Command reference](docs/command-reference.md)
+- [Portable files and formats](https://github.com/Medo-ID/ragvidence/blob/main/docs/portable-file-usage.md)
+- [Techniques, reviewed evidence and external imports](https://github.com/Medo-ID/ragvidence/blob/main/docs/portable-techniques.md)
+- [Comparisons and experiment suites](https://github.com/Medo-ID/ragvidence/blob/main/docs/portable-comparisons.md)
+- [Filters, MMR, rewriting and compression](https://github.com/Medo-ID/ragvidence/blob/main/docs/portable-advanced-techniques.md)
+- [Coverage and remaining gaps](https://github.com/Medo-ID/ragvidence/blob/main/docs/rag-technique-coverage.md)
+- [Command reference](https://github.com/Medo-ID/ragvidence/blob/main/docs/command-reference.md)
 
 ## Local models and data boundaries
 
@@ -112,7 +118,18 @@ Third-party providers and model download services have their own data policies.
 `ragvi tutorial` creates a bundled fictional comparison and HTML report.
 The earlier `benchmark`, `import-run`, `evaluate`, `compare`, `report` and recovery
 commands remain available. Optional `generate` produces answers for inspection;
-it does not score their correctness. See [getting started](docs/getting-started.md).
+it does not score their correctness. See [getting started](https://github.com/Medo-ID/ragvidence/blob/main/docs/getting-started.md).
+
+## Contribute and support
+
+RAGvidence is open source. [Report a reproducible problem](https://github.com/Medo-ID/ragvidence/issues),
+[contribute a change](https://github.com/Medo-ID/ragvidence/blob/main/CONTRIBUTING.md), improve the docs, share the project, or star
+[the repository](https://github.com/Medo-ID/ragvidence) if it helps you.
+See [support](https://github.com/Medo-ID/ragvidence/blob/main/SUPPORT.md) for what to include in a report.
+
+Financial sponsorship is not configured yet. When available it will be optional,
+with no features or support guarantees tied to payment. All included CLI features
+remain free. The separate website will be updated in a later session.
 
 ## Verify a release candidate
 
@@ -126,8 +143,8 @@ inspection, and isolated core wheel, source and optional-runtime installation
 journeys from unrelated folders. GitHub Actions repeats it across the CI matrix;
 fresh package installations may fetch locked dependency metadata from PyPI.
 Real model compatibility checks and manual CLI/report usability are separate.
-See [security](SECURITY.md), [support](SUPPORT.md), [changelog](CHANGELOG.md),
-[third-party notices](THIRD_PARTY_NOTICES.md) and [dependency licenses](THIRD_PARTY_LICENSES.md).
+See [security](https://github.com/Medo-ID/ragvidence/blob/main/SECURITY.md), [support](https://github.com/Medo-ID/ragvidence/blob/main/SUPPORT.md), [changelog](https://github.com/Medo-ID/ragvidence/blob/main/CHANGELOG.md),
+[third-party notices](https://github.com/Medo-ID/ragvidence/blob/main/THIRD_PARTY_NOTICES.md) and [dependency licenses](https://github.com/Medo-ID/ragvidence/blob/main/THIRD_PARTY_LICENSES.md).
 
 Copyright © 2026 Medo-ID. New releases from 0.2.0 use Apache-2.0;
 third-party components and models retain their own licenses.

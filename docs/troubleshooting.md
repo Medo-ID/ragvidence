@@ -29,6 +29,16 @@ uv run ragvi health
 
 ## Semantic retrieval says the extra is missing
 
+For an installed global tool, install the extra in that tool's environment. Once
+the matching release is available:
+
+```bash
+uv tool install --reinstall --python 3.12 "ragvidence[semantic]==0.2.0"
+```
+
+For a local candidate wheel, use `"ragvidence[semantic] @ file:///ABSOLUTE_PATH_TO_WHEEL"`
+instead. For source checkout use:
+
 ```bash
 uv sync --frozen --extra semantic
 ```
@@ -53,4 +63,4 @@ Run `ragvi workspace restore NAME`. Your current workspace becomes a timestamped
 
 ## A report might contain private data
 
-Do not share it yet. HTML reports contain short retrieved previews by design. Create a sanitized dataset/run and regenerate the report; do not manually edit authoritative evaluation JSON to hide data.
+Do not share it yet. HTML reports can contain full source passages, questions and model prompts/outputs. Create a sanitized dataset/run and regenerate the report; do not manually edit authoritative evaluation JSON to hide data.

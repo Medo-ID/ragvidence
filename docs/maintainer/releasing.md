@@ -56,8 +56,8 @@ Intel macOS needs ONNX Runtime below 1.24; the published semantic extra carries
 that marker constraint. `tool.uv.required-environments` protects all four targets
 when updating the lock. The current universal lock selects 1.23.2; real Linux
 model checks must use that runtime too. Dependency preflight is not OS execution.
-The local preparation run is Linux only; inspect the first GitHub run before
-claiming Windows/macOS support. The matrix does not cover Windows/Linux ARM,
+The local preparation run is Linux only; hosted run 38921470479 passed all four
+targets (see the retained outcomes below). The matrix does not cover Windows/Linux ARM,
 other Python versions, every OS version or every model/hardware combination.
 
 CI downloads **only** the official published 0.1.0 wheel, verifies its pinned SHA,
@@ -155,15 +155,15 @@ live package version and actual platform outcomes before changing public claims.
 Do not fabricate a donation destination or relabel the website's license.
 
 
-## GitHub execution before the release commit
+## GitHub verification and authentication
 
 Hosted runners cannot see the local uncommitted working tree. The source and
 workflow under test must be available at a GitHub branch/tag revision. A temporary
 test branch still requires a commit and push; obtain the maintainer's exception if
 they have instructed that no commit be created before hosted checks. Do not run an
-old revision and report its result as M8 verification. The current remote workflow
-at preparation time is older and manual dispatch publishes to TestPyPI: do not use
-it for verification-only requests.
+old revision and report its result as M8 verification. The updated **Publish
+release** workflow defaults to verify-only; selecting **testpypi** publishes.
+The separate **Portable release verification** workflow has no publication jobs.
 
 SSH Git access does not itself authenticate Actions API dispatch. At the last
 local audit, SSH read access succeeded, but there was no `gh` installation/login,

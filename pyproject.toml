@@ -46,8 +46,11 @@ dev = [
 ragvi = "ragvidence.cli:app"
 
 [project.urls]
-Homepage = "https://ragvidence.medo-id.com"
-Documentation = "https://ragvidence.medo-id.com/docs"
+Homepage = "https://github.com/Medo-ID/ragvidence"
+Documentation = "https://github.com/Medo-ID/ragvidence/blob/main/docs/getting-started.md"
+Repository = "https://github.com/Medo-ID/ragvidence"
+Issues = "https://github.com/Medo-ID/ragvidence/issues"
+Changelog = "https://github.com/Medo-ID/ragvidence/blob/main/CHANGELOG.md"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/ragvidence"]
@@ -59,6 +62,7 @@ include = [
   "/scripts",
   "/docs",
   "/README.md",
+  "/CONTRIBUTING.md",
   "/LICENSE.md",
   "/NOTICE",
   "/SECURITY.md",

@@ -1,6 +1,7 @@
 # Portable techniques and reviewed evidence
 
-These commands are available in development builds, not yet a new PyPI release.
+These commands are included from version 0.2.0; use a matching release or source build.
+The older 0.1.0 release lacks them.
 Run them from any directory after installing the development wheel. Use `uv run`
 as a prefix when working in the source checkout.
 

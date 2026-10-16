@@ -1,7 +1,8 @@
 # Portable file usage
 
-Available in the development source and wheels built from it; not yet published
-to PyPI. Portable BM25, semantic, hybrid, reranking, parent-child, heading/contextual
+These portable workflows are included from version 0.2.0; use a matching release
+or source build. Version 0.1.0 lacks them. Portable BM25, semantic, hybrid, reranking,
+parent-child, heading/contextual
 indexing, supplied multi-query and existing-system imports share TXT, Markdown,
 HTML, document JSON/JSONL, CSV and optional text-bearing PDF loaders. See
 [techniques and reviewed evidence](portable-techniques.md) for commands and scoring.
@@ -10,7 +11,7 @@ against the same frozen inputs and export one decision report.
 
 ## Run on your own text
 
-After installing the development wheel as a tool:
+After installing a matching wheel as a tool:
 
 ```bash
 ragvi bm25 ./manual.txt --query "How do I reset the device?"

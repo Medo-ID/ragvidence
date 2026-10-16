@@ -2,11 +2,12 @@
 
 This guide covers supported workflows beyond the bundled tutorial. Commands use an installed `ragvi` tool. Prefix them with `uv run` when using the source archive.
 
-Development builds also support [portable techniques and reviewed original spans](portable-techniques.md)
-directly on files/folders. The workspace lifecycle below remains available for the
-published release and existing reviewed-workspace experiments.
+Version 0.2.0 supports [portable techniques and reviewed original spans](portable-techniques.md)
+directly on files/folders. Use that workflow for ordinary data without workspace
+setup. The optional reviewed-workspace lifecycle below remains available for
+existing experiments. Version 0.1.0 has only the earlier workspace commands.
 
-## The experiment lifecycle
+## The reviewed-workspace lifecycle
 
 Every useful experiment follows the same sequence:
 
@@ -182,7 +183,7 @@ Generated answers are inspection artifacts. They do not alter retrieval labels o
 
 ## Report formats
 
-Use `--format json` for automation, `markdown` for lightweight review, and `html` for a self-contained report teammates can open locally. Never share a report before checking source identifiers and previews for confidential content.
+Use `--format json` for automation, `markdown` for lightweight review, and `html` for a self-contained report teammates can open locally. Never share a report before checking source passages, questions, prompts and metadata for confidential content.
 
 ## Reproducibility rules
 

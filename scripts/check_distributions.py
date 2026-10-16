@@ -92,6 +92,7 @@ def inspect_sdist(path: Path, version: str) -> dict:
             for n in [
                 "LICENSE.md",
                 "NOTICE",
+                "CONTRIBUTING.md",
                 "pyproject.toml",
                 "uv.lock",
                 "docs/portable-advanced-techniques.md",

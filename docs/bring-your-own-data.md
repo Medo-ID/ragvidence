@@ -1,6 +1,6 @@
 # Bring your own data
 
-For ordinary files or folders, start with the development build's
+For ordinary files or folders, start with the 0.2.0
 [portable commands](portable-file-usage.md). They need no manually prepared
 workspace and support inspection or [reviewed span scoring](portable-techniques.md).
 The schemas below are for reviewed

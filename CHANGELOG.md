@@ -2,10 +2,13 @@
 
 All notable user-facing changes are documented here.
 
-## 0.2.0 — release candidate (not yet published)
+## 0.2.0
 
 - Adopt Apache-2.0 for the new CLI release, with all included features free and no activation.
 - Add shared release gates, platform-matrix installation journeys and capability evidence checks.
+- Verify 395 tests per platform and installed-package/upgrade journeys on Linux, Windows and macOS ARM64/Intel.
+- Keep Windows version/JSON output clean when BM25S lacks the resource module; preserve exact CRLF source offsets.
+- Add public contribution guidance and issue/PR templates; sponsorship setup is deferred.
 - Add typed metadata scopes before ranking, deterministic cosine MMR selection,
   automatic question-only rewriting/multi-query fusion, and exact-span compression.
 - Compose the new stages with hybrid retrieval, parents, reranking and context

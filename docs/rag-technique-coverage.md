@@ -2,8 +2,8 @@
 
 Source: [Production RAG with LangChain & Vector Databases](https://www.medo-id.com/book/prod-rag-langchain), read on 2026-10-15.
 
-This describes the development source build. It does not claim that these additions
-are available in the published 0.1.0 wheel. The implementation uses RAGvidence's
+This describes version 0.2.0 and matching source builds. The older published 0.1.0
+wheel lacks these additions. The implementation uses RAGvidence's
 existing retrieval interfaces, without adding a LangChain dependency.
 
 The product workflow is to diagnose a user's current RAG technique on their own

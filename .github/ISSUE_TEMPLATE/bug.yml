@@ -1,0 +1,34 @@
+name: Bug report
+description: Report a reproducible CLI, evaluation or report problem.
+body:
+  - type: markdown
+    attributes:
+      value: Use synthetic data. Reports can include full passages and prompts. For security issues, follow SECURITY.md instead of posting exploit details here.
+  - type: input
+    id: version
+    attributes:
+      label: Installed version
+      description: Output of ragvi --version.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, architecture, Python version and installation method.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Exact command, small synthetic input and relevant configuration.
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Expected and observed behavior
+      description: Include error text and whether ragvi verify succeeds. Remove credentials and private content.
+    validations:
+      required: true

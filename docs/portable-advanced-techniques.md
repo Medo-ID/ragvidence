@@ -1,6 +1,6 @@
 # Filters, diversity, rewriting and extractive compression
 
-These M6 capabilities are implemented in the development build. They diagnose
+These capabilities are included from version 0.2.0. They diagnose
 trade-offs on your data; they do not change your RAG system. Use reviewed original
 spans for quality scores, or questions alone for unscored inspection.
 

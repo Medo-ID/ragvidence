@@ -189,3 +189,20 @@ route. Link to Source / Contribute / Star once the repository is actually public
 Use `.github/FUNDING.yml` plus the website sponsor button only after the maintainer
 chooses a working sponsorship/donation destination. Keep installation independent
 of payment. See the internal `docs/maintainer/open-source-transition.md` plan.
+
+
+## Latest release-preparation decisions
+
+M8 is committed and pushed on main as `16d2557` (Medo-ID). The temporary
+verification branch/worktree were removed; no PR was opened. Run 38921470479
+passed all four OS targets with 395 tests each and installed-package/upgrade checks.
+The owner confirmed the repository is public. Public contributor guidance and
+issue/PR templates are prepared before the version-tagged release. The shared
+release gate passed locally for this public-release preparation; raw outcomes
+are retained in `verification/public-release/`. Publication is still pending.
+
+The owner explicitly **deferred sponsorship setup** and requested setup guidance.
+Do not display an active Sponsor/Donate button or add a Funding metadata URL until
+an approved working destination exists. GitHub Sponsors offers custom amounts;
+see docs/maintainer/sponsorship.md for the setup steps. Donations remain optional
+and all included CLI features remain free. Website changes are still separate.
