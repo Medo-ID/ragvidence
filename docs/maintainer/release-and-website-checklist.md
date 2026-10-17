@@ -138,8 +138,10 @@ Exit: the production package, post-publication check and GitHub release succeed.
 
 - [x] Install `ragvidence==0.2.0` from production PyPI in a clean environment;
   confirm version, `ragvi verify`, one own-data run, one comparison and reports.
-- [x] Verify optional-runtime installation, README rendering, license metadata,
-  source/docs/issues links and ordinary upgrade instructions.
+- [x] Verify optional-runtime installation, published README content, license
+  metadata and source/docs/issues links.
+- [ ] Review the live PyPI page visually in an ordinary browser. Automated page
+  fetching receives PyPI's client challenge; metadata/content checks passed.
 - [x] Update root `instructions.md` with the final version/tag, production URLs,
   release commit, CI links, platform scope, known limits and deferred sponsorship.
   Replace preparation-time availability notes with the observed published status.
