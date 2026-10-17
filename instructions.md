@@ -36,11 +36,28 @@ Keep website licensing separate from the CLI license and retain asset notices.
 
 ## Release availability
 
-The intended release is 0.2.0. Publication is pending at preparation time;
-verify PyPI before saying it is available or regenerating production demos.
-Record the live version/tag, release commit, artifact hashes and verification links
-here after publication. Keep package, documentation, commands and demo provenance
-aligned. Until the website is deployed, GitHub documentation links are usable.
+Version **0.2.0 is published on production PyPI** under Apache-2.0.
+The annotated `v0.2.0` tag points to release commit
+`fba0c92ddaeb414ba8e9f0dea0e0c93f4e9c29f4` (Medo-ID).
+
+- Production: https://pypi.org/project/ragvidence/0.2.0/
+- TestPyPI: https://test.pypi.org/project/ragvidence/0.2.0/
+- Production run: https://github.com/Medo-ID/ragvidence/actions/runs/39012063464
+- TestPyPI run: https://github.com/Medo-ID/ragvidence/actions/runs/38938991864
+- Both platform matrices and exact published-wheel checks passed. Wheel and
+  source-distribution SHA-256 values match across both indexes:
+  `ef300e798bc7cad72a560dc2a6c6c9819737bdbac9241f7ebf2a593a5f2c54e9` (wheel),
+  `654a3ea0b1429ea72618501f205a97efb33965ff94775fe2f628f1ded008be0b` (source).
+
+The GitHub Release page remains pending: its job was skipped despite successful
+PyPI publication. A workflow condition fix is prepared separately; do not move the
+published tag or repeat the successful upload. Link to the GitHub Release page
+only after it actually exists. Until the website is deployed, use GitHub docs.
+
+The maintainer deferred the human Windows check on 2026-10-17. Do not describe it
+as passed. A synthetic manual-check ZIP is prepared in ignored `local-data/`;
+its six command journeys passed on Linux. This is separate from human usability
+review and the automated Windows/macOS runner checks.
 
 ```bash
 uv tool install --python 3.12 "ragvidence==0.2.0"

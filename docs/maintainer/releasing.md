@@ -105,6 +105,13 @@ rerun failed jobs rather than the successful upload. Never move a published tag
 to different bytes. Prerelease tags create prereleases on GitHub. Release
 immutability settings must be confirmed separately in the repository dashboard.
 
+If only GitHub Release creation was skipped after a verified PyPI upload, create
+the release from the existing tag and attach the original run's `release-assets`
+files. Verify the archive digest and both index hashes before attaching them.
+Do not rerun the index upload. The release job uses an explicit status check and
+requires successful production publication and published-wheel verification so
+a skipped TestPyPI ancestor does not suppress it.
+
 Git SSH access can push commits/tags but does not authenticate Actions dispatch.
 Use the maintainer's GitHub UI or authenticated CLI to dispatch the workflow.
 

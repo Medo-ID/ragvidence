@@ -1,18 +1,20 @@
 # Release, repository cleanup and website completion
 
-Status: proposed execution order, prepared 2026-10-16. This checklist does not
-publish, tag, deploy, delete files or modify the website repository.
+Execution record updated 2026-10-17. Tasks 1–3 are complete. The human Windows
+review in task 4 is deferred by the maintainer. PyPI publication and production
+installation passed; the GitHub Release page is pending completion. Website work
+remains a separate session.
 
 ## Starting point
 
-- CLI main: `b6d60ba`, committed as Medo-ID. Hosted run
-  [38924470360](https://github.com/Medo-ID/ragvidence/actions/runs/38924470360)
-  passed Linux x64, Windows x64, macOS ARM64 and Intel verification.
+- Release commit: `fba0c92`, annotated tag `v0.2.0`, authored/tagged by Medo-ID.
+  [Production run 39012063464](https://github.com/Medo-ID/ragvidence/actions/runs/39012063464)
+  passed Linux x64, Windows x64, macOS ARM64/Intel and published-wheel checks.
 - Retrieval techniques, evidence evaluation, comparisons and release gates are implemented.
   Generated-answer/citation judging is not included.
 - CLI source is public, Apache-2.0, with all included features free.
-- No new package was published by the work recorded here. Recheck both indexes
-  before executing; version availability can change.
+- Version 0.2.0 is live on both TestPyPI and PyPI. The wheel/source hashes match
+  across indexes; root `instructions.md` records the release identities.
 - Sponsorship setup is deferred and does not block release or website launch.
 - Website work belongs in a later session in `../ragvidence-web`, using root
   `instructions.md`. That repository already has uncommitted changes; preserve
@@ -49,7 +51,7 @@ Exit: the current documentation is useful, concise and aligned with the CLI.
 - [x] Run the shared release gate for the final cleanup and inspect its outcomes.
   Local results: 395 passing tests, all capability contracts, wheel/source checks
   and three isolated installation modes. Outcomes: `verification/ci/local/`.
-- [ ] Commit as **Medo-ID <midaghdour@gmail.com>**, push, and require the
+- [x] Commit as **Medo-ID <midaghdour@gmail.com>**, push, and require the
   four-platform CI matrix to pass on that exact commit.
 
 Exit: one clean release commit with accurate package documentation and passing CI.
@@ -61,17 +63,17 @@ publication without producing and verifying a new candidate.
 - [ ] Confirm private vulnerability reporting, required CI and release/environment
   access in GitHub. Remote settings need the maintainer's authenticated account;
   local files do not verify them.
-- [ ] Confirm the chosen version is available on both indexes. The intended
+- [x] Confirm the chosen version is available on both indexes. The intended
   version is `0.2.0`; keep pyproject/runtime/lock versions aligned.
 - [ ] Check each project's Trusted Publisher configuration: owner `Medo-ID`,
   repository `ragvidence`, workflow `release.yml`, and the corresponding
   `testpypi` / `pypi` environment. Check any environment approval requirements.
-- [ ] In GitHub **Actions → Publish release → Run workflow**, select **main**
+- [x] In GitHub **Actions → Publish release → Run workflow**, select **main**
   and **target: testpypi**. Confirm main still points to the final release commit.
   The default target, `verify`, does not upload anything.
-- [ ] Wait for the complete platform matrix, TestPyPI upload, and **Install the
+- [x] Wait for the complete platform matrix, TestPyPI upload, and **Install the
   exact published wheel** job. Publication alone is not the completion condition.
-- [ ] Save the run URL, tested commit, wheel/sdist hashes and results. Inspect the
+- [x] Save the run URL, tested commit, wheel/sdist hashes and results. Inspect the
   TestPyPI description and Apache-2.0 metadata.
 
 The current environment can push through Git SSH but cannot manually dispatch
@@ -83,6 +85,12 @@ installed workflows pass. Dependencies come from PyPI; do not configure TestPyPI
 as an unrestricted fallback source for unrelated dependencies.
 
 ## 4. Review the candidate as an ordinary user
+
+**Deferred by the maintainer on 2026-10-17; not marked passed.** Automated
+Windows/macOS checks passed. The maintainer explicitly chose to proceed to
+production publication without this human review. A downloadable synthetic ZIP
+is prepared locally at `local-data/ragvidence-0.2.0-manual-check.zip`, with
+PowerShell commands, reviewed references and a Linux fixture-check record.
 
 - [ ] Use an isolated installation of the exact TestPyPI wheel, outside both
   repositories, rather than replacing a personal tool installation accidentally.
@@ -108,14 +116,16 @@ rehearsal if further package changes are expected, followed by final `0.2.0`.
 
 ## 5. Publish to PyPI and create the GitHub release
 
-- [ ] Select the exact release commit that passed TestPyPI and the user review.
-  Create the annotated `v0.2.0` tag under Medo-ID and push that tag intentionally.
-  Use the aligned version/tag if a new candidate version became necessary.
-- [ ] Wait for the existing tag workflow: full platform verification → PyPI
-  upload → exact published-wheel installation → GitHub Release creation.
+- [x] Tag the exact TestPyPI-verified release commit as `v0.2.0` under Medo-ID and
+  push it intentionally. Human review was explicitly deferred as recorded above.
+- [x] Complete full platform verification, PyPI upload and the exact published-wheel
+  installation. Run 39012063464 succeeded; GitHub Release creation was skipped.
+- [ ] Complete the GitHub Release using the existing tag and the four original
+  verified release assets. The implicit skipped-job dependency condition has a
+  source fix for future runs; do not retag or repeat a successful package upload.
 - [ ] Check the GitHub release contains the intended distributions, checksums
   and provenance; review generated notes against the actual shipped scope.
-- [ ] Compare the production wheel and source-distribution hashes with the
+- [x] Compare the production wheel and source-distribution hashes with the
   TestPyPI candidate. The current workflow rebuilds from the tag; it verifies the
   index wheel against that run's build, so explicitly check the cross-index
   hashes too. Investigate any mismatch before announcing the release.
@@ -126,11 +136,11 @@ Exit: the production package, post-publication check and GitHub release succeed.
 
 ## 6. Confirm production installation and finish the CLI handoff
 
-- [ ] Install `ragvidence==0.2.0` from production PyPI in a clean environment;
+- [x] Install `ragvidence==0.2.0` from production PyPI in a clean environment;
   confirm version, `ragvi verify`, one own-data run, one comparison and reports.
-- [ ] Verify optional-runtime installation, README rendering, license metadata,
+- [x] Verify optional-runtime installation, README rendering, license metadata,
   source/docs/issues links and ordinary upgrade instructions.
-- [ ] Update root `instructions.md` with the final version/tag, production URLs,
+- [x] Update root `instructions.md` with the final version/tag, production URLs,
   release commit, CI links, platform scope, known limits and deferred sponsorship.
   Replace preparation-time availability notes with the observed published status.
 - [ ] Keep GitHub documentation links working while the website is undeployed.

@@ -100,7 +100,10 @@ jobs:
 
   github-release:
     name: Create GitHub Release
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    if: >-
+      always() && !cancelled() && github.event_name == 'push' &&
+      startsWith(github.ref, 'refs/tags/v') &&
+      needs.publish-pypi.result == 'success' && needs.verify-published.result == 'success'
     needs: [publish-pypi, verify-published]
     runs-on: ubuntu-latest
     permissions:
