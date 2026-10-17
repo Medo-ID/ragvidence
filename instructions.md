@@ -4,6 +4,9 @@ Use this brief in the separate `../ragvidence-web` session. Follow that reposito
 AGENTS.md, README and maintenance guidance, and preserve existing uncommitted work.
 The execution order is in
 [the completion checklist](docs/maintainer/release-and-website-checklist.md).
+Website tasks 7–13 are deferred until the CLI project is closed. Do not edit the
+website repository from the CLI session. Start its session by reviewing this
+brief and the checklist; verify its current state before acting on earlier notes.
 
 ## Product
 
@@ -42,6 +45,7 @@ The annotated `v0.2.0` tag points to release commit
 
 - Production: https://pypi.org/project/ragvidence/0.2.0/
 - TestPyPI: https://test.pypi.org/project/ragvidence/0.2.0/
+- GitHub release: https://github.com/Medo-ID/ragvidence/releases/tag/v0.2.0
 - Production run: https://github.com/Medo-ID/ragvidence/actions/runs/39012063464
 - TestPyPI run: https://github.com/Medo-ID/ragvidence/actions/runs/38938991864
 - Both platform matrices and exact published-wheel checks passed. Wheel and
@@ -49,10 +53,13 @@ The annotated `v0.2.0` tag points to release commit
   `ef300e798bc7cad72a560dc2a6c6c9819737bdbac9241f7ebf2a593a5f2c54e9` (wheel),
   `654a3ea0b1429ea72618501f205a97efb33965ff94775fe2f628f1ded008be0b` (source).
 
-The GitHub Release page remains pending: its job was skipped despite successful
-PyPI publication. A workflow condition fix is prepared separately; do not move the
-published tag or repeat the successful upload. Link to the GitHub Release page
-only after it actually exists. Until the website is deployed, use GitHub docs.
+The GitHub Release is published. Its four attachments were downloaded and verified
+byte for byte against the original production-run assets on 2026-10-17. The wheel
+and source distribution also match both indexes; the checksum manifest and
+provenance identify the clean release commit above. The original automatic release
+job was skipped; manual completion and the subsequent workflow fix are recorded
+in the checklist. Keep the published tag and package artifacts unchanged.
+Until the website is deployed, use the working GitHub documentation URLs.
 
 The maintainer deferred the human Windows check on 2026-10-17. Do not describe it
 as passed. A synthetic manual-check ZIP is prepared in ignored `local-data/`;
@@ -125,10 +132,12 @@ API credits. Model requirements, output compliance and quality depend on the mod
 and hardware. An OpenAI-compatible endpoint can be local or remote.
 
 Installed-package checks cover Linux x64, Windows x64 and macOS ARM64/Intel on
-Python 3.12. Run [38924470360](https://github.com/Medo-ID/ragvidence/actions/runs/38924470360)
-passed on the public-preparation commit. Recheck CI for the final release commit;
-a matrix definition alone is not proof of success. Real-model checks use identified
-Linux configurations and do not establish inference compatibility on every OS.
+Python 3.12. The production run linked above passed on the exact released commit.
+Post-release maintenance CI
+[39013114622](https://github.com/Medo-ID/ragvidence/actions/runs/39013114622)
+also passed on `f547862`, including the workflow condition fix. Consult Actions for
+later documentation commits. Real-model checks use identified Linux configurations
+and do not establish inference compatibility on every OS.
 
 Remote services receive the text needed for the selected operation. Reviewed
 reference answers/evidence IDs are excluded from retrieval/transformation prompts.
@@ -161,3 +170,19 @@ reduced-motion failures and pass its complete `npm run verify` gate, including a
 normal production build on a capable host, browser checks and production audit.
 Verify a preview, then deploy as the separately authorized final action. Check the
 live domain, HTTPS, docs/search, keyboard/mobile use, copy controls and media.
+
+## Deferred work and owner decisions
+
+The ordered website plan is tasks 7–13 of the completion checklist: reconcile the
+existing changes; update product/trust pages; update docs and executable examples;
+regenerate reports and media; pass the full website gate; verify a preview and
+deploy; then check live links and close both projects. Select the host and confirm
+domain/DNS access during that session. Do not claim the site is deployed beforehand.
+
+CLI owner follow-ups are listed separately in the checklist: protect `main`,
+confirm private reporting and publishing access, and visually inspect the live
+PyPI description. The human Windows usability review remains deferred, with
+synthetic data and PowerShell commands in
+`local-data/ragvidence-0.2.0-manual-check.zip` in the CLI checkout. That ignored ZIP
+is not a public download. Sponsorship remains optional and unconfigured. M7 is
+deferred; no additional capability or release is needed for this handoff.
