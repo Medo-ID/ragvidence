@@ -4,8 +4,10 @@ Use this brief in the separate `../ragvidence-web` session. Follow that reposito
 AGENTS.md, README and maintenance guidance, and preserve existing uncommitted work.
 The execution order is in
 [the completion checklist](docs/maintainer/release-and-website-checklist.md).
-The CLI release work is complete. Website tasks 7–13 are next, in the website
-repository. Start that session by reviewing this brief and the checklist; verify
+The CLI package release is complete. Before moving sessions, finish task 6's
+Actions-permission fix and merge the final documentation PR; its initial CI was
+blocked before any tests ran. Website tasks 7–13 follow in the website repository.
+Start that session by reviewing this brief and the checklist; verify
 the website's current state before acting on earlier notes. Treat the CLI
 repository and published release as read-only references during website work.
 

@@ -3,9 +3,10 @@
 Execution record updated 2026-10-18. CLI cleanup, TestPyPI/PyPI publication,
 production installation and the GitHub Release are complete. All available
 automated CLI release checks passed. Task 4's human Windows review remains
-explicitly deferred. Repository setup is complete; the completed owner-action
-section has been removed. Website tasks 7–13 are next, in the separate website
-session. There is no remaining CLI feature or publication task for this release.
+explicitly deferred. Branch/tag protections and private reporting passed; the
+completed owner-action section has been removed. The final documentation branch
+is blocked by the current Actions allowlist (task 6). Website tasks 7–13 follow
+in the separate website session. No CLI feature or publication task remains.
 
 ## Starting point
 
@@ -161,12 +162,33 @@ Exit: the production package, post-publication check and GitHub release succeed.
   visual reviews. Public API checks independently verified the repository rules
   and private reporting; private index settings and browser rendering are human
   confirmations.
+- [ ] Restore access to the existing CI actions. Final handoff run
+  [39134648119](https://github.com/Medo-ID/ragvidence/actions/runs/39134648119)
+  failed at startup with zero test jobs because the repository permits only
+  Medo-ID-owned actions. This is a settings failure, not a test result. In
+  **Settings → Actions → General → Actions permissions**, select **Allow Medo-ID,
+  and select non-Medo-ID, actions and reusable workflows**. Under specified allowed
+  actions, add these comma-separated references and save:
+
+  ```text
+  actions/checkout@v7, actions/upload-artifact@v7, actions/download-artifact@v8, astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4, pypa/gh-action-pypi-publish@release/v1
+  ```
+
+  These are the five external action references in the checked-in workflows.
+  Keep the branch/tag protections. Do not change workflow token permissions to
+  resolve an action-source restriction.
+- [ ] After saving that setting, open the final documentation PR from
+  `verification/website-handoff-20261018` to `main`. PR creation triggers fresh CI;
+  wait for all five required checks, merge, and remove the temporary branch.
+  This environment has Git SSH push access but no authenticated GitHub API session
+  to create/merge the PR or edit Actions settings.
 
 Exit: automated production journeys pass and the website has an accurate handoff.
-No CLI implementation/publication work remains. The human Windows review is the
-only deferred CLI test in this checklist. Sponsorship, M7 and broader model checks
-remain optional future scope. All maintainer commits use Medo-ID; future changes
-go through a branch and pull request under the new main protection.
+No CLI implementation/publication work remains. Complete the two final handoff
+items above before declaring the CLI folder closed. The human Windows review is
+the only deferred CLI test. Sponsorship, M7 and broader model checks remain optional
+future scope. All maintainer commits use Medo-ID; future changes go through a
+branch and pull request under the new main protection.
 
 ## Deferred website plan
 
