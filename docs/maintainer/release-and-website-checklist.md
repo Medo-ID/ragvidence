@@ -1,10 +1,11 @@
 # Release, repository cleanup and website completion
 
-Execution record updated 2026-10-17. CLI cleanup, TestPyPI/PyPI publication,
+Execution record updated 2026-10-18. CLI cleanup, TestPyPI/PyPI publication,
 production installation and the GitHub Release are complete. All available
 automated CLI release checks passed. Task 4's human Windows review remains
-explicitly deferred. Owner-only follow-ups are listed below; website tasks 7–13
-are planned and deferred to the separate website session.
+explicitly deferred. Repository setup is complete; the completed owner-action
+section has been removed. Website tasks 7–13 are next, in the separate website
+session. There is no remaining CLI feature or publication task for this release.
 
 ## Starting point
 
@@ -22,9 +23,9 @@ are planned and deferred to the separate website session.
   them and review their intent before making additional changes.
 
 The recorded sequence is **CLI cleanup → TestPyPI → installed-user review
-(deferred) → PyPI → production installation → GitHub Release**. Next, finish the
-owner follow-ups before starting **website/docs update → website verification →
-deployment → launch**. Do not rebuild or republish the released version for
+(deferred) → PyPI → production installation → GitHub Release → repository setup**.
+Next is **website/docs update → website verification → deployment → launch**.
+Do not rebuild or republish the released version for
 maintainer-only documentation changes.
 
 ## 1. Finish the CLI wording and repository cleanup
@@ -63,7 +64,7 @@ publication without producing and verifying a new candidate.
 ## 3. Publish the final candidate to TestPyPI
 
 - [x] Verify the workflow's publishing access by successful OIDC uploads to both
-  indexes. Ongoing access/approval review is an owner follow-up below.
+  indexes. The maintainer also confirmed reviewing ongoing publishing access.
 - [x] Confirm the chosen version is available on both indexes. The intended
   version is `0.2.0`; keep pyproject/runtime/lock versions aligned.
 - [x] In GitHub **Actions → Publish release → Run workflow**, select **main**
@@ -90,7 +91,7 @@ production publication without this human review. A downloadable synthetic ZIP
 is prepared locally at `local-data/ragvidence-0.2.0-manual-check.zip`, with
 PowerShell commands, reviewed references and a Linux fixture-check record.
 
-- [ ] Use an isolated installation of the exact TestPyPI wheel, outside both
+- [ ] Use an isolated installation of the exact production `0.2.0` wheel, outside both
   repositories, rather than replacing a personal tool installation accidentally.
 - [ ] On the available Windows machine, check a fresh terminal, version,
   techniques, verification, a file/folder with spaces or Unicode, question prompt,
@@ -99,18 +100,13 @@ PowerShell commands, reviewed references and a Linux fixture-check record.
   inspect passages and limitations, and copy/share a synthetic report.
 - [ ] Compare two techniques, then repeat with reviewed evidence. Confirm there
   is no invented quality winner for questions without relevance references.
-- [ ] If advertising a local-model example, run that example with an identified
-  model and record the outcome. Retain the existing bounded real-model evidence;
-  do not treat runtime installation as inference-quality proof on every OS.
 - [ ] Record version, artifact hash, OS, shell/browser and any observed issues.
   GitHub already supplies automated Windows/macOS execution; this review checks
-  usability. A human macOS review is useful when a Mac is available and must not
-  be reported as performed otherwise.
+  Windows usability. Broader human/model/hardware checks are optional future work.
 
-Exit: no unresolved release-blocking issue. If fixes change the uploaded package,
-return to the candidate process using a fresh version rather than overwriting an
-index filename. An isolated prerelease such as `0.2.0rc1` can be used for an early
-rehearsal if further package changes are expected, followed by final `0.2.0`.
+Exit: record the actual human review and any issues found. If a fix changes the
+published package, use a fresh version; do not replace `0.2.0` or move its tag.
+This deferred review does not block the website session.
 
 ## 5. Publish to PyPI and create the GitHub release
 
@@ -155,59 +151,31 @@ Exit: the production package, post-publication check and GitHub release succeed.
   branches and history, and keep personal setup/data/build outputs ignored.
 - [x] Prepare the separate website plan below and refresh root `instructions.md`
   with the published release, verified files, current scope and deferred work.
+- [x] Complete repository setup: active main-branch protection with all five
+  GitHub Actions checks, up-to-date merging, pull requests and no required review
+  from another person; active `v*` protection against tag updates/deletion while
+  allowing new release tags; private reporting enabled. Public configuration
+  verified on 2026-10-18. Bypass lists are not exposed in the public response;
+  signed-in setup was confirmed by the maintainer. No destructive test performed.
+- [x] Record the maintainer's confirmation of publishing-settings and live PyPI
+  visual reviews. Public API checks independently verified the repository rules
+  and private reporting; private index settings and browser rendering are human
+  confirmations.
 
 Exit: automated production journeys pass and the website has an accurate handoff.
-Human/browser/account work below is still unperformed. All CLI maintainer commits
-continue to use Medo-ID. No changes to released code or artifacts are required.
-
-## Owner actions before the website session
-
-These actions need the maintainer's signed-in account or ordinary browser. This
-environment has Git SSH push access, but no authenticated GitHub/PyPI settings
-session. They are not failed CLI tests and have not been marked complete.
-
-- [ ] Protect `main`: on 2026-10-17 the public branch API reports
-  `protected: false` and the repository rulesets list is empty. In
-  **Settings → Rules → Rulesets**, create an active branch ruleset targeting
-  `main`. Require pull requests and passing CI; block force pushes and deletion.
-  Select the five actual GitHub Actions check names:
-  `verify / Validate workflow syntax and expressions`,
-  `verify / Python 3.12 / ubuntu-latest`,
-  `verify / Python 3.12 / windows-latest`,
-  `verify / Python 3.12 / macos-latest`, and
-  `verify / Python 3.12 / macos-15-intel`. Review bypass permissions deliberately.
-  For a sole maintainer, do not require an approval from yourself. Consider a
-  separate `v*` tag rule blocking tag updates/deletion while permitting release
-  tag creation. Confirm the rules are active after saving.
-- [ ] In **Settings → Advanced Security**, confirm private vulnerability reporting
-  is enabled. Check the repository's **Security → Advisories** page shows the
-  private reporting route; do not submit a dummy vulnerability. If unavailable,
-  provide an actual private contact before changing SECURITY.md to promise one.
-- [ ] Review **Settings → Environments → pypi / testpypi** for intended publishing
-  access, branch/tag restrictions and any approvals. In each index's project
-  **Publishing** settings, confirm owner `Medo-ID`, repository `ragvidence`,
-  workflow `release.yml` and its matching environment. Both uploads already
-  succeeded; this checks ongoing ownership/access without repeating publication.
-- [ ] Open https://pypi.org/project/ragvidence/0.2.0/ in an ordinary browser.
-  Check README rendering, install example, Apache-2.0 metadata and docs/source/
-  issues links. Automated fetching receives PyPI's client challenge; API metadata,
-  packaged README content and installation checks passed.
-
-Optional and still deferred: Windows human usability review (task 4), wider
-real-model/OS/hardware checks, M7, and sponsorship setup. The synthetic Windows
-review ZIP is local only; provide it separately if another reviewer needs it.
-No donation link should be advertised until a working destination is supplied.
-
-Settings references:
-[branch/tag rulesets](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/creating-rulesets-for-a-repository),
-[private vulnerability reporting](https://docs.github.com/en/code-security/how-tos/report-and-fix-vulnerabilities/configure-vulnerability-reporting/configure-for-a-repository).
+No CLI implementation/publication work remains. The human Windows review is the
+only deferred CLI test in this checklist. Sponsorship, M7 and broader model checks
+remain optional future scope. All maintainer commits use Medo-ID; future changes
+go through a branch and pull request under the new main protection.
 
 ## Deferred website plan
 
-Tasks 7–13 belong exclusively to `../ragvidence-web` and have not been executed
-in this CLI session. Read root `instructions.md` first in that session, inspect
-the actual repository state, and preserve existing work. Host/domain access and
-the final production deployment will require the maintainer's action there.
+Tasks 7–13 are the next work in `../ragvidence-web` and have not been executed
+in this CLI session. Read root `instructions.md` first there, inspect the actual
+repository state, and preserve existing work. Task 13's cross-repository link
+updates happen after website deployment; they are not unfinished CLI release
+work. Host/domain access and final deployment require the maintainer's action in
+the website session. Sponsorship is optional and does not block completion.
 
 ## 7. Start the separate website session and reconcile its existing changes
 
