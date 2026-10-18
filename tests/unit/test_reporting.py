@@ -238,7 +238,11 @@ def test_portable_html_keeps_facts_offline_assets_and_navigation(tmp_path, comma
         app, [*args, "--output", str(output), "--format", "html", "--format", "json", "--no-input"]
     )
     assert result.exit_code == (1 if command == "failure" else 0), result.output
-    payload = json.loads(next(output.rglob("report.json")).read_text(encoding="utf-8"))
+    pattern = "*/exports/*/report.json" if command in {"comparison", "failure"} else "*/report.json"
+    payload = json.loads(next(output.glob(pattern)).read_text(encoding="utf-8"))
+    assert payload.get("kind") == (
+        "comparison" if command in {"comparison", "failure"} else "inspection"
+    )
     original = deepcopy(payload)
     html = render_report(payload, "html")
     assert payload == original

@@ -15,8 +15,13 @@ def read(path):
 def verify(root: Path, after: str) -> dict:
     comparisons = []
     for name in ("source-only", "retrieval", "reviewed", "comparison", "unscored", "failure"):
-        left = read(next((root / "before" / name).rglob("report.json")))
-        right = read(next((root / after / name).rglob("report.json")))
+        pattern = (
+            "*/exports/*/report.json"
+            if name in {"comparison", "unscored", "failure"}
+            else "*/report.json"
+        )
+        left = read(next((root / "before" / name).glob(pattern)))
+        right = read(next((root / after / name).glob(pattern)))
         if left.get("kind") == "comparison":
             for key in ("state", "evaluation_level", "phase", "baseline", "policy", "comparisons"):
                 assert left[key] == right[key], (name, key)
