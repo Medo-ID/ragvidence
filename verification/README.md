@@ -12,7 +12,7 @@ Retained evidence:
   [39012063464](https://github.com/Medo-ID/ragvidence/actions/runs/39012063464).
   The release tag resolves to `fba0c92`; package hashes match PyPI and TestPyPI.
   [The completion checklist](../docs/maintainer/release-and-website-checklist.md)
-  records the manual GitHub Release completion and outstanding owner actions.
+  records the manual GitHub Release completion, repository setup and website handoff.
 
 - `portable-m8/github/38921470479/`: complete passing Linux, Windows and macOS
   ARM64/Intel test, installation and upgrade outcomes, with run/job identities.

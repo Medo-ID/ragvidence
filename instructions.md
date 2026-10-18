@@ -4,9 +4,49 @@ Use this brief in the separate `../ragvidence-web` session. Follow that reposito
 AGENTS.md, README and maintenance guidance, and preserve existing uncommitted work.
 The execution order is in
 [the completion checklist](docs/maintainer/release-and-website-checklist.md).
-Website tasks 7–13 are deferred until the CLI project is closed. Do not edit the
-website repository from the CLI session. Start its session by reviewing this
-brief and the checklist; verify its current state before acting on earlier notes.
+The CLI package release is complete. Before moving sessions, finish task 6's
+Actions-permission fix and merge the final documentation PR; its initial CI was
+blocked before any tests ran. Website tasks 7–13 follow in the website repository.
+Start that session by reviewing this brief and the checklist; verify
+the website's current state before acting on earlier notes. Treat the CLI
+repository and published release as read-only references during website work.
+
+## Instructions for the website agent
+
+Work in `../ragvidence-web`. Read its applicable AGENTS.md, README and maintenance
+guidance, then inspect `git status` and the existing diff before editing. Preserve
+and understand existing work; do not reset files or restore deleted assets blindly.
+
+Follow checklist tasks 7–13 in order. Map each product claim and command example
+to the published CLI's behavior and the technical sources below. Keep a concise
+mapping in the website's maintenance documentation so future CLI changes have
+known website/docs counterparts. Record the CLI version, release commit, wheel
+hash and website commit used for examples/media. Use an isolated installation of
+the production `ragvidence==0.2.0` wheel for command validation; do not rely on an
+unreleased CLI checkout or change the user's global installation incidentally.
+
+Update product copy, website documentation, release/license links, metadata,
+examples, sample reports, media, maintenance guidance and affected tests together.
+Focus on current supported functionality. Remove obsolete edition/paywall copy
+and old install snippets; do not recount previous product decisions. Use actual
+synthetic command outputs for reports and performance/quality claims. Never
+invent scores, supported input types, model compatibility or technique coverage.
+
+Use the website's declared Node/npm versions and required verification scripts.
+Recheck the recorded reduced-motion failures on the current tree, fix real
+failures, and pass lint, types, the normal production build, verifier and browser
+tests, accessibility/responsive checks and the production dependency audit.
+Do not weaken meaningful tests to make the gate pass. Commit as
+**Medo-ID <midaghdour@gmail.com>**, push through the repository's required review
+flow, and confirm CI. Keep generated private data and tool caches untracked.
+
+Continue all work that can be completed in the website repository. Ask for missing
+host/domain access or production-deployment authorization only when a concrete
+preview and its verification are ready. Do not modify, republish or retag the CLI
+to make website copy true. Report any actual CLI defect separately with a
+reproduction. At the end, report website checks, commit/deployment identities,
+live URLs and any remaining owner actions. The deferred human Windows CLI test
+is not a blocker for starting website work.
 
 ## Product
 
@@ -179,10 +219,13 @@ regenerate reports and media; pass the full website gate; verify a preview and
 deploy; then check live links and close both projects. Select the host and confirm
 domain/DNS access during that session. Do not claim the site is deployed beforehand.
 
-CLI owner follow-ups are listed separately in the checklist: protect `main`,
-confirm private reporting and publishing access, and visually inspect the live
-PyPI description. The human Windows usability review remains deferred, with
-synthetic data and PowerShell commands in
+On 2026-10-18, the active `main` ruleset was verified with all five required CI
+checks, strict up-to-date merging, pull requests and deletion/force-push protection.
+Private reporting was independently verified enabled; the maintainer confirmed
+publishing-settings and PyPI visual reviews. The active `v*` tag ruleset was also
+verified: updates/deletion are restricted and creation of new tags remains
+permitted. The human Windows usability review remains deferred, with synthetic
+data and PowerShell commands in
 `local-data/ragvidence-0.2.0-manual-check.zip` in the CLI checkout. That ignored ZIP
 is not a public download. Sponsorship remains optional and unconfigured. M7 is
 deferred; no additional capability or release is needed for this handoff.
