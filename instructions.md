@@ -4,10 +4,10 @@ Use this brief in the separate `../ragvidence-web` session. Follow that reposito
 AGENTS.md, README and maintenance guidance, and preserve existing uncommitted work.
 The execution order is in
 [the completion checklist](docs/maintainer/release-and-website-checklist.md).
-The CLI package release is complete. Before moving sessions, finish task 6's
-Actions-permission fix and merge the final documentation PR; its initial CI was
-blocked before any tests ran. Website tasks 7–13 follow in the website repository.
-Start that session by reviewing this brief and the checklist; verify
+The CLI package release and repository setup are complete. Actions access was
+restored; [PR #1](https://github.com/Medo-ID/ragvidence/pull/1) merged as `8af8d1f`,
+and its PR and main CI runs passed. Website tasks 7–13 are next in the website
+repository. Start that session by reviewing this brief and the checklist; verify
 the website's current state before acting on earlier notes. Treat the CLI
 repository and published release as read-only references during website work.
 
@@ -174,10 +174,11 @@ and hardware. An OpenAI-compatible endpoint can be local or remote.
 Installed-package checks cover Linux x64, Windows x64 and macOS ARM64/Intel on
 Python 3.12. The production run linked above passed on the exact released commit.
 Post-release maintenance CI
-[39013114622](https://github.com/Medo-ID/ragvidence/actions/runs/39013114622)
-also passed on `f547862`, including the workflow condition fix. Consult Actions for
-later documentation commits. Real-model checks use identified Linux configurations
-and do not establish inference compatibility on every OS.
+[39135984400](https://github.com/Medo-ID/ragvidence/actions/runs/39135984400)
+also passed on merged commit `8af8d1f`, including the workflow condition fix and
+website handoff. Consult Actions for later documentation commits. Real-model
+checks use identified Linux configurations and do not establish inference
+compatibility on every OS.
 
 Remote services receive the text needed for the selected operation. Reviewed
 reference answers/evidence IDs are excluded from retrieval/transformation prompts.
