@@ -1,34 +1,20 @@
+{% from '_labels.html.j2' import outcome, scroll_start %}
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>RAGvidence · {{ report.input.name }}</title>
-  <style>
-    @font-face { font-family: Geist; src: url(data:font/woff2;base64,{{ fonts.sans }}) format('woff2'); }
-    * { box-sizing: border-box; }
-    body { margin: 0; color: #173638; background: #f5f7f5; font: 16px/1.6 Geist, system-ui, sans-serif; }
-    main { max-width: 1000px; margin: auto; padding: 36px 24px; }
-    header, section { background: #fff; border: 1px solid #d5dfda; border-radius: 12px; padding: 24px; margin-bottom: 20px; }
-    header { border-top: 5px solid #13635b; }
-    h1 { font-size: clamp(24px, 4vw, 36px); line-height: 1.2; margin: 12px 0; }
-    h2 { font-size: 22px; } h3 { font-size: 17px; }
-    .eyebrow, .status { color: #29675e; font-weight: 600; }
-    .meta { color: #49645f; font-size: 14px; }
-    .metrics { display: flex; flex-wrap: wrap; gap: 12px 28px; }
-    .hit { border-top: 1px solid #d5dfda; margin-top: 20px; padding-top: 8px; }
-    pre, code, .path { overflow-wrap: anywhere; white-space: pre-wrap; }
-    pre { font-family: inherit; padding: 16px; background: #f2f6f3; border-radius: 6px; }
-    details { font-size: 14px; } ul { padding-left: 24px; }
-    @media print { body { background: #fff; } main { max-width: none; padding: 0; } section { break-inside: auto; } .hit { break-inside: avoid; } }
-  </style>
+  <meta name="color-scheme" content="dark">
+<style>{% include '_styles.css.j2' %}</style>
 </head>
-<body>
+<body><a class="skip-link" href="#summary">Skip to report summary</a>
 <main>
-  <header>
+  <header id="summary">
     <div class="eyebrow">RAGvidence · Local data diagnostics</div>
     <h1>{{ report.input.name }}</h1>
-    <p class="status">{{ report.evaluation_level }}</p>
+    <p class="status">{{ report.evaluation_level | replace('_', ' ') }}</p>
+    <p class="meta">{% if report.evaluation %}Reviewed evidence evaluation{% else %}Evidence quality: N/A · Unscored{% endif %} · Retrieval: {% if report.evaluation_level == 'ingestion_only' %}not executed{% else %}executed{% endif %}</p>
     <p>Technique: {{ report.manifest.config.name }} · Base: {{ report.manifest.config.strategy | upper }} · k={{ report.manifest.config.k }}</p>
     <p class="meta">Passage size: {{ report.preparation.chunk_size }} characters · Overlap: {{ report.preparation.chunk_overlap }} characters</p>
     <div class="metrics">
@@ -37,49 +23,54 @@
       <span>{{ report.questions | length }} questions</span>
       <span>{{ report.input.source_characters }} source characters</span>
     </div>
-    {% for observation in report.observations %}<p>{{ observation }}</p>{% endfor %}
+    {% for observation in report.observations %}<p class="notice">{{ observation }}</p>{% endfor %}
+    <p class="meta">Input notices: {{ report.input.skipped_count }} skipped · {{ report.input.failed_count }} failed · {{ report.input.warning_count }} warnings</p>
+    {% for warning in report.manifest.warnings %}<p class="notice">Warning: {{ warning }}</p>{% endfor %}
   </header>
-  {% if report.evaluation %}<section><h2>Reviewed evidence</h2><p>Scope: {{ report.evaluation.scope }} · Method: {{ report.evaluation.method }}</p>
-    {% for split, summary in report.evaluation.summaries.items() %}<p>{{ split }}: {{ summary.sufficient_count }} / {{ summary.answerable_questions }} answerable questions sufficient · Rate: {{ summary.sufficiency_rate if summary.sufficiency_rate is not none else 'N/A' }}</p>{% endfor %}
+  <nav class="report-nav" aria-label="Report navigation"><a href="#summary">Summary</a>{% if report.evaluation %}<a href="#evaluation">Reviewed evidence</a>{% endif %}{% if report.questions %}<a href="#questions">Questions &amp; passages</a>{% endif %}<a href="#sources">Sources</a>{% if report.input.skipped %}<a href="#notices">Input notices</a>{% endif %}<a href="#reproducibility">Reproducibility</a><a href="#limitations">Limitations</a></nav>
+  {% if report.evaluation %}<section id="evaluation"><h2>Reviewed evidence</h2><p>Scope: {{ report.evaluation.scope }} · Method: {{ report.evaluation.method }}</p>
+    {{ scroll_start('Reviewed evidence by split') }}<table><caption>Evidence sufficiency by question split</caption><thead><tr><th scope="col">Split</th><th scope="col">Sufficient / answerable</th><th scope="col">Sufficiency rate</th></tr></thead><tbody>{% for split, summary in report.evaluation.summaries.items() %}<tr><td>{{ split }}</td><td>{{ summary.sufficient_count }} / {{ summary.answerable_questions }}</td><td>{{ summary.sufficiency_rate if summary.sufficiency_rate is not none else 'N/A' }}</td></tr>{% endfor %}</tbody></table></div>
     <details><summary>Metric definitions</summary><pre>{{ report.evaluation.definitions | tojson(indent=2) }}</pre></details>
   </section>{% endif %}
+  {% if report.questions %}<section id="questions"><h2>Questions &amp; returned passages</h2><p class="section-copy">Review evidence outcomes and context size, then expand a question for original passages and stage traces.</p>
   {% for question in report.questions %}
-  <section>
-    <h2>{{ question.question }}</h2>
-    <p class="meta">{{ question.question_id }} · {% if question.query_time_ms is not none %}{{ "%.2f" | format(question.query_time_ms) }} ms{% else %}Timing unavailable{% endif %} · {{ question.context_characters }} context characters</p>
+  <details class="question-card">
+    <summary><span class="question-id">{{ question.question_id }}</span> · {{ question.question }}<span class="summary-metrics">{% if question.metrics %}{{ outcome(question.metrics.sufficient_evidence) }}<span>Split: {{ question.metrics.split }}</span>{% else %}<span class="status muted">N/A · Unscored</span>{% endif %}<span>{{ question.context_characters }} returned text characters</span><span>{{ question.hits | length }} passages</span></span></summary><div class="investigation">
+    <h3>{{ question.question }}</h3>
+    <p class="meta">{{ question.question_id }} · {% if question.query_time_ms is not none %}{{ "%.2f" | format(question.query_time_ms) }} ms{% else %}N/A · Timing unavailable{% endif %} · {{ question.context_characters }} context characters</p>
     {% if question.context_measurement %}<p class="meta">Rendered context: {{ question.context_measurement.count }} {{ question.context_measurement.unit }} · Budget: {{ question.context_measurement.budget if question.context_measurement.budget is not none else 'unlimited' }}</p>{% endif %}
-    {% if question.metrics %}<p><strong>Sufficient evidence: {{ question.metrics.sufficient_evidence if question.metrics.sufficient_evidence is not none else 'N/A' }}</strong> · Evidence coverage: {{ question.metrics.evidence_coverage if question.metrics.evidence_coverage is not none else 'N/A' }}</p><p>Missing evidence: {{ question.metrics.missing_evidence_ids | join(', ') or 'none' }}</p>{% endif %}
-    {% for observation in question.observations %}<p>{{ observation }}</p>{% endfor %}
+    {% if question.metrics %}<p>{{ outcome(question.metrics.sufficient_evidence) }} · Evidence coverage: {{ question.metrics.evidence_coverage if question.metrics.evidence_coverage is not none else 'N/A' }}</p><p>Missing evidence: {{ question.metrics.missing_evidence_ids | join(', ') or 'none' }}</p>{% endif %}
+    {% for observation in question.observations %}<p class="notice">{{ observation }}</p>{% endfor %}
     {% for hit in question.hits %}
     <article class="hit">
       <h3>#{{ hit.rank }} · <span class="path">{{ hit.source_path }}</span>{% if hit.get('context_spans') %} · Extract {{ hit.context_part }}{% endif %}</h3>
       <p class="meta">Score: {{ "%.6f" | format(hit.score) }} · {{ hit.location_label }} · Extracted lines {{ hit.line_start }}–{{ hit.line_end }} · Characters {{ hit.start }}–{{ hit.end }}</p>
       {% if hit.heading_path %}<p>{{ hit.heading_path | join(" › ") }}</p>{% endif %}
-      <pre>{{ hit.text }}</pre>
+      <pre class="passage">{{ hit.text }}</pre>
     </article>
     {% endfor %}
     {% if question.stages %}<details><summary>Stage evidence: candidates, scores, timing and selection</summary><pre>{{ question.stages | tojson(indent=2) }}</pre></details>{% endif %}
-  </section>
-  {% endfor %}
-  <section>
+  </div></details>
+  {% endfor %}</section>{% endif %}
+  <section id="sources">
     <h2>Extracted sources</h2>
-    {% for source in report.input.sources %}<p class="meta"><span class="path">{{ source.source_path }}</span> · {{ source.location_label }} · {{ source.loader }} · {{ source.characters }} characters<br>ID: <code>{{ source.source_unit_id }}</code><br>Text hash: <code>{{ source.text_hash }}</code></p>{% endfor %}
+    {% for source in report.input.sources %}<p class="meta"><span class="path">{{ source.source_path }}</span> · {{ source.location_label }} · {{ source.loader }} · {{ source.characters }} characters</p><details><summary>Source ID and text hash</summary><p>ID: <code>{{ source.source_unit_id }}</code><br>Text hash: <code>{{ source.text_hash }}</code></p></details>{% endfor %}
   </section>
   {% if report.input.skipped %}
-  <section>
+  <section id="notices">
     <h2>Input notices</h2>
     <p>{{ report.input.skipped_count }} skipped · {{ report.input.failed_count }} failed · {{ report.input.warning_count }} warnings</p>
     <ul>{% for item in report.input.skipped %}<li>{{ item.kind }} · <span class="path">{{ item.path }}</span>: {{ item.reason }}</li>{% endfor %}</ul>
   </section>
   {% endif %}
-  <section>
+  <section id="reproducibility">
     <h2>Reproducibility</h2>
     <p class="meta">Run: {{ report.manifest.run_id }} · Generated {{ report.generated_at }}</p>
-    <p class="meta path">Corpus: {{ report.input.corpus_hash }}</p>
+    <details><summary>Corpus hash and context hashes</summary><p class="meta path">Corpus: {{ report.input.corpus_hash }}</p>{% for question in report.questions %}<p class="meta">{{ question.question_id }}: <code>{{ question.context_hash }}</code></p>{% endfor %}</details>
     <details><summary>Resolved configuration</summary><pre>{{ report.manifest.config | tojson(indent=2) }}</pre></details>
   </section>
-  <section>
-    <h2>Limitations</h2>
+  <section id="limitations">
+    <h2>Limitations</h2><p class="print-note">Printing includes every question, source passage and closed disclosure, including configuration and stage evidence.</p>
     <ul>{% for limitation in report.limitations %}<li>{{ limitation }}</li>{% endfor %}</ul>
     <details><summary>Bundled Geist font license</summary><pre>{{ fonts.license }}</pre></details>
   </section>
