@@ -127,3 +127,24 @@ def test_download_installs_no_dependencies_and_verifies_exact_wheel(tmp_path, mo
     assert artifact.read_bytes() == content
     assert len(seen) == 2
     assert seen[0] == "https://test.pypi.org/pypi/ragvidence/0.2.0/json"
+
+
+def test_failed_gate_surfaces_retained_log_in_public_ci_annotation(tmp_path, monkeypatch, capsys):
+    from types import SimpleNamespace
+
+    from scripts import verify_release
+
+    def failed_command(argv, **kwargs):
+        kwargs["stdout"].write("Synthetic failure: 50%\nsecond line\n")
+        return SimpleNamespace(returncode=1)
+
+    monkeypatch.setattr(verify_release, "git_identity", lambda: {"commit": "synthetic"})
+    monkeypatch.setattr(verify_release.subprocess, "run", failed_command)
+    monkeypatch.setenv("GITHUB_ACTIONS", "true")
+    with pytest.raises(RuntimeError, match="lint failed"):
+        verify_release.verify(tmp_path, tmp_path / "dist")
+    output = capsys.readouterr()
+    assert "Synthetic failure: 50%\nsecond line" in output.err
+    assert "::error title=lint failed::Synthetic failure: 50%25%0Asecond line" in output.out
+    assert json.loads((tmp_path / "checks.json").read_text())["status"] == "failed"
+    assert (tmp_path / "lint.log").read_text() == "Synthetic failure: 50%\nsecond line\n"

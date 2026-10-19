@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.1 (unreleased)
+
+- Unify inspection, technique comparison and workspace HTML reports with comfortable
+  dark surfaces, embedded Geist typography, shared navigation and labeled outcomes.
+- Surface execution failures, unavailable measurements and resource trade-offs;
+  keep configuration, hashes and stage JSON in keyboard-accessible disclosures.
+- Improve narrow-screen tables, long paths, source passages and paper/PDF output,
+  including evidence inside closed disclosures. Reports remain self-contained and
+  useful offline with JavaScript disabled. Retrieval, scoring and schemas are unchanged.
+
 ## 0.2.0
 
 RAGvidence is a fully free, open-source CLI under Apache-2.0. This update brings

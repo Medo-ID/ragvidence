@@ -3,145 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="light">
+  <meta name="color-scheme" content="dark">
   <title>RAGvidence · {{ report.baseline.manifest.config.name }}{% if report.intervention %} vs {{ report.intervention.manifest.config.name }}{% endif %}</title>
-  <style>
-    @font-face { font-family: Geist; src: url(data:font/woff2;base64,{{ fonts.sans }}) format("woff2"); font-weight: 100 900; font-display: swap; }
-    @font-face { font-family: "Geist Mono"; src: url(data:font/woff2;base64,{{ fonts.mono }}) format("woff2"); font-weight: 100 900; font-display: swap; }
-    :root {
-      color-scheme: light;
-      --teal: #063f47; --ink: #172b2d; --muted: #4f6668; --line: #cedddd;
-      --panel: #fff; --raised: #f1f6f5; --success: #17633c; --danger: #a32437;
-      --warning: #765017; --radius-sm: 6px; --radius-md: 9px; --radius-lg: 12px; --radius-xl: 16px;
-      font-family: Geist, system-ui, sans-serif; color: var(--ink); background: #f5f8f7;
-    }
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; scroll-padding-top: 1rem; }
-    body { margin: 0; font-size: 16px; line-height: 1.7; overflow-wrap: anywhere; }
-    main { width: min(1440px, calc(100% - 48px)); margin: 32px auto 64px; }
-    h1, h2, h3, h4, p { margin: 0 0 12px; }
-    h1 { font-size: clamp(26px, 3vw, 40px); line-height: 1.2; letter-spacing: -0.03em; }
-    h2 { font-size: 25px; line-height: 1.35; letter-spacing: -0.025em; }
-    h3 { font-size: 19px; line-height: 1.5; }
-    h4 { font-size: 16px; }
-    a { color: var(--teal); text-underline-offset: 4px; }
-    :focus-visible { outline: 3px solid #167b86; outline-offset: 4px; }
-    code, pre { font-family: "Geist Mono", monospace; font-size: 14px; overflow-wrap: anywhere; }
-    code { background: var(--raised); border-radius: var(--radius-sm); padding: 2px 5px; }
-    .hero { background: var(--teal); color: #f2f6f5; border-radius: var(--radius-xl); padding: clamp(24px, 4vw, 44px); }
-    .hero code { background: #0a5964; color: #fff; }
-    .eyebrow { font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
-    .hero-copy { color: #d5e7e5; max-width: 900px; }
-    .result { font-size: clamp(40px, 6vw, 68px); line-height: 1.2; font-weight: 650; letter-spacing: -0.04em; margin: 20px 0 12px; }
-    .hero-meta, .outcomes { display: flex; flex-wrap: wrap; gap: 8px 24px; }
-    .hero-meta { color: #d5e7e5; font-size: 14px; margin-top: 24px; }
-    .outcomes { font-size: 18px; margin: 16px 0; }
-    .report-nav { display: flex; flex-wrap: wrap; gap: 8px 20px; padding: 20px 0; }
-    .report-nav a { padding: 8px 0; font-size: 14px; }
-    section { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: clamp(20px, 3vw, 32px); margin: 24px 0; }
-    .muted, .section-copy { color: var(--muted); }
-    .comparison, .runs, .diagnosis-grid, .metadata { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
-    .run-summary { padding: 24px; background: var(--raised); border-radius: var(--radius-lg); }
-    .rate { font-size: 40px; font-weight: 650; line-height: 1.3; }
-    .delta { margin-top: 20px; font-size: 20px; font-weight: 600; color: var(--teal); }
-    dl { margin: 16px 0 0; }
-    .metrics { display: flex; flex-wrap: wrap; gap: 12px 24px; }
-    dt { font-size: 14px; color: var(--muted); }
-    dd { margin: 2px 0 0; font-weight: 500; overflow-wrap: anywhere; }
-    .config { font-size: 14px; color: var(--muted); margin: 16px 0 0; }
-    .composition { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
-    .composition a { border: 1px solid var(--line); border-radius: var(--radius-md); padding: 16px; text-decoration: none; background: var(--raised); }
-    .composition strong { display: block; font-size: 30px; line-height: 1.3; }
-    .composition span { display: block; font-size: 14px; }
-    .status { display: inline-block; padding: 3px 8px; font-size: 14px; font-weight: 600; border-radius: var(--radius-sm); border: 1px solid currentColor; }
-    .success { color: var(--success); }
-    .danger { color: var(--danger); }
-    .warning { color: var(--warning); }
-    .question-list { display: grid; gap: 16px; }
-    .question-card { border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; }
-    summary { cursor: pointer; padding: 20px; background: var(--raised); }
-    summary:hover { background: #e8f1ef; }
-    .question-id { font-family: "Geist Mono", monospace; font-weight: 600; }
-    .question-heading { display: inline; margin-left: 12px; }
-    .summary-metrics { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 10px; font-size: 14px; }
-    .summary-metrics span { display: inline-block; }
-    .investigation { padding: 24px; }
-    .evidence-change { border-left: 3px solid var(--teal); padding: 12px 16px; background: var(--raised); margin-bottom: 24px; }
-    .evidence-change p { margin: 4px 0; }
-    .run { min-width: 0; }
-    .run + .run { border-left: 1px solid var(--line); padding-left: 24px; }
-    .evidence-ids { margin: 18px 0; font-size: 14px; }
-    .evidence-ids p { margin: 5px 0; }
-    .hits { list-style: none; padding: 0; margin: 16px 0 0; display: grid; gap: 16px; }
-    .hit { border-top: 1px solid var(--line); padding-top: 16px; overflow-wrap: anywhere; }
-    .hit-meta { font-size: 14px; color: var(--muted); }
-    .preview { white-space: pre-wrap; overflow-wrap: anywhere; margin-top: 12px; }
-    .diagnosis-grid > div { border-left: 3px solid var(--line); padding-left: 20px; }
-    .diagnosis-grid > div:last-child { border-left-color: var(--teal); }
-    .metadata dd { font-weight: 400; }
-    .metadata div { min-width: 0; }
-    .print-note, footer { font-size: 14px; color: var(--muted); }
-    .font-license pre { white-space: pre-wrap; }
-    footer { margin-top: 24px; }
-    @media (max-width: 800px) {
-      main { width: calc(100% - 24px); margin-top: 12px; }
-      .comparison, .runs, .diagnosis-grid, .metadata { grid-template-columns: 1fr; }
-      .composition { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .run + .run { border-left: 0; border-top: 1px solid var(--line); padding: 24px 0 0; }
-      .question-heading { display: block; margin: 10px 0 0; }
-      .investigation { padding: 20px; }
-    }
-    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
-    @media print {
-      @page { margin: 12mm; }
-      body, .hero, section, summary, .run-summary, .composition a { background: #fff; color: #172b2d; }
-      main { width: 100%; margin: 0; }
-      body { font-size: 11pt; line-height: 1.5; }
-      h1 { font-size: 24pt; }
-      h2 { font-size: 18pt; }
-      h3 { font-size: 12pt; }
-      h4 { font-size: 11pt; }
-      dt, .summary-metrics, .hit-meta, .config, .status { font-size: 10pt; }
-      code, pre { font-size: 9.5pt; }
-      p { margin-bottom: 6px; }
-      dl { margin-top: 8px; }
-      section { margin: 12px 0; }
-      .comparison { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-      .run-summary { padding: 12px; }
-      .metrics { gap: 6px 12px; }
-      .evidence-ids { margin: 8px 0; }
-      .evidence-change { margin-bottom: 12px; padding: 8px 12px; }
-      .hits { margin-top: 8px; gap: 12px; }
-      .hit { padding-top: 10px; }
-      .question-heading { display: inline; margin: 0 0 0 12px; }
-      .summary-metrics { gap: 4px 12px; }
-      .metrics > div { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px; }
-      .metrics dd { margin: 0; }
-      .metrics dt::after { content: ":"; }
-      .evidence-ids { font-size: 10pt; }
-      .hit h4, .hit-meta { margin-bottom: 4px; }
-      .preview { margin: 6px 0 0; font-size: 10.5pt; line-height: 1.4; }
-      .hero { padding: 0 0 16px; border-radius: 0; border-bottom: 2px solid #063f47; }
-      .hero-copy, .hero-meta { color: #172b2d; }
-      section { padding: 16px; }
-      .report-nav, .font-license { display: none; }
-      .runs { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-      .run + .run { border-left: 1px solid var(--line); border-top: 0; padding: 0 0 0 16px; }
-      .question-card { break-inside: avoid; }
-      .investigation { padding: 12px; }
-      summary { padding: 12px; }
-      details::details-content { display: block; content-visibility: visible; }
-      details:not([open]) > :not(summary) { display: block !important; }
-      summary, h2, h3, h4 { break-after: avoid; }
-      .hit, .evidence-change { break-inside: avoid; }
-      .question-card { overflow: visible; }
-      .preview, pre, code { white-space: pre-wrap; overflow-wrap: anywhere; }
-      .result { font-size: 40px; }
-      a { text-decoration: none; }
-    }
-  </style>
+  <style>{% include '_styles.css.j2' %}</style>
 </head>
 <body>
+<a class="skip-link" href="#summary">Skip to report summary</a>
 {% macro percent(value) -%}{% if value is none %}N/A{% elif (value * 100) % 1 == 0 %}{{ "%.0f%%" | format(value * 100) }}{% else %}{{ "%.1f%%" | format(value * 100) }}{% endif %}{%- endmacro %}
 {% macro metric(value) -%}{% if value is none %}N/A{% else %}{{ "%.3f" | format(value) }}{% endif %}{%- endmacro %}
 {% macro ids(values) -%}{% if values %}{{ values | join(", ") }}{% else %}None{% endif %}{%- endmacro %}
@@ -312,7 +179,7 @@
   <section id="reproducibility">
     <h2>Reproducibility</h2>
     <p class="section-copy">Keep the same reviewed dataset and retrieval depth when comparing runs. Run identifiers and configuration refer to the recorded artifacts.</p>
-    <div class="metadata">{{ reproduction(baseline, "Baseline") }}{% if candidate %}{{ reproduction(candidate, "Intervention") }}{% endif %}</div>
+    <details><summary>Run identifiers, hashes and resolved configuration</summary><div class="metadata">{{ reproduction(baseline, "Baseline") }}{% if candidate %}{{ reproduction(candidate, "Intervention") }}{% endif %}</div></details>
   </section>
   <section id="limitations">
     <h2>Limitations</h2>

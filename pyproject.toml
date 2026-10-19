@@ -1,6 +1,6 @@
 [project]
 name = "ragvidence"
-version = "0.2.0"
+version = "0.2.1"
 description = "Evidence-first RAG retrieval diagnostics, built to run locally."
 readme = "README.md"
 requires-python = ">=3.12,<3.13"

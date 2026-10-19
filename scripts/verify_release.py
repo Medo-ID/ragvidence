@@ -50,6 +50,14 @@ def verify(
             }
         )
         if result.returncode:
+            log = (output / f"{name}.log").read_text(encoding="utf-8", errors="replace")
+            tail = "\n".join(log.splitlines()[-80:])[-12000:]
+            print(tail, file=sys.stderr)
+            if os.environ.get("GITHUB_ACTIONS") == "true":
+                # Public check annotations keep hosted-only failures diagnosable
+                # when downloading the retained log artifact requires sign-in.
+                message = tail.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+                print(f"::error title={name} failed::{message}")
             raise RuntimeError(f"{name} failed; see {output / (name + '.log')}")
 
     try:

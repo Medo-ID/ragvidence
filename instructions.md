@@ -1,3 +1,21 @@
+# Report redesign candidate: 0.2.1 (unpublished)
+
+The HTML report redesign is implemented on `verification/dark-html-reports`.
+Read [the report-design handoff](docs/maintainer/report-design-handoff.md) for the
+CLI commits, reproducible synthetic fixtures, before/after previews, report hashes,
+screenshots, PDF/browser evidence, complete checks and website/video instructions.
+The local packet is `verification/ci/report-design/index.html`; `packet.json`
+records the exact final head and observed CI outcomes. Open the prepared PR before
+merging protected main. Publication requires separate authorization.
+
+Production remains **0.2.0**, with its original immutable artifacts and tag. The
+redesigned 0.2.1 samples are candidate previews until a subsequent release is
+explicitly published. The website repository remained read-only in this task.
+The existing production handoff below still governs production claims; use the
+new report-design handoff for the next sample/media update after authorization.
+
+---
+
 # Website handoff: RAGvidence 0.2.0
 
 Use this brief in the separate `../ragvidence-web` session. Follow that repository's

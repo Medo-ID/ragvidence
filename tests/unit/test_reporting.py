@@ -210,3 +210,65 @@ def test_fractional_coverage_keeps_display_precision() -> None:
     evaluation["questions"][0]["evidence_coverage"] = 1 / 3
     rendered = render_html(build_report(evaluation), TEMPLATE)
     assert "33.3%" in rendered
+
+
+@pytest.mark.parametrize("command", ["source-only", "retrieval", "comparison", "failure"])
+def test_portable_html_keeps_facts_offline_assets_and_navigation(tmp_path, command):
+    """Real command payloads retain their text, N/A and failure facts in HTML."""
+    import json
+
+    from typer.testing import CliRunner
+
+    from ragvidence.cli import app
+    from ragvidence.reporting.render import render_report
+
+    source = tmp_path / "manual café.txt"
+    text = 'Reset 日本語 مرحبا <script>alert("unsafe")</script> & use USB-C.\n'
+    source.write_text(text, encoding="utf-8")
+    output = tmp_path / "output"
+    args = ["compare-data" if command in {"comparison", "failure"} else "bm25", str(source)]
+    if command != "source-only":
+        args += ["--query", "Reset"]
+    if command in {"comparison", "failure"}:
+        args += [
+            "--techniques",
+            "bm25,heading-context" if command == "failure" else "bm25,parent-child",
+        ]
+    result = CliRunner().invoke(
+        app, [*args, "--output", str(output), "--format", "html", "--format", "json", "--no-input"]
+    )
+    assert result.exit_code == (1 if command == "failure" else 0), result.output
+    pattern = "*/exports/*/report.json" if command in {"comparison", "failure"} else "*/report.json"
+    payload = json.loads(next(output.glob(pattern)).read_text(encoding="utf-8"))
+    assert payload.get("kind") == (
+        "comparison" if command in {"comparison", "failure"} else "inspection"
+    )
+    original = deepcopy(payload)
+    html = render_report(payload, "html")
+    assert payload == original
+    assert source.read_text(encoding="utf-8") == text
+    assert "N/A" in html
+    if command == "failure":
+        assert "partial failure" in html and "failed" in html
+        assert payload["participants"][1]["error"] in html
+    elif command != "source-only":
+        assert "Reset 日本語 مرحبا &lt;script&gt;alert(&#34;unsafe&#34;)&lt;/script&gt;" in html
+    ids, links, assets, tags = [], [], [], []
+
+    class Document(HTMLParser):
+        def handle_starttag(self, tag, attrs):
+            tags.append(tag)
+            for key, value in attrs:
+                if key == "id":
+                    ids.append(value)
+                if key == "href":
+                    links.append(value)
+                if key in {"src", "srcset"}:
+                    assets.append(value)
+
+    Document().feed(html)
+    assert len(ids) == len(set(ids))
+    assert links and all(link.startswith("#") and link[1:] in ids for link in links)
+    assert not assets and not {"script", "link", "iframe", "img"}.intersection(tags)
+    assert html.count("data:font/woff2;base64,") == 2
+    assert "SIL OPEN FONT LICENSE" in html
