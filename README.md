@@ -15,7 +15,7 @@ The CLI is fully free and open source under
 Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then run:
 
 ```bash
-uv tool install --python 3.12 "ragvidence==0.2.0"
+uv tool install --python 3.12 "ragvidence==0.2.1"
 ragvi --version
 ragvi verify
 ```
@@ -114,7 +114,7 @@ the docs or star [the repository](https://github.com/Medo-ID/ragvidence).
 For problems, start with [troubleshooting](https://github.com/Medo-ID/ragvidence/blob/main/docs/troubleshooting.md)
 and [support](https://github.com/Medo-ID/ragvidence/blob/main/SUPPORT.md).
 
-See [what's new in 0.2.0](https://github.com/Medo-ID/ragvidence/blob/main/CHANGELOG.md),
+See [what's new in 0.2.1](https://github.com/Medo-ID/ragvidence/blob/main/CHANGELOG.md),
 [security](https://github.com/Medo-ID/ragvidence/blob/main/SECURITY.md) and
 [third-party notices](https://github.com/Medo-ID/ragvidence/blob/main/THIRD_PARTY_NOTICES.md).
 

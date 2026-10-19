@@ -11,7 +11,7 @@ commands. The CLI is fully free under [Apache-2.0](../LICENSE.md).
 2. Install RAGvidence using Python 3.12; uv can download that Python version:
 
 ```bash
-uv tool install --python 3.12 "ragvidence==0.2.0"
+uv tool install --python 3.12 "ragvidence==0.2.1"
 ```
 
 3. Check the installation:
@@ -35,20 +35,20 @@ support for every OS version, architecture or model/hardware combination.
 For an existing uv tool installation:
 
 ```bash
-uv tool install --upgrade --python 3.12 "ragvidence==0.2.0"
+uv tool install --upgrade --python 3.12 "ragvidence==0.2.1"
 ragvi --version
 ragvi verify
 ```
 
 Include any extras you use in the package specification, for example
-`"ragvidence[pdf,semantic]==0.2.0"`. Keep your experiment folders and reports;
+`"ragvidence[pdf,semantic]==0.2.1"`. Keep your experiment folders and reports;
 updating the tool does not require deleting them. Use a new output directory when
 running another experiment.
 
 ## Optional PDF support
 
 ```bash
-uv tool install --reinstall --python 3.12 "ragvidence[pdf]==0.2.0"
+uv tool install --reinstall --python 3.12 "ragvidence[pdf]==0.2.1"
 ```
 
 This adds text extraction for text-bearing PDFs. Scans, OCR and visual table/layout
@@ -60,7 +60,7 @@ locations.
 For local FastEmbed embeddings, cross-encoder reranking or MMR:
 
 ```bash
-uv tool install --reinstall --python 3.12 "ragvidence[semantic]==0.2.0"
+uv tool install --reinstall --python 3.12 "ragvidence[semantic]==0.2.1"
 ragvi semantic ./docs --query "How do I reset the device?"
 ```
 
@@ -68,7 +68,7 @@ The first run downloads the selected model, then inference runs locally. Allow
 disk space and memory for that model. `--cache-dir DIRECTORY` selects the model
 and vector cache location.
 
-Install both extras together with `"ragvidence[pdf,semantic]==0.2.0"`.
+Install both extras together with `"ragvidence[pdf,semantic]==0.2.1"`.
 Reinstalling replaces the tool environment; include every extra you need.
 
 You can also use a running Ollama service or an OpenAI-compatible endpoint for
@@ -110,7 +110,7 @@ Use `uv run ragvi` inside that checkout. To build and install its global command
 
 ```bash
 uv build --out-dir dist/release
-uv tool install --python 3.12 ./dist/release/ragvidence-0.2.0-py3-none-any.whl
+uv tool install --python 3.12 ./dist/release/ragvidence-0.2.1-py3-none-any.whl
 ```
 
 Use `--reinstall` deliberately when replacing an existing global installation.

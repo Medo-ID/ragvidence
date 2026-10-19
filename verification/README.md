@@ -26,7 +26,8 @@ These files describe their recorded revisions. Require passing hosted checks on
 the actual final release commit as described in
 [the release procedure](../docs/maintainer/releasing.md).
 
-Store fresh local outputs under ignored `verification/ci/`; GitHub retains each
+All new files under `verification/` are ignored; existing tracked canonical proof
+remains retained. Store fresh local outputs under `verification/ci/`; GitHub retains each
 run's artifacts according to workflow retention. Keep only useful canonical proof
 in Git. Superseded intermediate checkpoints and duplicate local runs are not
 required to execute tests, build the CLI or assess the retained passing result.

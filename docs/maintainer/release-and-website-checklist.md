@@ -1,3 +1,8 @@
+> **0.2.1 follow-up:** The owner has now approved the redesigned HTML reports and
+> authorized pushing/releasing 0.2.1. Follow the [current release handoff](report-release-0.2.1.md).
+> The completed 0.2.0 checklist below remains historical; do not overwrite its
+> artifacts or interpret its completed publication steps as evidence for 0.2.1.
+
 # Release, repository cleanup and website completion
 
 Execution record updated 2026-10-18. CLI cleanup, TestPyPI/PyPI publication,

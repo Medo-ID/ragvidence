@@ -1,31 +1,36 @@
-# Centered CLI report revision: awaiting visual confirmation
+# Approved HTML report release: 0.2.1
 
-The current report direction is a centered, single-column CSS Grid document capped at
-900px, with 32–40px inner padding, generous outer whitespace, a subtle 1px frame,
-thin dividers, semantic status badges and an optional dark/light toggle. Read
-[the grid review and website sync contract](docs/maintainer/report-grid-review.md).
-New real previews are in `verification/ci/report-document/index.html`; its manifests,
-screenshots and gate records apply to this revision. The older packet below is
-retained historical evidence. Keep the website read-only until the owner confirms
-this direction. Production remains 0.2.0; 0.2.1 is unpublished.
+The owner approved the final design and authorized pushing and publishing 0.2.1.
+Read [the current release and website handoff](docs/maintainer/report-release-0.2.1.md)
+and [the approved design contract](docs/maintainer/report-grid-review.md).
+The package/runtime/lock versions are 0.2.1. Production is still 0.2.0 until the
+TestPyPI → verified candidate → PyPI/GitHub Release workflow completes. Preserve
+all 0.2.0 artifacts and tags. Do not label 0.2.1 as published before verification.
 
----
+Review branch: `verification/dark-html-reports`, targeting protected `main`.
+Push is authorized; require passing CI and the PR review flow. Git SSH is available,
+but this session has no GitHub API authentication for opening/merging a PR or
+manually dispatching TestPyPI. Prepared review/release material and exact commit,
+CI and candidate hashes belong in `verification/ci/report-release-021/`.
 
-# Report redesign candidate: 0.2.1 (unpublished)
+Approved previews: `verification/ci/report-mobile-nav/index.html`, phase
+`accessible/`. The 1100px single-column frame has aligned thin rails, Woodsmoke
+and gray-100 backgrounds, local light/dark switching, 16px toolbar padding and
+native horizontal navigation at 800px and below. All seven synthetic journeys,
+70 browser checks and 14 evidence-complete PDFs are retained with commands/hashes.
 
-The HTML report redesign is implemented on `verification/dark-html-reports`.
-Read [the report-design handoff](docs/maintainer/report-design-handoff.md) for the
-CLI commits, reproducible synthetic fixtures, before/after previews, report hashes,
-screenshots, PDF/browser evidence, complete checks and website/video instructions.
-The local packet is `verification/ci/report-design/index.html`; `packet.json`
-records the exact final head and observed CI outcomes. Open the prepared PR before
-merging protected main. Publication requires separate authorization.
+Local development environments, agent/editor configuration, credentials, caches,
+browser/test outputs, all new verification output and `report_UI.png` are ignored.
+Maintained tests/fixtures and existing canonical verification evidence stay tracked.
+Release package checks reject local development material and provider dotenv files.
 
-Production remains **0.2.0**, with its original immutable artifacts and tag. The
-redesigned 0.2.1 samples are candidate previews until a subsequent release is
-explicitly published. The website repository remained read-only in this task.
-The existing production handoff below still governs production claims; use the
-new report-design handoff for the next sample/media update after authorization.
+Keep the website repository read-only in this CLI task. After production 0.2.1
+verification, start the separate website session with the new handoff, regenerate
+samples from the exact published wheel and then record the next video. Preserve
+existing website work. Website deployment requires separate authorization.
+
+The 0.2.0 handoff below is a retained historical production record; use the new
+0.2.1 handoff for the next website update once that release is verified.
 
 ---
 

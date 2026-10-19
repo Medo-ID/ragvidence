@@ -28,11 +28,33 @@ def test_release_identity_matches_runtime_package_and_lock():
         "x/maintainer/notes.md",
         "x/instructions.md",
         "x/cache.pyc",
+        "x/.agents/notes.md",
+        "x/.aws/credentials",
+        "x/.codex/config.toml",
+        "x/.vscode/settings.json",
+        "x/.pytest_cache/v/cache/nodeids",
+        "x/.venv-before-ragvi/lib/private.py",
+        "x/.env.local",
+        "x/providers.env",
+        "x/verification/ci/run.json",
+        "x/test-results/report.html",
+        "x/report_UI.png",
     ],
 )
 def test_distribution_rejects_private_or_unsafe_members(name):
     with pytest.raises(ValueError):
         check_members([name])
+
+
+def test_distribution_keeps_shared_tests_fixtures_and_environment_template():
+    check_members(
+        [
+            "ragvidence-0.2.1/tests/conftest.py",
+            "ragvidence-0.2.1/tests/fixtures/portable/manual.txt",
+            "ragvidence-0.2.1/scripts/check_distributions.py",
+            "ragvidence-0.2.1/.env.example",
+        ]
+    )
 
 
 def test_stale_distribution_cannot_enter_a_release(tmp_path):

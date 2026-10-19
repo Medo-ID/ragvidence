@@ -127,7 +127,7 @@
     {% if comparison %}<div class="outcomes"><span class="status success">{{ comparison.summary.fail_to_pass }} recovered</span><span class="status danger">{{ comparison.summary.pass_to_fail }} regression{% if comparison.summary.pass_to_fail != 1 %}s{% endif %}</span><span class="status warning">{{ comparison.summary.fail_to_fail }} unresolved failure{% if comparison.summary.fail_to_fail != 1 %}s{% endif %}</span></div>{% endif %}
     <div class="hero-meta"><span>Generated {{ report.generated_at }}</span><span>Artifact schema v{{ report.schema_version }}</span></div>
   </header>
-  <nav class="report-nav" aria-label="Report navigation">
+  <nav class="report-nav" aria-label="Report navigation" tabindex="0">
     <a href="#summary">Summary</a>
     {% if comparison %}<a href="#change-analysis">Change analysis</a><a href="#diagnosis">Diagnosis</a><a href="#regressions">Regressions</a><a href="#unresolved-failures">Unresolved failures</a><a href="#improvements">Improvements</a><a href="#stable-results">Stable results</a><a href="#not-applicable">N/A cases</a>{% else %}<a href="#questions">Questions</a>{% endif %}
     <a href="#reproducibility">Reproducibility</a><a href="#limitations">Limitations</a>

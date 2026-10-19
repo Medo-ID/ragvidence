@@ -10,11 +10,37 @@ from pathlib import Path, PurePosixPath
 from scripts.release_metadata import ROOT, distributions, git_identity, release_version, sha256
 
 FORBIDDEN = {
+    ".agents",
+    ".aws",
+    ".cache",
+    ".claude",
+    ".codex",
+    ".cursor",
     ".git",
     ".env",
+    ".hypothesis",
+    ".idea",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".tox",
     ".venv",
+    ".vscode",
     "__pycache__",
     ".ragvidence-cache",
+    "blob-report",
+    "build",
+    "coverage",
+    "dist",
+    "htmlcov",
+    "local-data",
+    "node_modules",
+    "playwright-report",
+    "report_UI.png",
+    "test-results",
+    "verification",
     "workspaces",
     "ragvi-reports",
     "maintainer",
@@ -24,10 +50,14 @@ FORBIDDEN = {
 def check_members(names: list[str]):
     for name in names:
         parts = PurePosixPath(name).parts
+        basename = parts[-1] if parts else ""
         if (
             ".." in parts
             or name.startswith("/")
             or FORBIDDEN.intersection(parts)
+            or any(part.startswith(".venv") for part in parts)
+            or (basename.startswith(".env.") and basename != ".env.example")
+            or basename.endswith(".env")
             or name.endswith((".pyc", ".log"))
         ):
             raise ValueError(f"Forbidden distribution member: {name}")
