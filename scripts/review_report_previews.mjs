@@ -33,11 +33,40 @@ async function inspect(page) {
         (parseFloat(style.fontSize) >= 18.66 && parseFloat(style.fontWeight) >= 700);
       if (ratio < (large ? 3 : 4.5)) contrasts.push({ text: el.textContent.trim().slice(0, 50), ratio });
     }
-    return { overflow: document.documentElement.scrollWidth > innerWidth,
+    const report = document.querySelector('main');
+    const box = report.getBoundingClientRect();
+    const style = getComputedStyle(report);
+    const singleColumn = [...document.querySelectorAll('main,.comparison,.runs,.diagnosis-grid,.metadata,.composition,.question-list')]
+      .filter(el => el.checkVisibility()).every(el => {
+        const css = getComputedStyle(el);
+        return css.display !== 'grid' || css.gridTemplateColumns.trim().split(/\s+/).length === 1;
+      });
+    const layout = { display: style.display, width: box.width,
+      centered: Math.abs(box.left - (document.documentElement.clientWidth - box.right)) < 1,
+      padding: ['Top','Right','Bottom','Left'].map(side => parseFloat(style[`padding${side}`])),
+      borders: ['Top','Right','Bottom','Left'].map(side => parseFloat(style[`border${side}Width`])),
+      topMargin: box.top + scrollY,
+      bottomMargin: document.documentElement.scrollHeight - (box.bottom + scrollY),
+      backgroundImage: getComputedStyle(document.body).backgroundImage,
+      shadow: style.boxShadow, radius: style.borderRadius, singleColumn };
+    return { layout, overflow: document.documentElement.scrollWidth > innerWidth,
       missingAnchors, contrasts, fonts: document.fonts.check('16px Geist'),
       details: document.querySelectorAll('details').length,
       background: getComputedStyle(document.body).backgroundColor };
   });
+}
+
+function assertLayout(layout) {
+  assert.equal(layout.display, 'grid');
+  assert(layout.singleColumn, 'one column at every screen width');
+  assert(layout.width <= 900, 'maximum report width');
+  assert(layout.centered, 'horizontally centered report');
+  assert(layout.padding.every(value => value >= 32 && value <= 48), '32–48px inner padding');
+  assert.deepEqual(layout.borders, [1, 1, 1, 1], 'all four frame edges');
+  assert(layout.topMargin >= 24 && layout.bottomMargin >= 24, 'top and bottom whitespace');
+  assert.equal(layout.backgroundImage, 'none');
+  assert.equal(layout.shadow, 'none');
+  assert.equal(layout.radius, '0px');
 }
 
 try {
@@ -58,6 +87,7 @@ try {
         const checks = await inspect(page);
         if (phase === after) assert.equal(await page.locator('#theme-toggle').isVisible(), false);
         if (phase === after) {
+          assertLayout(checks.layout);
           assert.equal(checks.overflow, false, `${name}/${width}: viewport overflow`);
           assert.deepEqual(checks.missingAnchors, []);
           assert.deepEqual(checks.contrasts, [], `${name}/${width}: contrast`);
@@ -137,6 +167,7 @@ try {
           const light = await inspect(themedPage);
           assert.deepEqual(light.contrasts, [], `${name}/${width}: light theme contrast`);
           assert.equal(light.overflow, false);
+          assertLayout(light.layout);
           await themedPage.evaluate(() => document.activeElement?.blur());
           await themedPage.screenshot({ path: path.join(captureDir, `${name}-light-${width}.png`) });
           if (width === 1440) {
@@ -156,6 +187,21 @@ try {
       }
     }
   }
+  const manifest = JSON.parse(await fs.readFile(path.join(root, after, 'manifest.json')));
+  const layoutContext = await browser.newContext({ javaScriptEnabled: false, offline: true });
+  for (const relative of Object.keys(manifest)) {
+    const page = await layoutContext.newPage();
+    await page.goto(pathToFileURL(path.join(root, relative)).href);
+    for (const width of [320, 768, 900, 1920]) {
+      await page.setViewportSize({ width, height: 1000 });
+      const checks = await inspect(page);
+      assertLayout(checks.layout);
+      assert.equal(checks.overflow, false);
+      records.push({ phase: after, name: relative.split('/')[1], width, probe: 'layout', ...checks });
+    }
+    await page.close();
+  }
+  await layoutContext.close();
 } finally { await browser.close(); }
 await fs.writeFile(path.join(root, 'browser', 'checks.json'), JSON.stringify(records, null, 2) + '\n');
 console.log(`PASS: ${records.length} offline browser checks, including JavaScript-disabled and dark/light views`);

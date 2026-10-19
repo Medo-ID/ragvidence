@@ -1,4 +1,4 @@
-# CLI report grid: design review
+# Centered single-column CLI report: design review
 
 This revision supersedes the visual direction in the previous dark-report packet.
 The design is **awaiting owner visual confirmation**. Keep `../ragvidence-web`
@@ -8,8 +8,8 @@ move its tag. The prior packet and verification evidence remain unchanged.
 
 ## Design contract for reports and the later website session
 
-The report is a compact CLI document: a single bordered frame, continuous thin
-section dividers, a subtle square grid in the surrounding canvas, small monospace
+The report is a compact CLI document: a centered rectangular document with a subtle 1px border on all four edges, thin
+section dividers, a plain surrounding canvas, small monospace
 metadata, ordinary readable source text, restrained badges and native disclosures.
 There are no marketing sections, large hero numbers or decorative panels. Jump
 navigation stays available while scrolling. Use actual report labels and facts;
@@ -41,11 +41,15 @@ script. All are embedded into each generated file and included in the wheel.
 
 Unscored and unavailable values stay neutral with explicit N/A labels. Completion
 of execution is blue, separate from green evidence sufficiency. Card/control
-corners are 4–5px; the outer frame and section grid are square. The grid step is
-48px. Geist remains embedded for text; Geist Mono is used for identifiers and
+corners are 4–5px; the outer document frame is square, with no shadow. CSS Grid
+uses exactly one column at every breakpoint, including comparisons and outcomes.
+The maximum outer document width is 900px, with 40px internal padding (32px on
+narrow screens). The page has 64px top/bottom and at least 48px left/right whitespace
+on desktop; narrow screens use 32px top/bottom and 24px left/right. The document
+grows vertically with its content. Geist remains embedded for text; Geist Mono is used for identifiers and
 numeric summaries. Heading sizes are 26/18/15px, body 14px and metadata 11–12px.
 Report content stays fluid, wraps long paths, and keeps wide tables inside labeled,
-keyboard-scrollable regions. Narrow screens keep 16px exterior margins.
+keyboard-scrollable regions. Wide tables scroll inside the single document column.
 
 ## Theme behavior and safety
 
@@ -62,7 +66,7 @@ source scripts remain escaped.
 
 ## Reproduce and inspect
 
-The new local packet is `verification/ci/report-grid/`. `before/` contains reports
+The new local packet is `verification/ci/report-document/`. `before/` contains reports
 from the preceding implementation; `proposal/` contains real CLI outputs with this
 revision. Each phase contains actual generation commands and HTML SHA-256 values.
 The inputs, original spans, scores, exact returned contexts and question-level
@@ -70,7 +74,7 @@ changes are checked against the earlier generation. Timings and run IDs vary.
 
 ```bash
 mkdir -p /tmp/ragvidence-grid-baseline
-git archive 6769433cc79d67fc0cdae21b641a02a23ec439a9 src | tar -x -C /tmp/ragvidence-grid-baseline
+git archive 08d14cbd47a0be0fd3e3d6ae86e40e9407b423dd src | tar -x -C /tmp/ragvidence-grid-baseline
 PYTHONPATH=/tmp/ragvidence-grid-baseline/src .venv/bin/python -m scripts.generate_report_previews --root verification/ci/fresh-grid-review --phase before
 uv run --no-sync python -m scripts.generate_report_previews --root verification/ci/fresh-grid-review --phase proposal
 PLAYWRIGHT_MODULE=/absolute/path/to/playwright/index.mjs node scripts/review_report_previews.mjs verification/ci/fresh-grid-review proposal
@@ -80,7 +84,9 @@ uv run --no-sync python -m scripts.verify_report_previews --root verification/ci
 Use fresh phase names; do not overwrite reports or hand-edit generated facts.
 The packet index links actual dark/light desktop/mobile screenshots, all seven
 report cases, print PDFs, fixtures and commands. `browser/checks.json` records
-JavaScript-disabled and enabled theme checks. `evidence-checks.json` records
+JavaScript-disabled and enabled theme checks, plus actual layout measurements
+at 320, 390, 768, 900, 1440 and 1920px. These assert a centered 900px maximum, one
+column, 32–48px internal padding, four 1px border edges and plain backgrounds. `evidence-checks.json` records
 unchanged evidence and PDF extraction. The final local gate is `gate/checks.json`;
 CI identity and outcomes belong to the packet's provenance record. The old
 packet's CI results are evidence for its older revision only.
@@ -89,7 +95,7 @@ packet's CI results are evidence for its older revision only.
 
 In the separate website session, re-read its AGENTS.md and maintenance guidance,
 inspect its status/diff, and preserve existing work. Use these colors, typography,
-component states and grid alignment as the approved design contract. Adapt the
+component states and centered single-column document layout as the approved design contract. Adapt the
 website's actual navigation and content to its users; report density and evidence
 hierarchy stay specific to the CLI. Record CLI and website commits in the sync
 handoff and update screenshots/tests together.

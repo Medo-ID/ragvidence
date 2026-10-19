@@ -1,9 +1,10 @@
-# CLI report grid revision: awaiting visual confirmation
+# Centered CLI report revision: awaiting visual confirmation
 
-The current report direction is a compact CLI document with a neutral grid frame,
+The current report direction is a centered, single-column CSS Grid document capped at
+900px, with 32–40px inner padding, generous outer whitespace, a subtle 1px frame,
 thin dividers, semantic status badges and an optional dark/light toggle. Read
 [the grid review and website sync contract](docs/maintainer/report-grid-review.md).
-New real previews are in `verification/ci/report-grid/index.html`; its manifests,
+New real previews are in `verification/ci/report-document/index.html`; its manifests,
 screenshots and gate records apply to this revision. The older packet below is
 retained historical evidence. Keep the website read-only until the owner confirms
 this direction. Production remains 0.2.0; 0.2.1 is unpublished.
