@@ -62,17 +62,20 @@ async function inspect(page) {
     const rails = getComputedStyle(document.body, '::before');
     const railBorders = parseFloat(rails.borderLeftWidth) + parseFloat(rails.borderRightWidth);
     const railOuterWidth = parseFloat(rails.width) + (rails.boxSizing === 'border-box' ? 0 : railBorders);
-    const toolbar = getComputedStyle(report.querySelector('.report-toolbar'));
+    // Published 0.2.0 portable reports predate the shared toolbar/navigation.
+    // Still capture their real baseline; enforce the new layout only on "after".
+    const toolbar = getComputedStyle(report.querySelector('.report-toolbar') || report);
     const undecorated = [...report.querySelectorAll('.run-summary,.question-list')].map(el => {
       const css = getComputedStyle(el);
       return { border: css.borderTopWidth, padding: el.matches('.run-summary') ? css.paddingTop : null };
     });
-    const headerBoundary = getComputedStyle(report.querySelector('header'), '::after');
-    const nav = report.querySelector('.report-nav');
+    const headerBoundary = getComputedStyle(report.querySelector('header') || report, '::after');
+    const reportNav = report.querySelector('.report-nav');
+    const nav = reportNav || report;
     const navStyle = getComputedStyle(nav);
     const navLinks = [...nav.querySelectorAll('a')].map(a => a.getBoundingClientRect());
     const layout = { canvas: rgb(getComputedStyle(document.body).backgroundColor),
-      navigation: { width: nav.clientWidth, contentWidth: nav.scrollWidth,
+      navigation: { present: Boolean(reportNav), width: nav.clientWidth, contentWidth: nav.scrollWidth,
         overflowX: navStyle.overflowX, wrap: navStyle.flexWrap,
         rows: new Set(navLinks.map(box => Math.round(box.top))).size,
         linksVisible: navLinks.every(box => box.left >= 0 && box.right <= viewport) },
@@ -105,6 +108,7 @@ function assertLayout(layout) {
   assert.equal(layout.display, 'grid');
   assert(layout.singleColumn, 'one column at every screen width');
   assert(layout.width <= 1100, 'maximum report width');
+  assert(layout.navigation.present, 'report navigation is present');
   if (layout.viewport <= 800) {
     assert.equal(layout.navigation.overflowX, 'auto', 'small-screen navigation can scroll');
     assert.equal(layout.navigation.wrap, 'nowrap');
