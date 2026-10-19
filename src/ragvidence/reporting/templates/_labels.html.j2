@@ -2,6 +2,6 @@
 {% if value is none %}<span class="status muted">Sufficient evidence: N/A · Unscored</span>{% elif value %}<span class="status success">Pass · Sufficient evidence</span>{% else %}<span class="status danger">Fail · Insufficient evidence</span>{% endif %}
 {%- endmacro %}
 {% macro state(value) -%}
-<span class="status {% if value in ['failed', 'partial_failure', 'regressed'] %}danger{% elif value == 'improved' %}success{% elif value == 'stable_fail' %}warning{% else %}muted{% endif %}">{{ value | replace('_', ' ') }}</span>
+<span class="status {% if value in ['failed', 'partial_failure', 'regressed'] %}danger{% elif value in ['improved', 'stable_pass'] %}success{% elif value == 'stable_fail' %}warning{% elif value in ['complete', 'retrieval_inspection'] %}info{% else %}muted{% endif %}">{{ value | replace('_', ' ') }}</span>
 {%- endmacro %}
 {% macro scroll_start(label) -%}<div class="scroll" role="region" aria-label="{{ label }}" tabindex="0">{%- endmacro %}

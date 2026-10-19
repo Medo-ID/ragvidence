@@ -49,6 +49,8 @@ def inspect_wheel(path: Path, version: str) -> dict:
             "ragvidence/reporting/templates/report.html.j2",
             "ragvidence/reporting/templates/_styles.css.j2",
             "ragvidence/reporting/templates/_labels.html.j2",
+            "ragvidence/reporting/templates/_toolbar.html.j2",
+            "ragvidence/reporting/templates/_theme.js.j2",
             "ragvidence/reporting/fonts/Geist-Sans.woff2",
             "ragvidence/reporting/fonts/Geist-Mono.woff2",
             "ragvidence/reporting/fonts/LICENSE.txt",

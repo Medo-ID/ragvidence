@@ -1,3 +1,15 @@
+# CLI report grid revision: awaiting visual confirmation
+
+The current report direction is a compact CLI document with a neutral grid frame,
+thin dividers, semantic status badges and an optional dark/light toggle. Read
+[the grid review and website sync contract](docs/maintainer/report-grid-review.md).
+New real previews are in `verification/ci/report-grid/index.html`; its manifests,
+screenshots and gate records apply to this revision. The older packet below is
+retained historical evidence. Keep the website read-only until the owner confirms
+this direction. Production remains 0.2.0; 0.2.1 is unpublished.
+
+---
+
 # Report redesign candidate: 0.2.1 (unpublished)
 
 The HTML report redesign is implemented on `verification/dark-html-reports`.

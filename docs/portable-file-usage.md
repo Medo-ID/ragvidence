@@ -116,8 +116,10 @@ Markdown overlap stays within sections. These are character counts, not tokens.
 
 ## Reports and internal artifacts
 
-The HTML report contains no scripts or remote assets and can be opened locally or
-shared. HTML, JSON and Markdown exports contain retrieved passages and their source
+The HTML report embeds its assets and a small optional dark/light theme script;
+reading, disclosures and printing also work with JavaScript disabled. It makes no
+remote requests and can be opened locally or shared. HTML, JSON and Markdown
+exports contain retrieved passages and their source
 locations. Review those contents before sharing.
 
 The run directory also contains private working artifacts: `snapshot.json` has

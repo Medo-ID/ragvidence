@@ -2,8 +2,9 @@
 
 ## 0.2.1 (unreleased)
 
-- Unify inspection, technique comparison and workspace HTML reports with comfortable
-  dark surfaces, embedded Geist typography, shared navigation and labeled outcomes.
+- Unify inspection, technique comparison and workspace HTML reports in a compact
+  CLI-style grid with embedded Geist typography, jump navigation and labeled outcomes.
+  Default to a neutral dark theme with an optional embedded light/dark toggle.
 - Surface execution failures, unavailable measurements and resource trade-offs;
   keep configuration, hashes and stage JSON in keyboard-accessible disclosures.
 - Improve narrow-screen tables, long paths, source passages and paper/PDF output,

@@ -75,7 +75,7 @@ def verify(root: Path, after: str) -> dict:
     for pdf in sorted((root / "browser" / after).glob("*.pdf")):
         reader = PdfReader(pdf)
         text = "\n".join(page.extract_text() for page in reader.pages)
-        expected = read(pdf.with_name(pdf.stem + "-print-content.json"))
+        expected = read(pdf.with_name(pdf.stem.removesuffix("-light") + "-print-content.json"))
         for index, content in enumerate(expected["pre"]):
             assert normalized(content) in normalized(text), (pdf.name, index)
         assert "SIL OPEN FONT LICENSE" in text
@@ -88,7 +88,8 @@ def verify(root: Path, after: str) -> dict:
                 "closed_disclosures": expected["closed"],
             }
         )
-    assert len(pdfs) == 7
+    assert len(pdfs) in {7, 14}
+    assert len({p["report"].removesuffix("-light") for p in pdfs}) == 7
     record = {"unchanged_evidence": comparisons + ["tutorial"], "pdfs": pdfs}
     (root / "evidence-checks.json").write_text(json.dumps(record, indent=2) + "\n")
     print("PASS: unchanged evidence in all seven journeys; every PDF preformatted block present")

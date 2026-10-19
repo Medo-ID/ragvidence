@@ -4,7 +4,9 @@
 <title>RAGvidence comparison · {{ report.input_name }}</title>
 <meta name="color-scheme" content="dark">
 <style>{% include '_styles.css.j2' %}</style></head><body><a class="skip-link" href="#summary">Skip to report summary</a><main>
-<header id="summary"><p class="eyebrow">RAGvidence · Technique comparison</p><h1>{{ report.input_name }}</h1>
+{% set report_type = "comparison / techniques" %}
+{% include "_toolbar.html.j2" %}
+<header id="summary"><p class="eyebrow">FROZEN INPUTS / COMPARISON</p><h1>Technique comparison</h1><p class="input-name">{{ report.input_name }}</p>
 <p>{{ state(report.state) }} · {{ report.evaluation_level | replace("_", " ") }} · Phase: {{ report.phase }}</p>
 <p>Baseline: {{ report.baseline }} · Policy: {{ report.policy }}</p>
 {% for observation in report.observations %}<p class="notice">{{ observation }}</p>{% endfor %}
@@ -39,4 +41,5 @@
 <details><summary>Observed stages and scores</summary><pre>{{ question.stages | tojson(indent=2) }}</pre></details></article></details>{% endfor %}</details>
 {% endif %}</section>{% endfor %}
 <section id="limitations"><h2>Limitations</h2><p class="print-note">Printing includes every question, source passage and closed disclosure, including configuration and stage evidence.</p><ul>{% for value in report.limitations %}<li>{{ value }}</li>{% endfor %}</ul><p class="meta">Generated {{ report.generated_at }} · Query-stage invocation upper bound {{ report.query_call_upper_bound }}</p><details><summary>Bundled font license</summary><pre>{{ fonts.license }}</pre></details></section>
-</main></body></html>
+</main>{% include "_theme.js.j2" %}
+</body></html>

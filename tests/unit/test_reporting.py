@@ -197,7 +197,9 @@ def test_long_and_hostile_content_is_escaped_in_real_template() -> None:
             tags.append(tag)
 
     Tags().feed(rendered)
-    assert not {"script", "img", "iframe", "link"}.intersection(tags)
+    assert not {"img", "iframe", "link"}.intersection(tags)
+    assert tags.count("script") == 1
+    assert (TEMPLATE.parent / "_theme.js.j2").read_text().strip() in rendered
     assert "&lt;script&gt;" in rendered
     assert "&amp;" in rendered
     assert rendered.count("data:font/woff2;base64,") == 2
@@ -269,6 +271,8 @@ def test_portable_html_keeps_facts_offline_assets_and_navigation(tmp_path, comma
     Document().feed(html)
     assert len(ids) == len(set(ids))
     assert links and all(link.startswith("#") and link[1:] in ids for link in links)
-    assert not assets and not {"script", "link", "iframe", "img"}.intersection(tags)
+    assert not assets and not {"link", "iframe", "img"}.intersection(tags)
+    assert tags.count("script") == 1
+    assert (TEMPLATE.parent / "_theme.js.j2").read_text().strip() in html
     assert html.count("data:font/woff2;base64,") == 2
     assert "SIL OPEN FONT LICENSE" in html

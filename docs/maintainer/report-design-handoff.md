@@ -1,3 +1,7 @@
+> The report grid and optional theme-toggle revision supersedes this visual
+> direction. See [the current design review](report-grid-review.md). This file and
+> its packet describe the prior revision and retain its original evidence.
+
 # Dark HTML reports: website and video handoff
 
 The report presentation is implemented for the **unpublished 0.2.1 candidate**.

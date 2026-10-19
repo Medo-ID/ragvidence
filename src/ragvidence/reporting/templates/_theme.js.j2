@@ -1,0 +1,13 @@
+<script id="report-theme">
+(() => {
+  const root = document.documentElement;
+  const button = document.getElementById('theme-toggle');
+  button.hidden = false;
+  button.addEventListener('click', () => {
+    const light = root.dataset.theme !== 'light';
+    root.dataset.theme = light ? 'light' : 'dark';
+    button.setAttribute('aria-pressed', String(light));
+    button.querySelector('span').textContent = light ? 'Dark mode' : 'Light mode';
+  });
+})();
+</script>
