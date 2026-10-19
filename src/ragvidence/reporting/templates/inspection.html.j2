@@ -10,9 +10,11 @@
 </head>
 <body><a class="skip-link" href="#summary">Skip to report summary</a>
 <main>
+{% set report_type = "inspection / local data" %}
+{% include "_toolbar.html.j2" %}
   <header id="summary">
-    <div class="eyebrow">RAGvidence · Local data diagnostics</div>
-    <h1>{{ report.input.name }}</h1>
+    <div class="eyebrow">LOCAL DATA / INSPECTION</div>
+    <h1>{% if report.evaluation %}Reviewed retrieval{% elif report.questions %}Retrieval inspection{% else %}Source inspection{% endif %}</h1><p class="input-name">{{ report.input.name }}</p>
     <p class="status">{{ report.evaluation_level | replace('_', ' ') }}</p>
     <p class="meta">{% if report.evaluation %}Reviewed evidence evaluation{% else %}Evidence quality: N/A · Unscored{% endif %} · Retrieval: {% if report.evaluation_level == 'ingestion_only' %}not executed{% else %}executed{% endif %}</p>
     <p>Technique: {{ report.manifest.config.name }} · Base: {{ report.manifest.config.strategy | upper }} · k={{ report.manifest.config.k }}</p>
@@ -25,9 +27,9 @@
     </div>
     {% for observation in report.observations %}<p class="notice">{{ observation }}</p>{% endfor %}
     <p class="meta">Input notices: {{ report.input.skipped_count }} skipped · {{ report.input.failed_count }} failed · {{ report.input.warning_count }} warnings</p>
-    {% for warning in report.manifest.warnings %}<p class="notice">Warning: {{ warning }}</p>{% endfor %}
+    {% for warning in report.manifest.warnings %}<p class="notice warning">Warning: {{ warning }}</p>{% endfor %}
   </header>
-  <nav class="report-nav" aria-label="Report navigation"><a href="#summary">Summary</a>{% if report.evaluation %}<a href="#evaluation">Reviewed evidence</a>{% endif %}{% if report.questions %}<a href="#questions">Questions &amp; passages</a>{% endif %}<a href="#sources">Sources</a>{% if report.input.skipped %}<a href="#notices">Input notices</a>{% endif %}<a href="#reproducibility">Reproducibility</a><a href="#limitations">Limitations</a></nav>
+  <nav class="report-nav" aria-label="Report navigation" tabindex="0"><a href="#summary">Summary</a>{% if report.evaluation %}<a href="#evaluation">Reviewed evidence</a>{% endif %}{% if report.questions %}<a href="#questions">Questions &amp; passages</a>{% endif %}<a href="#sources">Sources</a>{% if report.input.skipped %}<a href="#notices">Input notices</a>{% endif %}<a href="#reproducibility">Reproducibility</a><a href="#limitations">Limitations</a></nav>
   {% if report.evaluation %}<section id="evaluation"><h2>Reviewed evidence</h2><p>Scope: {{ report.evaluation.scope }} · Method: {{ report.evaluation.method }}</p>
     {{ scroll_start('Reviewed evidence by split') }}<table><caption>Evidence sufficiency by question split</caption><thead><tr><th scope="col">Split</th><th scope="col">Sufficient / answerable</th><th scope="col">Sufficiency rate</th></tr></thead><tbody>{% for split, summary in report.evaluation.summaries.items() %}<tr><td>{{ split }}</td><td>{{ summary.sufficient_count }} / {{ summary.answerable_questions }}</td><td>{{ summary.sufficiency_rate if summary.sufficiency_rate is not none else 'N/A' }}</td></tr>{% endfor %}</tbody></table></div>
     <details><summary>Metric definitions</summary><pre>{{ report.evaluation.definitions | tojson(indent=2) }}</pre></details>
@@ -75,5 +77,6 @@
     <details><summary>Bundled Geist font license</summary><pre>{{ fonts.license }}</pre></details>
   </section>
 </main>
+{% include "_theme.js.j2" %}
 </body>
 </html>

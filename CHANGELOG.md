@@ -1,14 +1,21 @@
 # Changelog
 
-## 0.2.1 (unreleased)
+## 0.2.1 — Redesigned HTML reports
 
-- Unify inspection, technique comparison and workspace HTML reports with comfortable
-  dark surfaces, embedded Geist typography, shared navigation and labeled outcomes.
+- Unify inspection, technique comparison and workspace HTML reports in a centered,
+  single-column CLI document with embedded Geist typography, jump navigation and
+  labeled outcomes. The centered report is capped at 1100px, with aligned thin
+  borders, generous section spacing and a compact toolbar.
+  Default to the dark Woodsmoke theme with an optional embedded light/dark toggle.
 - Surface execution failures, unavailable measurements and resource trade-offs;
   keep configuration, hashes and stage JSON in keyboard-accessible disclosures.
 - Improve narrow-screen tables, long paths, source passages and paper/PDF output,
   including evidence inside closed disclosures. Reports remain self-contained and
   useful offline with JavaScript disabled. Retrieval, scoring and schemas are unchanged.
+- Keep small-screen navigation on one horizontally scrollable row, with native
+  keyboard access and visible focus. No new report runtime dependencies or remote assets.
+- Exclude local development, test outputs and design references from version control;
+  reject local caches, provider credentials and generated evidence in release packages.
 
 ## 0.2.0
 

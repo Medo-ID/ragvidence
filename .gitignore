@@ -11,6 +11,9 @@ __pycache__/
 .tox/
 .nox/
 .cache/
+.hypothesis/
+.benchmarks/
+.ipynb_checkpoints/
 
 # Local credentials and provider configuration; keep the shared template
 .env
@@ -49,6 +52,10 @@ build/
 .coverage
 .coverage.*
 htmlcov/
+coverage/
+test-results/
+playwright-report/
+blob-report/
 /coverage.xml
 /junit.xml
 *.log
@@ -58,5 +65,12 @@ htmlcov/
 workspaces/
 ragvi-reports/
 .ragvidence-cache/
-verification/ci/
-verification/published/
+/verification/*
+!/verification/README.md
+/node_modules/
+/tmp/
+/temp/
+/screenshots/
+/recordings/
+/report-previews/
+/report_UI.png

@@ -111,21 +111,23 @@
 {% set before_rate = baseline.summary.sufficient_evidence_rate %}
 {% set after_rate = candidate.summary.sufficient_evidence_rate if candidate else none %}
 <main>
+{% set report_type = "evaluation / workspace" %}
+{% include "_toolbar.html.j2" %}
   <header id="summary" class="hero">
-    <p class="eyebrow">RAGvidence · Evidence retrieval report</p>
-    <h1>{{ baseline.manifest.config.name }}{% if candidate %} → {{ candidate.manifest.config.name }}{% endif %}</h1>
+    <p class="eyebrow">WORKSPACE / REVIEWED EVIDENCE</p>
+    <h1>{% if candidate %}Retrieval comparison{% else %}Retrieval evaluation{% endif %}</h1><p class="run-label">{{ baseline.manifest.config.name }}{% if candidate %} → {{ candidate.manifest.config.name }}{% endif %}</p>
     <p class="hero-copy">{% if candidate %}One controlled retrieval comparison{% else %}Baseline retrieval evaluation{% endif %} · {{ baseline.questions | length }} questions · {{ baseline.summary.answerable }} answerable · k={{ baseline.manifest.config.k }}</p>
-    <p class="result">{{ percent(before_rate) }}{% if candidate %} → {{ percent(after_rate) }}{% endif %}</p>
+    <p class="meta">Evidence sufficiency</p><p class="result">{{ percent(before_rate) }}{% if candidate %} → {{ percent(after_rate) }}{% endif %}</p>
     <p class="hero-copy">
       {% if candidate and before_rate is not none and after_rate is not none %}
         Evidence sufficiency {% if after_rate > before_rate %}improved{% elif after_rate < before_rate %}decreased{% else %}was unchanged{% endif %} from {{ percent(before_rate) }} to {{ percent(after_rate) }}.
       {% elif candidate %}No answerable success-rate comparison is available.
       {% else %}The baseline retrieved all required evidence for {{ baseline.summary.successful }} of {{ baseline.summary.answerable }} answerable questions.{% endif %}
     </p>
-    {% if comparison %}<div class="outcomes"><span>{{ comparison.summary.fail_to_pass }} questions recovered</span><span>{{ comparison.summary.pass_to_fail }} regression{% if comparison.summary.pass_to_fail != 1 %}s{% endif %}</span><span>{{ comparison.summary.fail_to_fail }} unresolved failure{% if comparison.summary.fail_to_fail != 1 %}s{% endif %}</span></div>{% endif %}
+    {% if comparison %}<div class="outcomes"><span class="status success">{{ comparison.summary.fail_to_pass }} recovered</span><span class="status danger">{{ comparison.summary.pass_to_fail }} regression{% if comparison.summary.pass_to_fail != 1 %}s{% endif %}</span><span class="status warning">{{ comparison.summary.fail_to_fail }} unresolved failure{% if comparison.summary.fail_to_fail != 1 %}s{% endif %}</span></div>{% endif %}
     <div class="hero-meta"><span>Generated {{ report.generated_at }}</span><span>Artifact schema v{{ report.schema_version }}</span></div>
   </header>
-  <nav class="report-nav" aria-label="Report navigation">
+  <nav class="report-nav" aria-label="Report navigation" tabindex="0">
     <a href="#summary">Summary</a>
     {% if comparison %}<a href="#change-analysis">Change analysis</a><a href="#diagnosis">Diagnosis</a><a href="#regressions">Regressions</a><a href="#unresolved-failures">Unresolved failures</a><a href="#improvements">Improvements</a><a href="#stable-results">Stable results</a><a href="#not-applicable">N/A cases</a>{% else %}<a href="#questions">Questions</a>{% endif %}
     <a href="#reproducibility">Reproducibility</a><a href="#limitations">Limitations</a>
@@ -149,14 +151,14 @@
     <p class="muted">{{ comparison.changes | selectattr("classification", "none") | list | length }} N/A cases are excluded from the answerable success-rate denominator.</p>
   </section>
   <section id="diagnosis">
-    <h2>Evidence-backed diagnosis</h2>
+    <h2>Diagnostic notes</h2><details><summary>Observed pattern and next experiment</summary>
     {% if report.diagnosis %}
     <div class="diagnosis-grid">
       <div><h3>Observed facts</h3><p>{{ report.diagnosis.evidence }}</p></div>
       <div><h3>Diagnostic interpretation</h3><p><strong>Observed pattern:</strong> {{ report.diagnosis.pattern }}</p><p><strong>Recommended next experiment:</strong> {{ report.diagnosis.next_experiment }}</p><p><strong>Confidence:</strong> {{ report.diagnosis.confidence }}</p><p><strong>Limitation:</strong> {{ report.diagnosis.limit }}</p></div>
     </div>
     {% else %}<p>No diagnostic interpretation is available. Inspect the recorded evidence before choosing the next experiment.</p>{% endif %}
-  </section>
+  </details></section>
   {% for key, anchor, title, label in [("pass_to_fail", "regressions", "Regressions", "Pass → Fail"), ("fail_to_fail", "unresolved-failures", "Unresolved failures", "Fail → Fail"), ("fail_to_pass", "improvements", "Improvements", "Fail → Pass"), ("pass_to_pass", "stable-results", "Stable results", "Pass → Pass"), (none, "not-applicable", "Unanswerable / N/A cases", "Not applicable")] %}
   <section id="{{ anchor }}">
     <h2>{{ title }}</h2>
@@ -188,9 +190,10 @@
     <p class="print-note">Printing includes every question and ranked evidence item, including closed disclosures. Navigation is omitted. Use this complete view when exporting to PDF.</p>
   </section>
   <footer>
-    <p>RAGvidence · Local-first evidence diagnostics · No report scripts or remote assets.</p>
+    <p>RAGvidence · Local-first evidence diagnostics · Self-contained report · Offline assets.</p>
     <details class="font-license"><summary>Bundled Geist font license</summary><pre>{{ fonts.license }}</pre></details>
   </footer>
 </main>
+{% include "_theme.js.j2" %}
 </body>
 </html>

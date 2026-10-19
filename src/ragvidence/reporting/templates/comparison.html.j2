@@ -4,13 +4,15 @@
 <title>RAGvidence comparison · {{ report.input_name }}</title>
 <meta name="color-scheme" content="dark">
 <style>{% include '_styles.css.j2' %}</style></head><body><a class="skip-link" href="#summary">Skip to report summary</a><main>
-<header id="summary"><p class="eyebrow">RAGvidence · Technique comparison</p><h1>{{ report.input_name }}</h1>
+{% set report_type = "comparison / techniques" %}
+{% include "_toolbar.html.j2" %}
+<header id="summary"><p class="eyebrow">FROZEN INPUTS / COMPARISON</p><h1>Technique comparison</h1><p class="input-name">{{ report.input_name }}</p>
 <p>{{ state(report.state) }} · {{ report.evaluation_level | replace("_", " ") }} · Phase: {{ report.phase }}</p>
 <p>Baseline: {{ report.baseline }} · Policy: {{ report.policy }}</p>
 {% for observation in report.observations %}<p class="notice">{{ observation }}</p>{% endfor %}
 {% if report.heldout_use %}<p>Heldout evaluation #{{ report.heldout_use.evaluation_number }} under this output root · Previously used: {{ report.heldout_use.reused }}</p>{% endif %}
 </header>
-<nav class="report-nav" aria-label="Report navigation"><a href="#summary">Summary</a><a href="#tradeoffs">Status &amp; resources</a>{% for pair in report.comparisons %}<a href="#pair-{{ loop.index }}">{{ pair.participant }} vs {{ pair.baseline }}</a>{% endfor %}{% for entry in report.participants %}<a href="#participant-{{ loop.index }}">{{ entry.name }}</a>{% endfor %}<a href="#limitations">Limitations</a></nav>
+<nav class="report-nav" aria-label="Report navigation" tabindex="0"><a href="#summary">Summary</a><a href="#tradeoffs">Status &amp; resources</a>{% for pair in report.comparisons %}<a href="#pair-{{ loop.index }}">{{ pair.participant }} vs {{ pair.baseline }}</a>{% endfor %}{% for entry in report.participants %}<a href="#participant-{{ loop.index }}">{{ entry.name }}</a>{% endfor %}<a href="#limitations">Limitations</a></nav>
 <section id="tradeoffs"><h2>Execution &amp; resource trade-offs</h2><p class="section-copy">Read completion status alongside quality and resource evidence. Timing covers known values only; N/A means unavailable. No automatic winner is selected.</p>
 {{ scroll_start('Participant execution and resource measurements') }}<table class="tradeoffs"><caption>Recorded participant measurements</caption><thead><tr><th scope="col">Participant / status</th><th scope="col">Evidence scope</th><th scope="col">Query time, ms</th><th scope="col">Rendered context</th><th scope="col">Supplied-usage cost</th></tr></thead><tbody>
 {% for entry in report.participants %}<tr><td><a href="#participant-{{ loop.index }}">{{ entry.name }}</a><br>{{ state(entry.state) }}</td>{% if entry.state == 'complete' %}<td>{{ entry.evidence_scope | replace('_', ' ') }}</td><td>{{ '%.2f' | format(entry.resources.query_ms.mean_known) if entry.resources.query_ms.mean_known is not none else 'N/A' }}<br><span class="meta">{{ entry.resources.query_ms.known_count }} known · {{ entry.resources.query_ms.missing_count }} missing</span></td><td>{{ entry.resources.context_units.mean_known if entry.resources.context_units.mean_known is not none else 'N/A' }} {{ entry.resources.context_unit or '' }}</td><td>{{ entry.usage.cost if entry.usage.cost is not none else 'N/A' }} {{ entry.usage.currency or '' }}</td>{% else %}<td colspan="4">N/A · {{ entry.error }}</td>{% endif %}</tr>{% endfor %}
@@ -39,4 +41,5 @@
 <details><summary>Observed stages and scores</summary><pre>{{ question.stages | tojson(indent=2) }}</pre></details></article></details>{% endfor %}</details>
 {% endif %}</section>{% endfor %}
 <section id="limitations"><h2>Limitations</h2><p class="print-note">Printing includes every question, source passage and closed disclosure, including configuration and stage evidence.</p><ul>{% for value in report.limitations %}<li>{{ value }}</li>{% endfor %}</ul><p class="meta">Generated {{ report.generated_at }} · Query-stage invocation upper bound {{ report.query_call_upper_bound }}</p><details><summary>Bundled font license</summary><pre>{{ fonts.license }}</pre></details></section>
-</main></body></html>
+</main>{% include "_theme.js.j2" %}
+</body></html>

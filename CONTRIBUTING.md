@@ -58,7 +58,9 @@ For more commands and input schemas, see [getting started](docs/getting-started.
 The ignore rules cover virtual environments, editor/agent settings, local dotenv
 files, credentials directories, caches, build output, logs, reports and generated
 verification output. Use `local-data/` for personal datasets and
-`verification/ci/` for new check results. Review report contents before sharing.
+`verification/ci/` for new check results. New verification output, browser test
+results, screenshots/recordings and the local `report_UI.png` design reference
+are ignored; maintained tests, fixtures and existing canonical evidence remain tracked. Review report contents before sharing.
 
 Keep `pyproject.toml`, `uv.lock`, `.python-version`, `.env.example`, CI workflows,
 tests/fixtures, documentation and license notices tracked. These define the
