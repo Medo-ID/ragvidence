@@ -58,9 +58,10 @@ For more commands and input schemas, see [getting started](docs/getting-started.
 The ignore rules cover virtual environments, editor/agent settings, local dotenv
 files, credentials directories, caches, build output, logs, reports and generated
 verification output. Use `local-data/` for personal datasets and
-`verification/ci/` for new check results. New verification output, browser test
-results, screenshots/recordings and the local `report_UI.png` design reference
-are ignored; maintained tests, fixtures and existing canonical evidence remain tracked. Review report contents before sharing.
+`verification/ci/` for new check results. Personal instructions, maintainer notes,
+verification output, browser results, screenshots and recordings stay local and
+ignored. Keep maintained tests and fixtures tracked; review report contents before
+sharing them. Hosted CI retains its generated evidence as workflow artifacts.
 
 Keep `pyproject.toml`, `uv.lock`, `.python-version`, `.env.example`, CI workflows,
 tests/fixtures, documentation and license notices tracked. These define the
@@ -129,6 +130,8 @@ locked package metadata/dependencies; it does not enable model downloads or
 external access in unit tests. A fully warm resolver cache can run without it.
 CI repeats the gate and an upgrade check on Linux x64, Windows x64 and macOS
 ARM64/Intel. Other Python/OS/model combinations are outside that tested matrix.
+See [the release procedure](docs/releasing.md) for packaging, publication and
+installed-release checks.
 
 For a bug, add a regression for the observed failure when appropriate. For a
 technique, include an independently computed positive case, an adverse or neutral
