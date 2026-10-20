@@ -37,6 +37,14 @@ __pycache__/
 /CLAUDE.local.md
 *.code-workspace
 
+# Personal instructions, handoffs and maintainer records
+/AGENTS.md
+/CLAUDE.md
+/CLI-HANDOFF.md
+/instructions.md
+/docs/maintainer/
+/.local-notes/
+
 # OS/editor temporary files
 .DS_Store
 Thumbs.db
